@@ -1717,8 +1717,15 @@ img.px {
 .chip.dl:hover { color: #000; background: var(--p-glow); border-color: var(--p-glow); }
 .chip.dl b { color: var(--p-glow); font-weight: 400; }
 .chip.dl:hover b, .chip.dl:hover .dl-n { color: #000; }
-.chip.dl .dl-n { color: var(--p-half); }
-.chip.dl .dl-n::before { content: "· "; }
+/* The counter sits beside the download rather than inside it. Inside, the
+   number ran on after the file size and there was nothing to say which was
+   which -- "406 kb 3" reads as a typo. */
+.chip.dl-count {
+  color: var(--p-half);
+  border-style: dashed;
+  cursor: default;
+}
+.chip.dl-count b { color: var(--p-body); font-weight: 400; }
 
 /* the visitor count opens the map */
 a.item.visitors { text-decoration: none; cursor: pointer; }

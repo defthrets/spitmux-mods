@@ -44,6 +44,7 @@
   function wireDownload(m) {
     if (!m.repo) return;
     var slot = outEl.querySelector(".chip.dl");
+    var count = outEl.querySelector(".chip.dl-count");
     if (!slot) return;
 
     var slug = m.repo.replace(/^https?:\/\/github\.com\//, "").replace(/\/+$/, "");
@@ -53,9 +54,18 @@
       if (!rel || !rel.url) return;
       slot.href = rel.url;
       slot.innerHTML = "&#8595; " + esc(rel.tag) +
-        (rel.size ? ' <b>' + Math.round(rel.size / 1024) + " kb</b>" : "") +
-        (rel.downloads ? ' <span class="dl-n">' + num(rel.downloads) + "</span>" : "");
+        (rel.size ? ' <b>' + Math.round(rel.size / 1024) + " kb</b>" : "");
       slot.hidden = false;
+
+      // Shown even at zero. Hidden-when-empty reads as "there is no counter"
+      // rather than "nobody has taken it yet", and the second is the useful
+      // fact -- a release that has just gone up SHOULD say 0.
+      if (count) {
+        var n = rel.downloads || 0;
+        count.innerHTML = num(n) + " <b>" + (n === 1 ? "download" : "downloads") + "</b>";
+        count.title = "counted across every release, not just this one";
+        count.hidden = false;
+      }
     }
 
     if (RELEASES[slug]) { paint(RELEASES[slug]); return; }
@@ -68,21 +78,31 @@
       }
     } catch (e) { /* private mode; just ask the network */ }
 
-    fetch("https://api.github.com/repos/" + slug + "/releases/latest")
+    /* The whole list rather than /releases/latest, which costs the same one
+       request and answers a better question. Downloads live on the ASSET, so
+       asking only about the newest release reports zero the moment a new
+       version goes up and throws away everything the old ones earned -- fumes
+       had four releases and a download, and read as none. */
+    fetch("https://api.github.com/repos/" + slug + "/releases?per_page=100")
       .then(function (r) {
-        // 404 is the ordinary case: public repo, no release cut yet.
         if (r.status === 404) return null;
         // 403 is the rate limit. Do NOT cache that as "no release", or the
         // whole session goes quiet over one bad minute.
         if (!r.ok) throw new Error(r.status);
         return r.json();
       })
-      .then(function (d) {
-        var asset = d && d.assets && d.assets.filter(function (a) {
-          return /\.zip$/i.test(a.name);
-        })[0];
-        var rel = asset ? { tag: d.tag_name, url: asset.browser_download_url,
-                            size: asset.size, downloads: asset.download_count } : {};
+      .then(function (list) {
+        var zips = function (rel) {
+          return (rel.assets || []).filter(function (a) { return /\.zip$/i.test(a.name); });
+        };
+        var newest = (list && list.length) ? list[0] : null;
+        var asset = newest ? zips(newest)[0] : null;
+        var total = 0;
+        (list || []).forEach(function (r2) {
+          zips(r2).forEach(function (a) { total += a.download_count || 0; });
+        });
+        var rel = asset ? { tag: newest.tag_name, url: asset.browser_download_url,
+                            size: asset.size, downloads: total } : {};
         RELEASES[slug] = rel;
         try { sessionStorage.setItem(key, JSON.stringify(rel)); } catch (e) {}
         // Guard against a slow reply landing after the reader has moved
@@ -257,6 +277,7 @@
     h.push('<span class="chip">c<b>#</b> · shvdn 3</span>');
     if (m.repo) {
       h.push('<a class="chip dl" hidden target="_blank" rel="noopener"></a>');
+      h.push('<span class="chip dl-count" hidden></span>');
       h.push('<a class="chip link" href="' + esc(m.repo) + '" target="_blank" rel="noopener">source ↗</a>');
     } else {
       h.push('<span class="chip mute">source · private</span>');
