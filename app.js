@@ -630,6 +630,23 @@
         el.hidden = false;
       })
       .catch(function () { /* stays hidden */ });
+
+    /* And which country, so the map has something to pin.
+
+       api.country.is is asked because it answers with CORS and returns two
+       fields, an address and a country code. The address is read and dropped
+       on the floor -- what gets stored anywhere is a single +1 against "GB",
+       and no part of this site ever learns, keeps or publishes who anybody is.
+       That is also why it is a country and not a city: a pin on a town is a
+       pin on a person, near enough. */
+    fetch("https://api.country.is/")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        var cc = d && d.country;
+        if (!cc || !/^[A-Z]{2}$/.test(cc)) return;
+        return fetch("https://counterapi.com/api/spitmux/geo/" + cc);
+      })
+      .catch(function () { /* the count still stands, just unplaced */ });
   })();
 
   window.addEventListener("konami", function () {

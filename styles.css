@@ -1007,19 +1007,12 @@ html, body {
 }
 .spec-window > * { position: relative; z-index: 7; }
 
-.spec-roll {
-  position: absolute;
-  left: 0; right: 0;
-  height: 90px;
-  z-index: 6;
-  pointer-events: none;
-  background: linear-gradient(to bottom, transparent, rgb(var(--rgb-spec) / 0.05), transparent);
-  animation: roll 7s linear infinite;
-}
-@keyframes roll {
-  from { top: -90px; }
-  to   { top: 100%; }
-}
+/* The band that swept down the spec panel is gone. It was the one piece of
+   motion on the page with nothing to say -- the wordmark's glitch is a fault,
+   the rain is the backdrop, the demon turns because it is a mark; this just
+   moved. Element kept in the markup so nothing has to be re-plumbed if it
+   ever comes back. */
+.spec-roll { display: none; }
 
 .spec-header {
   padding: 5px 12px;
@@ -1177,7 +1170,7 @@ body.unlocked {
 body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0.45); }
 
 @media (prefers-reduced-motion: reduce) {
-  .grain-overlay, .spec-roll, .live-dot, .crt-led, .statusbar .dot,
+  .grain-overlay, .live-dot, .crt-led, .statusbar .dot,
   .mod-btn.in, .tagline .cursor { animation: none !important; }
 }
 
@@ -1738,3 +1731,8 @@ img.px {
 .chip.dl:hover b, .chip.dl:hover .dl-n { color: #000; }
 .chip.dl .dl-n { color: var(--p-half); }
 .chip.dl .dl-n::before { content: "· "; }
+
+/* the visitor count opens the map */
+a.item.visitors { text-decoration: none; cursor: pointer; }
+a.item.visitors:hover { color: var(--p-glow); }
+a.item.visitors:hover b { color: var(--p-core); }

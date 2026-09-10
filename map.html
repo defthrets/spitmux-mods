@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>spitmux ~ where from</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#0a0603" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Only what this page adds; the palette, the bezel and the type all come
+       from the site's own stylesheet. */
+    .scope-wrap { padding: 14px 18px 18px; }
+    .scope-grid {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .scope-grid { grid-template-columns: 1fr; } }
+
+    .scope {
+      position: relative;
+      border: 1px solid var(--p-line);
+      border-radius: 6px;
+      background: #0b0704;
+      overflow: hidden;
+    }
+    .scope svg { display: block; width: 100%; height: auto; }
+
+    .grat  { stroke: rgb(var(--rgb-signal) / 0.10); stroke-width: 0.6; fill: none; }
+    .coast { fill: rgb(var(--rgb-signal) / 0.055); stroke: var(--p-dim);
+             stroke-width: 0.5; stroke-linejoin: round; }
+
+    /* A pin is a disc plus a ring that sits outside it, so a small count is
+       still visible against the coastline and a large one does not simply
+       become a blob. */
+    .pin      { fill: var(--p-signal); fill-opacity: 0.85; }
+    .pin-ring { fill: none; stroke: var(--p-glow); stroke-width: 0.9; opacity: 0.55; }
+    .pin-hit  { fill: transparent; cursor: pointer; }
+    .pin-hit:hover ~ .pin,
+    .pin.on   { fill: var(--p-core); }
+
+    .scope-note {
+      margin: 10px 2px 0;
+      color: var(--p-half);
+      font-family: "VT323", monospace;
+      font-size: 16px;
+      letter-spacing: 0.05em;
+      text-shadow: none;
+    }
+
+    .tally { border: 1px solid var(--p-line); border-radius: 6px; overflow: hidden; }
+    .tally-head {
+      display: flex; justify-content: space-between;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--p-line);
+      background: #100a05;
+      font-family: "VT323", monospace;
+      font-size: 16px; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--p-glow); text-shadow: none;
+    }
+    .tally-list { max-height: 460px; overflow-y: auto; }
+    .tally-row {
+      display: grid;
+      grid-template-columns: 26px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 4px 10px;
+      border-bottom: 1px dotted rgb(var(--rgb-signal) / 0.14);
+      font-family: "VT323", monospace;
+      font-size: 16px;
+      color: var(--p-body);
+      text-shadow: none;
+      cursor: default;
+    }
+    .tally-row:hover { background: rgb(var(--rgb-signal) / 0.07); }
+    .tally-row .cc { color: var(--p-dim); letter-spacing: 0.06em; }
+    .tally-row .n  { color: var(--p-glow); font-variant-numeric: tabular-nums; }
+    .tally-empty { padding: 12px 10px; color: var(--p-dim);
+                   font-family: "VT323", monospace; font-size: 16px; }
+
+    .scope-back { color: var(--cyan); text-decoration: none;
+                  border-bottom: 1px dashed var(--amber-dim); }
+    .scope-back:hover { color: var(--orange-glow); }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="titlebar">
+      <div class="tb-left">
+        <span class="tb-dot r"></span><span class="tb-dot y"></span><span class="tb-dot g"></span>
+        &nbsp;&nbsp;<span>tty2</span>&nbsp;—&nbsp;<span>where from</span>
+      </div>
+      <div class="tb-right">
+        <span><a class="scope-back" href="./">&#8592; back to the archive</a></span>
+      </div>
+    </div>
+
+    <section class="col center" style="flex:1;min-height:0;">
+      <div class="frame">
+        <div class="scope-wrap">
+          <div class="crumb" style="margin-bottom:10px;">
+            archive <span class="sep">/</span> <span class="cat">VISITORS</span>
+            <span class="sep">/</span> where from
+          </div>
+          <h1 class="dossier-title" style="margin:0 0 4px;">Where from</h1>
+          <div class="dossier-tag" style="margin-bottom:16px;">
+            one pin per country, counted once per address &#183; no addresses are kept
+          </div>
+
+          <div class="scope-grid">
+            <div>
+              <div class="scope"><svg id="map" role="img"
+                   aria-label="World map with a pin for each country visitors have come from"></svg></div>
+              <div class="scope-note" id="note">scanning&#8230;</div>
+            </div>
+            <div class="tally">
+              <div class="tally-head"><span>by country</span><span id="tally-total">&#8212;</span></div>
+              <div class="tally-list" id="tally"><div class="tally-empty">reading&#8230;</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="statusbar">
+      <div class="left">
+        <span class="item online"><span class="dot"></span>online</span>
+        <span class="item" id="stat-seen">countries: <b>&#8212;</b></span>
+      </div>
+      <div class="right"><span class="item">esc &#183; back</span></div>
+    </div>
+  </main>
+
+  <script src="map-data.js"></script>
+  <script src="map.js"></script>
+</body>
+</html>
