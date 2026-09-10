@@ -22,6 +22,10 @@
   var FORK = '<path d="M -4 -8 L -4 -1 M -1.5 -8 L -1.5 8 M -4 -1 L 1 -1 ' +
              'M 4 -8 C 6.5 -8 6.5 -2 4 -2 L 4 8" stroke="var(--p-glow)" ' +
              'stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+  var SKULL = '<path d="M 0 -9 C 6 -9 9 -5 9 -1 C 9 2 7 4 6 5 L 6 8 ' +
+              'L -6 8 L -6 5 C -7 4 -9 2 -9 -1 C -9 -5 -6 -9 0 -9 Z ' +
+              'M -4 -2 A 2.2 2.2 0 1 0 -4 -1.9 M 4 -2 A 2.2 2.2 0 1 0 4 -1.9" ' +
+              'fill-rule="evenodd"/>';
   var PUMP = '<g stroke="var(--p-glow)" stroke-width="1.8" fill="none" ' +
              'stroke-linejoin="round" stroke-linecap="round">' +
              '<path d="M -9 7 L -9 -8 L 3 -8 L 3 7"/>' +
@@ -80,13 +84,25 @@
       '<text class="hl dim" x="' + (x + w + 6) + '" y="' + y + '">' + label + '</text>';
   }
 
-  function app(x, y, label, on) {
-    return '<g transform="translate(' + x + ',' + y + ')">' +
-      '<rect x="0" y="0" width="40" height="40" rx="6" ' +
-        'fill="' + (on ? "var(--p-signal)" : "rgb(var(--rgb-signal) / 0.10)") + '" ' +
-        'stroke="' + (on ? "var(--p-glow)" : "var(--p-line)") + '" stroke-width="1.5"/>' +
-      '<text class="hl" x="20" y="56" text-anchor="middle" ' +
-        'style="fill:' + (on ? "var(--p-glow)" : "var(--p-half)") + '">' + label + '</text></g>';
+  // one app tile on the phone's home screen; `on` is the one under the cursor
+  function app3(x, y, on) {
+    return '<rect x="' + x + '" y="' + y + '" width="30" height="30" rx="4" ' +
+      'fill="' + (on ? "var(--p-signal)" : "rgb(var(--rgb-signal) / 0.10)") + '" ' +
+      'stroke="' + (on ? "var(--p-core)" : "var(--p-line)") + '" ' +
+      'stroke-width="' + (on ? 2 : 1) + '"/>';
+  }
+
+  // a leader from a drawn part out to the label that names it
+  function lead(x1, y, x2) {
+    return '<line x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y +
+      '" stroke="var(--p-line)" stroke-width="1.2"/>';
+  }
+
+  // a dialogue line you did not pick
+  function opt(y, text) {
+    return '<circle cx="46" cy="' + (y - 5) + '" r="7" fill="none" ' +
+      'stroke="var(--p-half)" stroke-width="1.2"/>' +
+      '<text class="hlq" x="62" y="' + y + '" style="fill:var(--p-half)">' + text + '</text>';
   }
 
   window.HUDS = {
@@ -187,85 +203,119 @@
     },
 
     // ── the handset, the panel when somebody talks, and the table ────────
+    // ── the handset, the deal, the talk, and the table ──────────────────
     "hoodrich": [
       {
-        w: 420, h: 220,
-        cap: "The phone replaces the in-game one and stands on the right. " +
-             "Apps on the home screen, lists inside them.",
+        w: 420, h: 330,
+        cap: "The phone replaces the in-game one. Eleven apps three across, " +
+             "the contact you last spoke to along the top, and the bank card " +
+             "underneath. Overspray appears here as an app when it is " +
+             "installed \u2014 the mods know about each other.",
         svg:
-          '<rect x="252" y="16" width="132" height="190" rx="14" ' +
+          '<rect x="34" y="16" width="152" height="298" rx="13" ' +
             'fill="rgb(var(--rgb-signal) / 0.05)" stroke="var(--p-signal)" stroke-width="2.5"/>' +
-          '<rect x="262" y="34" width="112" height="154" rx="4" ' +
-            'fill="rgb(var(--rgb-signal) / 0.04)" stroke="var(--p-line)" stroke-width="1.5"/>' +
-          '<line x1="300" y1="25" x2="336" y2="25" stroke="var(--p-line)" ' +
-            'stroke-width="3" stroke-linecap="round"/>' +
-          app(272, 44, "deal", true) + app(324, 44, "cont", false) +
-          app(272, 96, "gang", false) + app(324, 96, "inv", false) +
-          app(272, 148, "soc", false) +
-          '<text class="hl" x="60" y="46">dealing</text>' +
-          '<text class="hl" x="60" y="72">contacts</text>' +
-          '<text class="hl" x="60" y="98">gangs</text>' +
-          '<text class="hl" x="60" y="124">inventory</text>' +
-          '<text class="hl" x="60" y="150">socials</text>' +
-          '<text class="hl dim" x="60" y="186">the weapon wheel is left alone</text>'
+          '<rect x="42" y="30" width="136" height="270" rx="4" ' +
+            'fill="rgb(var(--rgb-signal) / 0.04)" stroke="var(--p-line)" stroke-width="1.2"/>' +
+          '<text class="hl dim" x="50" y="46" style="font-size:11px">POSTED UP</text>' +
+          '<text class="hl dim" x="116" y="46" style="font-size:11px">06:35</text>' +
+          '<rect x="150" y="39" width="18" height="8" rx="1" fill="var(--p-signal)"/>' +
+          '<rect x="48" y="52" width="124" height="18" rx="2" fill="none" ' +
+            'stroke="var(--p-line)" stroke-width="1" stroke-dasharray="3 3"/>' +
+          app3(54, 76) + app3(92, 76) + app3(130, 76) +
+          app3(54, 112) + app3(92, 112, true) + app3(130, 112) +
+          app3(54, 148) + app3(92, 148) + app3(130, 148) +
+          app3(54, 184) + app3(92, 184) +
+          '<rect x="48" y="222" width="124" height="44" rx="3" ' +
+            'fill="rgb(var(--rgb-signal) / 0.07)" stroke="var(--p-line)" stroke-width="1"/>' +
+          '<text class="hlb" x="56" y="245" style="font-size:15px">$2,335,286</text>' +
+          '<text class="hl dim" x="56" y="259" style="font-size:11px">FLEECA &#183; 4471</text>' +
+          '<text class="hl dim" x="110" y="288" text-anchor="middle" ' +
+            'style="font-size:11px">d-pad &#183; a &#183; b</text>' +
+          lead(190, 46, 214) + '<text class="hl" x="220" y="50">time, signal, battery</text>' +
+          lead(190, 61, 214) + '<text class="hl" x="220" y="65">who you last spoke to</text>' +
+          lead(190, 130, 214) + '<text class="hl" x="220" y="124">eleven apps, three across</text>' +
+          '<text class="hl dim" x="220" y="143">phone &#183; messages &#183; contacts</text>' +
+          '<text class="hl dim" x="220" y="159">dealing &#183; socials &#183; gangs</text>' +
+          '<text class="hl dim" x="220" y="175">inventory &#183; settings</text>' +
+          '<text class="hl dim" x="220" y="191">overspray &#183; mask &#183; luber</text>' +
+          lead(190, 244, 214) + '<text class="hl" x="220" y="248">the bank card</text>' +
+          lead(190, 288, 214) + '<text class="hl dim" x="220" y="292">move &#183; open &#183; put away</text>'
       },
       {
-        w: 420, h: 196,
+        w: 420, h: 252,
         cap: "Talking to somebody is a panel, not a menu: who is speaking, " +
-             "their face, what they said, and the line you give back. The " +
-             "header is set in blackletter in game.",
+             "their face, what they said, and every line you could give back. " +
+             "The one under the cursor explains itself on the right.",
         svg:
-          '<rect x="18" y="14" width="384" height="152" rx="10" ' +
+          '<rect x="16" y="14" width="388" height="220" rx="10" ' +
             'fill="rgb(var(--rgb-signal) / 0.05)" stroke="var(--p-signal)" stroke-width="2"/>' +
-          '<text class="hlb" x="210" y="42" text-anchor="middle" ' +
+          '<text class="hlb" x="210" y="38" text-anchor="middle" ' +
             'style="letter-spacing:0.22em;fill:var(--p-core)">POSTED UP</text>' +
-
-          // portrait, with the speaker's accent stripe down its left
-          '<rect x="34" y="54" width="3" height="46" fill="var(--p-glow)"/>' +
-          '<rect x="39" y="54" width="46" height="46" ' +
-            'fill="rgb(var(--rgb-signal) / 0.10)" stroke="var(--p-line)" stroke-width="1.5"/>' +
-          '<circle cx="62" cy="72" r="9" fill="var(--p-half)" opacity="0.55"/>' +
-          '<path d="M 47 100 C 49 87 75 87 77 100 Z" fill="var(--p-half)" opacity="0.55"/>' +
-          '<text class="hl" x="96" y="66" style="fill:var(--p-glow)">GERALD</text>' +
-          '<text class="hlq" x="96" y="86">Go on then. And don’t be standing round</text>' +
-          '<text class="hlq" x="96" y="104">here with it neither, that’s my corner.</text>' +
-
-          // the line you can give back, and the bar that runs along it
-          '<rect x="250" y="113" width="132" height="23" fill="var(--p-signal)" opacity="0.16"/>' +
-          '<rect x="250" y="113" width="46" height="23" fill="var(--p-signal)" opacity="0.28"/>' +
-          '<rect x="38" y="112" width="346" height="25" rx="2" fill="none" ' +
-            'stroke="var(--p-glow)" stroke-width="1.5"/>' +
-          '<text class="hlq" x="50" y="130" style="fill:var(--p-core)">Say less.</text>' +
-
-          prompt(38, 156, "&#8597;", "choose") +
-          prompt(126, 156, "A", "say it") +
-          prompt(300, 156, "B", "walk off")
+          '<rect x="30" y="50" width="3" height="42" fill="var(--p-glow)"/>' +
+          '<rect x="35" y="50" width="42" height="42" ' +
+            'fill="rgb(var(--rgb-signal) / 0.10)" stroke="var(--p-line)" stroke-width="1.2"/>' +
+          '<circle cx="56" cy="66" r="8" fill="var(--p-half)" opacity="0.55"/>' +
+          '<path d="M 42 92 C 44 80 68 80 70 92 Z" fill="var(--p-half)" opacity="0.55"/>' +
+          '<text class="hl" x="88" y="62" style="fill:var(--p-glow)">GERALD</text>' +
+          '<text class="hlq" x="88" y="84">We already did this part. Go work.</text>' +
+          '<rect x="30" y="100" width="360" height="24" rx="2" ' +
+            'fill="rgb(var(--rgb-signal) / 0.10)" stroke="var(--p-glow)" stroke-width="1.5"/>' +
+          '<circle cx="46" cy="112" r="7" fill="none" stroke="var(--p-glow)" stroke-width="1.2"/>' +
+          '<text class="hlq" x="62" y="117" style="fill:var(--p-core)">Where should I be working?</text>' +
+          '<text class="hl dim" x="382" y="116" text-anchor="end" ' +
+            'style="font-size:12px">ask which blocks are safe</text>' +
+          opt(140, "How am I doing?") +
+          opt(162, "About the port.") +
+          opt(184, "Still got your work.") +
+          '<text class="hlq" x="62" y="206" style="fill:var(--p-half)">I&#39;m out.</text>' +
+          prompt(30, 228, "&#8597;", "choose") +
+          prompt(120, 228, "A", "say it") +
+          prompt(300, 228, "B", "walk off")
+      },
+      {
+        w: 420, h: 200,
+        cap: "Stood on a corner with something to sell. The bar is standing, " +
+             "not a timer \u2014 what the block thinks of you, between a " +
+             "reputation worth having and one that gets you robbed.",
+        svg:
+          '<text class="hlb" x="210" y="34" text-anchor="middle" ' +
+            'style="letter-spacing:0.2em;fill:var(--p-core)">POSTED UP</text>' +
+          '<text class="hl dim" x="210" y="54" text-anchor="middle">selling ecstasy</text>' +
+          '<rect x="66" y="72" width="288" height="24" rx="2" ' +
+            'fill="rgb(var(--rgb-signal) / 0.06)" stroke="var(--p-line)" stroke-width="1.5"/>' +
+          '<rect x="68" y="74" width="188" height="20" fill="var(--p-signal)" opacity="0.85"/>' +
+          '<text class="hl" x="162" y="89" text-anchor="middle" ' +
+            'style="fill:var(--p-core)">reputation</text>' +
+          '<g transform="translate(48,84)" fill="var(--p-half)">' + SKULL + '</g>' +
+          '<g transform="translate(372,84)" fill="var(--p-glow)">' + HEART + '</g>' +
+          '<text class="hlq" x="210" y="122" text-anchor="middle" ' +
+            'style="fill:var(--p-glow);font-style:italic">word is it&#39;s decent</text>' +
+          '<text class="hlb" x="210" y="148" text-anchor="middle">' +
+            '17 PILLS LEFT &#160;&#183;&#160; 8 MORE SALES</text>' +
+          '<text class="hl dim" x="210" y="172" text-anchor="middle">' +
+            '6 passing &#183; 0 sold &#183; $0</text>'
       },
       {
         w: 420, h: 222,
         cap: "Stretch's armoury. The guns are laid out on the table in front " +
-             "of you and the screen has no panel of its own — a count of what " +
-             "the category holds, what this one is, and what a box costs.",
+             "of you and the screen has no panel of its own \u2014 a count of " +
+             "what the category holds, what this one is, and what a box costs.",
         svg:
-          // no chrome in game: the type sits straight on the scene
           '<rect x="14" y="12" width="392" height="204" rx="6" fill="none" ' +
             'stroke="var(--p-edge)" stroke-width="1.5" stroke-dasharray="6 6"/>' +
-
           '<text class="hl dim" x="132" y="42" text-anchor="middle">handguns</text>' +
-          '<text class="hl" x="210" y="42" text-anchor="middle">11 / 19</text>' +
+          '<text class="hl" x="210" y="42" text-anchor="middle">4 / 19</text>' +
           '<text class="hl" x="292" y="42" text-anchor="middle" ' +
-            'style="fill:var(--p-glow)">9 held</text>' +
-
+            'style="fill:var(--p-glow)">6 held</text>' +
           '<text x="210" y="82" text-anchor="middle" ' +
-            'style="font-size:27px;letter-spacing:0.04em;fill:var(--p-core)">CERAMIC PISTOL</text>' +
+            'style="font-size:27px;letter-spacing:0.04em;fill:var(--p-core)">VINTAGE PISTOL</text>' +
           '<text class="hl" x="210" y="106" text-anchor="middle" ' +
             'style="fill:var(--p-glow)">owned</text>' +
-          '<text class="hlq" x="210" y="130" text-anchor="middle">Walks through a door</text>' +
-          '<text class="hlb" x="210" y="154" text-anchor="middle">1 BOX  ·  24 ROUNDS  ·  ' +
-            '<tspan style="fill:var(--p-glow)">$360</tspan></text>' +
+          '<text class="hlq" x="210" y="130" text-anchor="middle">Somebody&#39;s grandad&#39;s</text>' +
+          '<text class="hlb" x="210" y="154" text-anchor="middle">1 BOX &#160;&#183;&#160; 20 ROUNDS &#160;&#183;&#160; ' +
+            '<tspan style="fill:var(--p-glow)">$130</tspan></text>' +
           '<text class="hl dim" x="210" y="172" text-anchor="middle" ' +
-            'style="font-size:13px">1 parts</text>' +
-
+            'style="font-size:13px">2 parts</text>' +
           prompt(34, 190, "&#8597;", "pick") +
           prompt(124, 190, "&#8596;", "rounds") +
           prompt(240, 190, "LB/RB", "rack", 40) +

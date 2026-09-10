@@ -33,3 +33,14 @@ Any mod can take shots. The ids are:
     overspray franklin-rp  streetgolf  weapon-tweaks  vehicle-tweaks
 
 Drop the file in and say which mod it belongs to and what it shows.
+
+MORE SHOTS WIRED AND WAITING
+----------------------------
+These five are already wired into Hoodrich - save them under these
+names and they appear:
+
+    posted-up.png     Gerald, and the lines you can answer with
+    armoury.png       Stretch's table, a gun picked out
+    phone.png         the handset, home screen
+    dealing.png       stood on a corner selling
+    graffiti.png      spraying a wall (this one goes on Overspray)
