@@ -1254,17 +1254,6 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
   76%      { opacity: 0.8; }
 }
 
-.crt-noise {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  image-rendering: pixelated;
-  mix-blend-mode: screen;
-  opacity: 0.55;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
 
 .crt-roll {
   position: absolute;
@@ -1318,8 +1307,7 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
 
 @media (prefers-reduced-motion: reduce) {
   .crt-roll, .crt-sig { animation: none; }
-  .crt-noise { display: none; }
-}
+  }
 
 /* ─── Real captures ──────────────────────────────────────────────────────
    Actual frames out of the game. These get the heavier frame and the glow
@@ -1454,7 +1442,6 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
   transition: transform 0.04s steps(1);
 }
 .crt-stage { z-index: 2; }
-.crt-noise { z-index: 3; }
 .crt-roll  { z-index: 4; }
 .crt-scan  { z-index: 5; }
 

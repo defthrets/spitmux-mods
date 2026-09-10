@@ -106,11 +106,6 @@
   drawSig();
   var sigTimer = setInterval(drawSig, 90);
 
-  var noise = document.createElement("canvas");
-  noise.className = "crt-noise";
-  noise.width = 180;
-  noise.height = 110;
-
   var roll = document.createElement("div");
   roll.className = "crt-roll";
   var scan = document.createElement("div");
@@ -128,26 +123,12 @@
   if (rain) { rain.classList.add("in-crt"); inner.appendChild(rain); }
 
   inner.appendChild(stage);
-  inner.appendChild(noise);
   inner.appendChild(roll);
   inner.appendChild(scan);
   root.appendChild(inner);
   root.appendChild(line);
   root.classList.add("live");            // cancels the stylesheet failsafe
 
-  // ── static ──────────────────────────────────────────────────────────────
-  var ctx = noise.getContext("2d");
-  var img = ctx.createImageData(noise.width, noise.height);
-  var noiseTimer = setInterval(function () {
-    var d = img.data;
-    for (var i = 0; i < d.length; i += 4) {
-      var v = Math.random();
-      var on = v > 0.86;
-      d[i] = 255; d[i + 1] = 148; d[i + 2] = 24;
-      d[i + 3] = on ? 40 + Math.random() * 90 : 0;
-    }
-    ctx.putImageData(img, 0, 0);
-  }, 55);
 
   // ── the fault itself ────────────────────────────────────────────────────
   // Re-rolled on a random interval rather than run off a keyframe loop: a
@@ -211,11 +192,9 @@
   function powerOff() {
     if (done) return;
     clearTimeout(glitchTimer);
-    clearInterval(noiseTimer);
     clearInterval(sigTimer);
     layers.forEach(clear);
     inner.style.filter = "";
-    noise.style.opacity = 0;
     sig.style.opacity = 0;
 
     root.classList.add("off");
@@ -246,7 +225,6 @@
   // without five seconds of tearing.
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     clearTimeout(glitchTimer);
-    clearInterval(noiseTimer);
     layers.forEach(clear);
     clearTimeout(offTimer);
     offTimer = setTimeout(powerOff, 1200);
