@@ -1,0 +1,1492 @@
+/* spitmux mods — strict single-hue palette: amber on warm black.
+   Same design system as spitmux.dev, re-cut for a catalogue. */
+:root {
+  /* ── The amber ladder: one hue family, nine even contrast steps ─────────
+     Every value below was solved against the page ground rather than picked
+     by eye, so the ladder has no gap in the middle. The version this replaces
+     had everything either at 3.5:1 or above 11:1 and nothing in between,
+     which is why it read flat. Ratios in the comments are against --bg-deep.
+
+     The hue drifts as it heats: toward cream at the core, toward ember as it
+     fades. --p-signal is the one value that was not solved for — #ff9418 is
+     the identity, carried over from spitmux.dev unchanged. */
+  --p-core:   #fdf0c2;   /* 18.1:1  max highlight — readouts, key numbers  */
+  --p-pale:   #ffd283;   /* 14.5:1  primary text                          */
+  --p-glow:   #ffb24d;   /* 11.5:1  emphasis, hover, names                */
+  --p-signal: #ff9418;   /*  9.3:1  THE amber — prompt, LED, live edge    */
+  --p-body:   #e7933b;   /*  8.5:1  body copy                             */
+  --p-mid:    #bf7224;   /*  5.5:1  secondary labels, chips, code         */
+  --p-half:   #a86120;   /*  4.3:1  small caps labels, breadcrumbs        */
+  --p-dim:    #8f511b;   /*  3.3:1  de-emphasised meta, comments          */
+  --p-line:   #603614;   /*  2.0:1  borders and rules that must be seen   */
+  --p-edge:   #3d220c;   /*  1.4:1  hairlines, barely-there structure     */
+
+  /* channel triplets, for the shadows and washes that need an alpha */
+  --rgb-core:       253 240 194;
+  --rgb-pale:       255 210 131;
+  --rgb-glow:       255 178  77;
+  --rgb-signal:     255 148  24;
+  --rgb-index:      250 181 151;
+  --rgb-index-glow: 252 207 182;
+  --rgb-spec:       255 195  67;
+
+  /* grounds — the page sits below every panel, so panels read as objects */
+  --bg-deep: #050301;    /* the page itself   */
+  --bg:      #0a0603;
+  --rail:    #100a05;    /* titlebar, statusbar, panel headers */
+
+  /* roles. Body copy is --p-body and not --p-dim: it is the thing on this
+     page people actually read, and it was the least legible text on it. */
+  --orange:        var(--p-signal);
+  --orange-dim:    var(--p-mid);
+  --orange-glow:   var(--p-glow);
+  --magenta:       var(--p-core);
+  --magenta-dim:   var(--p-mid);
+  --green:         var(--p-signal);
+  --cyan:          var(--p-glow);
+  --yellow:        var(--p-glow);
+  --gray:          var(--p-line);
+  --gray-dim:      var(--p-line);
+  --text:          var(--p-pale);
+  --text-dim:      var(--p-body);
+
+  --amber-pale:   var(--p-pale);
+  --amber-mid:    var(--p-mid);
+  --amber-dim:    var(--p-half);
+  --amber-darker: var(--p-line);
+
+  --shadow:         0 0 8px rgb(var(--rgb-signal) / 0.50), 0 0 22px rgb(var(--rgb-signal) / 0.22);
+  --shadow-soft:    0 0 4px rgb(var(--rgb-signal) / 0.35);
+  --shadow-magenta: 0 0 6px rgb(var(--rgb-pale) / 0.40);
+
+  --font: "JetBrains Mono";
+  --font-size: 14px;
+  --line-height: 1.5;
+
+  /* the page commits to one world — a warm-black CRT — in every theme */
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: var(--font), "Courier New", monospace;
+  font-size: var(--font-size);
+  font-weight: 400;
+  line-height: var(--line-height);
+  overflow: hidden;
+  height: 100%;
+  text-shadow: var(--shadow-soft);
+}
+
+/* ─── screen furniture ───────────────────────────────────────────────── */
+
+#matrix {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.shadow-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgb(var(--rgb-glow) / 0.14) 0.5px, transparent 0.7px),
+    radial-gradient(rgba(0, 0, 0, 0.25) 0.5px, transparent 0.7px);
+  background-size: 3px 3px, 3px 3px;
+  background-position: 0 0, 1px 1px;
+  mix-blend-mode: overlay;
+  opacity: 0.55;
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.55) 85%, rgba(0,0,0,0.9) 100%);
+}
+
+@keyframes crt-flash {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.flash {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--orange);
+  pointer-events: none;
+  opacity: 0;
+}
+.flash.go { animation: crt-flash 0.25s ease-out; }
+
+::selection { background: var(--magenta); color: #000; text-shadow: none; }
+
+/* ─── shell ──────────────────────────────────────────────────────────── */
+
+.shell {
+  position: relative;
+  z-index: 10;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px 12px;
+  max-width: 1700px;
+  margin: 0 auto;
+}
+
+/* The titlebar and the statusbar are closed rails, not the open top and bottom
+   of one window — the CRT bezel between them has its own thick rounded frame,
+   and a half-drawn border either side of it reads as a mistake. */
+.titlebar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--gray-dim);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  background: linear-gradient(to bottom, rgba(22, 14, 7, 0.95), rgba(10, 6, 3, 0.85));
+  font-size: 0.85em;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  flex: 0 0 auto;
+}
+.titlebar .dots { letter-spacing: 0.25em; }
+/* Three lamps down the ladder rather than a traffic light — a single-phosphor
+   tube has no red or green to give. */
+.titlebar .dots .d-r { color: var(--p-mid);    text-shadow: 0 0 5px rgb(var(--rgb-signal) / 0.4); }
+.titlebar .dots .d-y { color: var(--p-glow);   text-shadow: 0 0 6px rgb(var(--rgb-glow) / 0.55); }
+.titlebar .dots .d-g { color: var(--p-signal); text-shadow: 0 0 7px rgb(var(--rgb-signal) / 0.7); }
+.titlebar .right { display: flex; gap: 18px; }
+.titlebar .right b { color: var(--cyan); font-weight: normal; }
+.titlebar .right .v-conn b { color: var(--green); }
+.titlebar .right .v-ver  b { color: var(--magenta); text-shadow: var(--shadow-magenta); }
+
+/* ─── CRT bezel head ─────────────────────────────────────────────────── */
+
+.frame-head {
+  flex: 0 0 auto;
+  border: 10px solid #120b05;
+  background: #080502;
+  padding: 26px 30px 26px;
+  position: relative;
+  border-radius: 20px / 24px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  text-align: center;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--rgb-signal) / 0.15),
+    inset 0 0 60px rgba(0, 0, 0, 0.85),
+    inset 0 0 200px rgba(0, 0, 0, 0.35),
+    0 0 0 2px #1f1408,
+    0 6px 24px rgba(0, 0, 0, 0.65);
+}
+.frame-head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 95%, rgba(0,0,0,0.85) 100%);
+  z-index: 1;
+}
+.frame-head > * { position: relative; z-index: 3; }
+
+/* ─── the seal, leaning in from behind the bezel ─────────────────────────
+   On the left, so the paddle points into the header rather than off the edge.
+   Sits under the vignette (z-index 1) rather than over it, so the bezel's own
+   falloff darkens the half nearest the edge and the mark reads as being behind
+   the frame instead of pasted on top of it. */
+.frame-head > .seal-peek {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: -104px;                 /* the tuck: about a third sits behind the edge */
+  width: 300px;                 /* the mark is wider than tall now */
+  height: auto;
+  transform: translateY(-50%) rotate(8deg);
+  color: var(--p-signal);
+  opacity: 0.95;                /* the bezel vignette knocks this back to ~a third */
+  pointer-events: none;
+}
+.frame-head > .seal-peek svg { width: 100%; height: auto; display: block; }
+
+.seal-ring-text {
+  transform-box: view-box;
+  transform-origin: 512px 512px;
+  animation: seal-turn 30s linear infinite;
+}
+@keyframes seal-turn { to { transform: rotate(360deg); } }
+
+.seal-ring-text text {
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+               "Meiryo", sans-serif;
+  font-weight: 700;
+  font-size: 70px;
+  fill: currentColor;
+}
+
+/* Below this there is no room for the mark and the wordmark side by side, so
+   the seal stops being a tuck and becomes the header's first element: in flow,
+   centred, above the wordmark. Hiding it was the easy answer and the wrong one —
+   it is the only picture in the header. */
+@media (max-width: 1100px) {
+  .frame-head > .seal-peek {
+    position: relative;
+    z-index: 2;
+    top: auto;
+    left: auto;
+    width: clamp(132px, 30vw, 200px);
+    height: auto;
+    margin: 0 auto 14px;
+    transform: rotate(6deg);
+    opacity: 0.92;
+  }
+}
+@media (prefers-reduced-motion: reduce) { .seal-ring-text { animation: none; } }
+
+.ascii-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+/* The Fraktur wordmark from spitmux.dev, 92 columns wide. The size is tied to
+   the viewport rather than stepped at breakpoints: 92 columns at 0.6em per
+   column is 55.2em, so any font-size under viewport/55 fits, and one clamp
+   covers every width without a second, smaller mark to keep in step. */
+.ascii {
+  margin: 0;
+  display: inline-block;
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 700;
+  /* Tied to the viewport so it never reaches the seal: the seal is a fixed
+     300px on the left while the header grows, so the squeeze is worst at the
+     narrow end. 1vw clears it from 1100px up, which is where the seal starts
+     showing. */
+  font-size: clamp(4px, 1vw, 14px);
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: pre;
+  /* The bezel is text-align: center, and that centres every line of the art
+     on its own, which pulls the rows out of column and stops the word
+     reading at all. The block is still centred — by the flex parent. */
+  text-align: left;
+  color: var(--orange);
+  /* no glow: at this size the bloom closes the gaps between the glyphs */
+  text-shadow: none;
+}
+.ascii-wrap:hover .ascii { color: var(--orange-glow); }
+
+/* Below 1100px the seal is stacked above rather than tucked beside, so the
+   wordmark has the full width back and need not sit at the clamp floor.
+   This has to come after the rule above: same specificity, so source order
+   decides, and a media query adds none. */
+@media (max-width: 1100px) {
+  .ascii { font-size: clamp(3.4px, 1.5vw, 14px); }
+}
+
+.sub-rule {
+  font-family: "VT323", monospace;
+  font-size: 18px;
+  letter-spacing: 0.34em;
+  color: var(--amber-mid);
+  text-transform: uppercase;
+  line-height: 1;
+  margin: 12px 0 8px;
+  text-shadow: none;
+}
+.sub-rule .dot { color: var(--amber-darker); margin: 0 0.2em; }
+
+.tagline {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--amber-dim);
+  font-family: "VT323", monospace;
+  font-size: 23px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin: 0;
+  text-shadow: none;
+}
+.tagline .quote  { color: var(--orange-glow); }
+.tagline .glitch { cursor: pointer; }
+.tagline .cursor { color: var(--orange); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.crt-label {
+  position: absolute;
+  bottom: 6px; left: 14px;
+  font-size: 9px;
+  color: var(--amber-dim);
+  letter-spacing: 0.3em;
+  z-index: 4;
+  text-transform: uppercase;
+}
+.crt-led {
+  position: absolute;
+  bottom: 8px; right: 14px;
+  width: 7px; height: 7px;
+  background: var(--amber);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--amber), inset 0 0 2px rgba(255,255,255,0.6);
+  z-index: 4;
+  animation: crt-led-pulse 2.4s ease-in-out infinite;
+}
+@keyframes crt-led-pulse {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 8px var(--amber), inset 0 0 2px rgba(255,255,255,0.6); }
+  50%      { opacity: 0.7; box-shadow: 0 0 4px var(--amber), inset 0 0 2px rgba(255,255,255,0.4); }
+}
+
+/* ─── workspace grid ─────────────────────────────────────────────────── */
+
+.workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr) 330px;
+  gap: 12px;
+  min-height: 0;
+  min-width: 0;
+}
+.col { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+
+@media (max-width: 1400px) { .workspace { grid-template-columns: 268px minmax(0, 1fr) 300px; } }
+@media (max-width: 1180px) {
+  .workspace {
+    grid-template-columns: 250px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 0.7fr);
+  }
+  .col.left  { grid-row: 1 / span 2; }
+  .col.right { grid-column: 2; }
+}
+@media (max-width: 860px) {
+  html, body { overflow-x: hidden; overflow-y: auto; height: auto; }
+  .shell { height: auto; min-height: 100vh; padding: 10px 10px 8px; }
+
+  .workspace { grid-template-columns: 1fr; grid-template-rows: auto auto auto; }
+  .col.left, .col.right { grid-row: auto; grid-column: auto; }
+  .col.left  { max-height: 52vh; }
+  .index-window { min-height: 240px; }
+  .spec-window  { min-height: 300px; }
+
+  /* the dossier grows with the page instead of scrolling inside itself */
+  .col.center { min-height: 0; }
+  .frame { flex: 0 0 auto; overflow: visible; padding: 14px 16px 18px; }
+  .spec-body { overflow: visible; }
+
+  .frame-head { padding: 16px 12px 20px; border-width: 6px; }
+  /* tracking pulled in so the line does not break 'auto / v' */
+  .sub-rule { font-size: 15px; letter-spacing: 0.1em; }
+  .tagline  { font-size: 19px; padding: 0 6px; text-align: center; }
+  .tagline .glitch { display: inline; }
+  .crt-label { font-size: 8px; letter-spacing: 0.16em; }
+
+  .titlebar { font-size: 0.78em; gap: 8px; }
+  .titlebar .right { gap: 10px; }
+  .titlebar .v-conn { display: none; }
+
+  .statusbar { flex-direction: column; gap: 2px; font-size: 0.78em; }
+  .dossier-title { font-size: 1.7em; }
+  .blurb, .point { max-width: none; }
+  .ctrl-table, .codeblock { max-width: none; }
+}
+
+@media (max-width: 420px) {
+  .titlebar .v-ver { display: none; }
+  .ctrl-table td.k { white-space: normal; }
+}
+
+/* ─── LEFT: the index ────────────────────────────────────────────────── */
+
+.index-window {
+  /* The same amber rotated toward red, so the index reads as a different
+     instrument from the dossier without leaving the family. */
+  --gh-green:   #fab597;   /* 11.5:1 on this panel */
+  --gh-glow:    #fccfb6;
+  --gh-dim:     #b35c3c;   /*  4.3:1 borders and the CAT/LOC meta line */
+  --gh-text:    #fab597;
+  --gh-text-dim:#d58d70;   /*  7.5:1 row descriptions */
+  --gh-bg:      #070402;
+  --gh-bg-2:    #0d0804;
+  --gh-shadow-soft: 0 0 3px rgb(var(--rgb-index) / 0.40);
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--gh-dim);
+  background: var(--gh-bg);
+  color: var(--gh-text);
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 30px rgb(var(--rgb-index) / 0.04),
+    inset 0 0 80px rgba(0, 0, 0, 0.75);
+}
+.index-window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.7) 100%);
+  z-index: 5;
+}
+.index-window > * { position: relative; z-index: 7; }
+
+.index-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--gh-dim);
+  background: #0d0804;
+  color: var(--gh-green);
+  z-index: 8;
+}
+.banner-word {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 0.44em;
+  text-indent: 0.44em;
+  text-transform: uppercase;
+  color: var(--gh-green);
+  text-shadow: 0 0 12px rgb(var(--rgb-index) / 0.35);
+}
+@media (max-width: 1400px) { .banner-word { font-size: 21px; } }
+
+.index-header {
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--gh-dim);
+  background: var(--gh-bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  color: var(--gh-text-dim);
+  text-transform: uppercase;
+  font-family: "VT323", monospace;
+  line-height: 1.1;
+}
+.index-header .title { color: var(--gh-green); font-weight: 700; text-shadow: var(--gh-shadow-soft); }
+.live-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--gh-green);
+  border-radius: 50%;
+  margin-right: 6px;
+  box-shadow: 0 0 6px var(--gh-green);
+  animation: pulse 1.4s ease-in-out infinite;
+  vertical-align: middle;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.3; transform: scale(0.7); }
+}
+
+/* filter row — behaves like the scan line on the parent site */
+.index-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px;
+  border-bottom: 1px dashed var(--gh-dim);
+  background: rgb(var(--rgb-glow) / 0.03);
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--gh-dim);
+}
+.index-filter .caret { color: var(--gh-green); }
+.index-filter input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--gh-glow);
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: var(--gh-shadow-soft);
+  padding: 2px 0;
+}
+.index-filter input::placeholder { color: var(--gh-dim); text-transform: uppercase; opacity: 1; }
+
+.index-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gh-dim) transparent;
+}
+.index-list::-webkit-scrollbar { width: 6px; }
+.index-list::-webkit-scrollbar-thumb { background: var(--gh-dim); }
+.index-list::-webkit-scrollbar-track { background: transparent; }
+
+.index-empty {
+  font-family: "VT323", monospace;
+  font-size: 17px;
+  color: var(--gh-dim);
+  text-align: center;
+  padding: 18px 6px;
+  letter-spacing: 0.06em;
+}
+
+/* the mod button */
+.mod-btn {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  color: var(--gh-text);
+  padding: 9px 10px 8px;
+  background: var(--gh-bg-2);
+  border: 1px solid var(--gh-dim);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  font-family: "VT323", monospace;
+  line-height: 1.1;
+  transition: background 0.18s ease, color 0.15s ease, border-color 0.18s ease;
+}
+/* The stagger is decoration only, and it deliberately does NOT touch opacity.
+   A frozen or never-started animation must not be able to hide a row, so the
+   worst case here is a button sitting 8px to the left of where it belongs. */
+.mod-btn.in { animation: mod-in 0.4s ease backwards; }
+@keyframes mod-in { from { transform: translateX(-8px); } }
+
+.mod-btn::before {
+  content: "";
+  position: absolute;
+  top: -1px; left: -1px;
+  width: 10px; height: 10px;
+  border-top: 1px solid var(--gh-green);
+  border-left: 1px solid var(--gh-green);
+  z-index: 5;
+}
+.mod-btn::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; right: -1px;
+  width: 10px; height: 10px;
+  border-bottom: 1px solid var(--gh-green);
+  border-right: 1px solid var(--gh-green);
+  z-index: 5;
+}
+.mod-btn > * { position: relative; z-index: 1; }
+
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.18;
+  mix-blend-mode: screen;
+  background-image:
+    radial-gradient(rgb(var(--rgb-pale) / 0.4) 0.5px, transparent 0.6px),
+    radial-gradient(rgb(var(--rgb-glow) / 0.3) 0.5px, transparent 0.6px);
+  background-size: 3px 3px, 5px 5px;
+  background-position: 0 0, 1px 2px;
+  animation: grain-jitter 0.6s steps(6) infinite;
+}
+@keyframes grain-jitter {
+  0%   { background-position: 0 0, 1px 2px; }
+  20%  { background-position: 1px 0, 2px 3px; }
+  40%  { background-position: 0 1px, 0 1px; }
+  60%  { background-position: 2px 1px, 1px 0; }
+  80%  { background-position: 1px 2px, 0 2px; }
+  100% { background-position: 0 0, 1px 2px; }
+}
+
+.hover-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  background: linear-gradient(to bottom,
+    transparent 0%, transparent 40%,
+    rgb(var(--rgb-pale) / 0.18) 49%,
+    rgb(var(--rgb-pale) / 0.55) 50%,
+    rgb(var(--rgb-pale) / 0.18) 51%,
+    transparent 60%, transparent 100%);
+  background-size: 100% 220%;
+  background-position: 0 -120%;
+}
+@keyframes sweep-down {
+  from { background-position: 0 -120%; }
+  to   { background-position: 0 120%; }
+}
+.mod-btn:hover .hover-sweep { opacity: 1; animation: sweep-down 0.85s ease-out infinite; }
+
+.mod-btn:hover { border-color: var(--gh-green); background: rgb(var(--rgb-glow) / 0.05); }
+.mod-btn:hover .name { animation: title-tear 0.22s steps(2) 3; color: var(--gh-glow); }
+@keyframes title-tear {
+  0%   { transform: translateX(0);    text-shadow: var(--gh-shadow-soft); }
+  25%  { transform: translateX(-2px); text-shadow: 2px 0 var(--p-glow), -2px 0 var(--p-dim); }
+  50%  { transform: translateX(2px);  text-shadow: -2px 0 var(--p-glow), 2px 0 var(--p-dim); }
+  75%  { transform: translateX(-1px); text-shadow: 1px 0 var(--p-pale), -1px 0 var(--p-dim); }
+  100% { transform: translateX(0);    text-shadow: var(--gh-shadow-soft); }
+}
+
+.mod-btn.active {
+  border-color: var(--gh-green);
+  background: rgb(var(--rgb-glow) / 0.09);
+  box-shadow: inset 0 0 20px rgb(var(--rgb-index) / 0.08);
+}
+.mod-btn.active .name { color: var(--gh-glow); text-shadow: 0 0 6px rgb(var(--rgb-index-glow) / 0.5); }
+.mod-btn.active .marker { opacity: 1; }
+
+.mod-btn .marker {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--gh-green);
+  box-shadow: 0 0 8px var(--gh-green);
+  opacity: 0;
+  z-index: 6;
+  transition: opacity 0.15s ease;
+}
+
+.mod-btn .name {
+  color: var(--gh-green);
+  font-size: 20px;
+  text-shadow: var(--gh-shadow-soft);
+  line-height: 1;
+  display: block;
+  letter-spacing: 0.02em;
+}
+.mod-btn .desc {
+  display: -webkit-box;
+  color: var(--gh-text-dim);
+  font-size: 15px;
+  line-height: 1.05;
+  margin-top: 3px;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mod-btn .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+  font-size: 14px;
+  color: var(--gh-dim);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  border-top: 1px dotted rgb(var(--rgb-glow) / 0.18);
+  padding-top: 3px;
+}
+.mod-btn .row .loc { color: var(--gh-text-dim); }
+.mod-btn .status-tag {
+  position: absolute;
+  top: 5px; right: 11px;
+  font-size: 13px;
+  color: var(--gh-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: "VT323", monospace;
+  z-index: 6;
+}
+.mod-btn .status-tag.ready { color: var(--gh-green); text-shadow: var(--gh-shadow-soft); }
+
+.index-footer {
+  border-top: 1px solid var(--gh-dim);
+  padding: 4px 12px;
+  font-size: 15px;
+  color: var(--gh-text-dim);
+  display: flex;
+  justify-content: space-between;
+  background: var(--gh-bg-2);
+  letter-spacing: 0.04em;
+  font-family: "VT323", monospace;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.index-footer a {
+  color: var(--gh-green);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--gh-dim);
+  text-transform: lowercase;
+  letter-spacing: 0;
+}
+.index-footer a:hover { color: var(--gh-glow); border-bottom-color: var(--gh-green); }
+
+/* ─── CENTRE: the dossier ────────────────────────────────────────────── */
+
+.frame {
+  flex: 1;
+  border: 1px solid var(--gray-dim);
+  background: rgba(10, 6, 3, 0.78);
+  padding: 18px 26px 22px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange-dim) transparent;
+  position: relative;
+  border-radius: 8px;
+}
+.frame::-webkit-scrollbar { width: 8px; }
+.frame::-webkit-scrollbar-thumb { background: var(--orange-dim); }
+.frame::-webkit-scrollbar-track { background: transparent; }
+
+.frame-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: var(--amber);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  border-radius: inherit;
+}
+.frame-flash.go { animation: crt-flash 0.25s ease-out; }
+
+/* boot lines */
+.line { white-space: pre-wrap; word-break: break-word; }
+.line + .line { margin-top: 2px; }
+.line .ok   { color: var(--green); }
+.line .info { color: var(--cyan); }
+.line .dim  { color: var(--text-dim); }
+.line .head { color: var(--magenta); text-shadow: var(--shadow-magenta); }
+
+/* dossier head */
+.dossier-head {
+  border-bottom: 1px solid var(--gray-dim);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.crumb {
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  letter-spacing: 0.16em;
+  color: var(--amber-dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-shadow: none;
+}
+.crumb .sep { color: var(--amber-darker); }
+.crumb .cat { color: var(--orange); }
+
+.dossier-title {
+  font-size: 2.1em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--orange-glow);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: var(--shadow-soft);
+  cursor: pointer;
+}
+.dossier-tag {
+  font-family: "VT323", monospace;
+  font-size: 23px;
+  line-height: 1.15;
+  color: var(--amber-mid);
+  margin-top: 4px;
+  text-shadow: none;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip {
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber-mid);
+  border: 1px solid var(--amber-darker);
+  padding: 4px 8px 3px;
+  background: rgb(var(--rgb-signal) / 0.04);
+  white-space: nowrap;
+}
+.chip b { color: var(--orange-glow); font-weight: 400; }
+.chip.link { color: var(--cyan); border-color: var(--amber-dim); text-decoration: none; cursor: pointer; }
+.chip.link:hover { color: #000; background: var(--orange-glow); border-color: var(--orange-glow); }
+.chip.mute { color: var(--p-dim); border-style: dashed; }
+
+.blurb {
+  color: var(--amber-pale);
+  margin: 0 0 20px;
+  max-width: 74ch;
+  font-size: 1.02em;
+  line-height: 1.6;
+}
+
+/* body sections */
+.point { margin: 0 0 16px; max-width: 78ch; position: relative; padding-left: 16px; }
+.point::before {
+  content: "▸";
+  position: absolute;
+  left: 0; top: 0;
+  color: var(--orange);
+  text-shadow: var(--shadow-soft);
+}
+.point h3 {
+  margin: 0 0 3px;
+  font-size: 1em;
+  font-weight: 700;
+  color: var(--orange-glow);
+  letter-spacing: 0.01em;
+  text-shadow: none;
+}
+.point p { margin: 0; color: var(--text-dim); line-height: 1.55; }
+.point p code, .blurb code { color: var(--amber-mid); }
+
+.sec-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 12px;
+  font-family: "VT323", monospace;
+  font-size: 17px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+  text-shadow: none;
+}
+.sec-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--gray-dim), transparent);
+}
+
+/* control table */
+.ctrl-table { width: 100%; border-collapse: collapse; max-width: 70ch; }
+.ctrl-table td {
+  padding: 5px 10px 5px 0;
+  border-bottom: 1px dotted rgb(var(--rgb-glow) / 0.14);
+  vertical-align: top;
+  line-height: 1.4;
+}
+.ctrl-table td.k { white-space: nowrap; width: 1%; }
+.ctrl-table td.k kbd {
+  font-family: "VT323", monospace;
+  font-size: 17px;
+  line-height: 1;
+  display: inline-block;
+  padding: 3px 7px 2px;
+  border: 1px solid var(--amber-darker);
+  background: rgb(var(--rgb-signal) / 0.05);
+  color: var(--orange-glow);
+  text-shadow: none;
+  letter-spacing: 0.04em;
+}
+.ctrl-table td.v { color: var(--text-dim); }
+
+/* install block */
+.codeblock {
+  border: 1px solid var(--gray-dim);
+  background: rgb(var(--rgb-signal) / 0.03);
+  padding: 10px 14px;
+  color: var(--amber-mid);
+  white-space: pre;
+  overflow-x: auto;
+  font-size: 0.92em;
+  line-height: 1.55;
+  max-width: 70ch;
+  text-shadow: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange-dim) transparent;
+}
+.codeblock .c { color: var(--p-dim); }
+.codeblock .f { color: var(--orange-glow); }
+
+.foot-note {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-dim);
+  color: var(--amber-dim);
+  font-family: "VT323", monospace;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  text-shadow: none;
+}
+.foot-note a { color: var(--cyan); text-decoration: none; border-bottom: 1px dashed var(--amber-dim); }
+.foot-note a:hover { color: var(--orange-glow); border-bottom-color: var(--orange-glow); }
+
+/* ─── RIGHT: spec panel ──────────────────────────────────────────────── */
+
+.spec-window {
+  /* and rotated the other way, toward the yellow-hot end of the tube */
+  --pb-green: #ffc343;   /* 12.5:1 */
+  --pb-glow:  #fdecb1;   /* 16.9:1 readouts */
+  --pb-dim:   #825b21;   /*  3.3:1 rules */
+  --pb-text-dim: #d09b41;/*  8.0:1 row keys */
+  --pb-shadow-soft: 0 0 3px rgb(var(--rgb-spec) / 0.40);
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--gray-dim);
+  background: #060401;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.8);
+}
+.spec-window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.75) 100%);
+  z-index: 5;
+}
+.spec-window > * { position: relative; z-index: 7; }
+
+.spec-roll {
+  position: absolute;
+  left: 0; right: 0;
+  height: 90px;
+  z-index: 6;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, rgb(var(--rgb-spec) / 0.05), transparent);
+  animation: roll 7s linear infinite;
+}
+@keyframes roll {
+  from { top: -90px; }
+  to   { top: 100%; }
+}
+
+.spec-header {
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--gray-dim);
+  background: #0d0804;
+  font-family: "VT323", monospace;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pb-text-dim);
+  display: flex;
+  justify-content: space-between;
+  line-height: 1.1;
+}
+.spec-header .title { color: var(--pb-green); text-shadow: var(--pb-shadow-soft); }
+
+.spec-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange-dim) transparent;
+}
+.spec-body::-webkit-scrollbar { width: 6px; }
+.spec-body::-webkit-scrollbar-thumb { background: var(--orange-dim); }
+
+.id-card {
+  border: 1px solid var(--pb-dim);
+  padding: 8px 10px 10px;
+  background: rgb(var(--rgb-signal) / 0.02);
+  font-family: "VT323", monospace;
+  line-height: 1.2;
+}
+.id-title {
+  font-size: 16px;
+  letter-spacing: 0.2em;
+  color: var(--pb-green);
+  text-transform: uppercase;
+  text-shadow: var(--pb-shadow-soft);
+}
+.id-num {
+  font-size: 14px;
+  color: var(--pb-dim);
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.id-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 16px;
+  padding: 1px 0;
+  border-bottom: 1px dotted rgb(var(--rgb-glow) / 0.12);
+}
+.id-row .k { color: var(--pb-text-dim); text-transform: uppercase; font-size: 15px; }
+.id-row .v { color: var(--pb-glow); text-transform: uppercase; text-shadow: var(--pb-shadow-soft); text-align: right; }
+.id-row .v.on   { color: var(--pb-green); }
+.id-row .v.mute { color: var(--pb-dim); text-shadow: none; }
+.id-barcode {
+  margin-top: 7px;
+  color: var(--pb-dim);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* the bar chart of sizes */
+.size-list { display: flex; flex-direction: column; gap: 3px; }
+.size-row {
+  display: grid;
+  grid-template-columns: 84px 1fr 46px;
+  gap: 6px;
+  align-items: center;
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  color: var(--pb-text-dim);
+  cursor: pointer;
+  line-height: 1.2;
+}
+.size-row:hover .n, .size-row.on .n { color: var(--pb-glow); text-shadow: var(--pb-shadow-soft); }
+.size-row .n {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.size-row .bar { height: 7px; background: rgb(var(--rgb-glow) / 0.08); position: relative; overflow: hidden; }
+.size-row .bar i {
+  position: absolute;
+  inset: 0 100% 0 0;                 /* overridden inline with the real width */
+  background: var(--pb-dim);
+  box-shadow: 0 0 6px rgb(var(--rgb-signal) / 0.3);
+  /* width comes from the inline style and nothing animates it away */
+}
+.size-row.on .bar i, .size-row:hover .bar i { background: var(--pb-green); }
+.size-row .v { text-align: right; color: var(--pb-text-dim); font-variant-numeric: tabular-nums; }
+.size-row.on .v { color: var(--pb-glow); }
+
+.spec-note {
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  color: var(--pb-dim);
+  line-height: 1.25;
+  border-left: 1px solid var(--pb-dim);
+  padding-left: 8px;
+}
+
+/* ─── statusbar ──────────────────────────────────────────────────────── */
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid var(--gray-dim);
+  border-radius: 8px;
+  padding: 4px 12px;
+  background: linear-gradient(to top, rgba(22, 14, 7, 0.95), rgba(10, 6, 3, 0.85));
+  font-size: 0.85em;
+  color: var(--text-dim);
+  flex: 0 0 auto;
+  margin-top: 12px;
+}
+.statusbar .left, .statusbar .right { display: flex; gap: 16px; flex-wrap: wrap; }
+.statusbar .item { transition: color 0.12s ease; white-space: nowrap; }
+.statusbar .item b { font-weight: normal; }
+.statusbar .item.online  { color: var(--green); }
+.statusbar .item.tor     { color: var(--cyan); }
+.statusbar .item.matrix  { color: var(--magenta); }
+.statusbar .dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--magenta);
+  border-radius: 50%;
+  margin-right: 6px;
+  box-shadow: 0 0 6px var(--magenta);
+  vertical-align: middle;
+  animation: status-pulse 1.6s ease-in-out infinite;
+}
+@keyframes status-pulse {
+  0%, 100% { box-shadow: 0 0 6px var(--magenta); opacity: 1; }
+  50%      { box-shadow: 0 0 14px var(--magenta); opacity: 0.7; }
+}
+
+/* konami */
+body.unlocked {
+  --orange: #ff2a2a;
+  --orange-glow: #ff6666;
+  --orange-dim: #aa1010;
+}
+body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0.45); }
+
+@media (prefers-reduced-motion: reduce) {
+  .grain-overlay, .spec-roll, .live-dot, .crt-led, .statusbar .dot,
+  .mod-btn.in, .tagline .cursor { animation: none !important; }
+}
+
+/* ─── cold open: bad signal, then the set switches off ───────────────────
+   The overlay is in the markup so the page starts black instead of flashing
+   the site first. intro.js fills it and drives the sequence.
+
+   Nothing readable lives behind this. The failsafe animation below clears
+   the overlay on its own if intro.js never runs, app.js starts on its own
+   timeout, and a click or any key skips straight to the switch-off. */
+
+.crt-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: #000;
+  overflow: hidden;
+  cursor: pointer;
+  animation: crt-failsafe 0.4s linear 7s forwards;
+}
+.crt-intro.live { animation: none; }
+.crt-intro.gone { opacity: 0; transition: opacity 0.34s ease-out; pointer-events: none; }
+@keyframes crt-failsafe { to { opacity: 0; visibility: hidden; } }
+
+.crt-inner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.crt-stage {
+  position: relative;
+  width: min(66vmin, 560px);
+  aspect-ratio: 1200 / 1024;
+}
+.crt-seal { position: absolute; inset: 0; color: var(--p-signal); }
+.crt-seal svg { width: 100%; height: 100%; display: block; }
+/* The two torn layers ghost either side of the base picture. They are off
+   until intro.js gives one a band — three screened copies stacked on top of
+   each other wash the whole mark out to near-white. */
+.crt-seal.l1 { color: var(--p-core); mix-blend-mode: screen; opacity: 0; }
+.crt-seal.l2 { color: var(--p-dim);  mix-blend-mode: screen; opacity: 0; }
+
+.crt-sig {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: -14%;
+  text-align: center;
+  font-family: "VT323", monospace;
+  font-size: clamp(13px, 2.4vw, 21px);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: var(--p-mid);
+  text-shadow: none;
+  transition: opacity 0.2s;
+  animation: crt-sig 1.9s steps(1) infinite;
+}
+.crt-sig .n { color: var(--p-glow); }
+.crt-sig .w { color: var(--p-half); margin: 0 0.7em 0 0.7em; white-space: pre; }
+.crt-sig .b { color: var(--p-signal); letter-spacing: -0.06em; }
+.crt-sig .p {
+  color: var(--p-core);
+  margin-left: 0.7em;
+  font-variant-numeric: tabular-nums;
+}
+@keyframes crt-sig {
+  0%, 100% { opacity: 0.85; }
+  41%      { opacity: 0.12; }
+  45%      { opacity: 0.85; }
+  72%      { opacity: 0.3; }
+  76%      { opacity: 0.8; }
+}
+
+.crt-noise {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.crt-roll {
+  position: absolute;
+  left: 0; right: 0;
+  height: 26%;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+    transparent,
+    rgb(var(--rgb-signal) / 0.10),
+    rgb(var(--rgb-pale) / 0.06),
+    transparent);
+  animation: crt-rollmove 2.4s linear infinite;
+}
+@keyframes crt-rollmove { from { top: -28%; } to { top: 100%; } }
+
+.crt-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom,
+    rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.42) 2px 4px);
+}
+
+/* the switch-off: picture sucks down to a line, the line holds, then it
+   shrinks to a point and goes */
+.crt-intro.off .crt-inner { animation: crt-collapse 0.6s cubic-bezier(.3,.75,.25,1) forwards; }
+@keyframes crt-collapse {
+  0%   { transform: scale(1, 1);       filter: brightness(1); }
+  36%  { transform: scale(1.02, 0.004); filter: brightness(3.5); }
+  60%  { transform: scale(1.02, 0.004); filter: brightness(3.5); }
+  100% { transform: scale(0, 0.004);   filter: brightness(6); opacity: 0; }
+}
+
+.crt-line {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 3px;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--p-core);
+  box-shadow: 0 0 20px 4px rgb(var(--rgb-core) / 0.7);
+}
+.crt-intro.off .crt-line { animation: crt-lineoff 0.6s ease-out forwards; }
+@keyframes crt-lineoff {
+  0%   { opacity: 0; transform: translateY(-50%) scaleX(1); }
+  34%  { opacity: 1; transform: translateY(-50%) scaleX(1); }
+  60%  { opacity: 1; transform: translateY(-50%) scaleX(1); }
+  100% { opacity: 0; transform: translateY(-50%) scaleX(0.002); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-roll, .crt-sig { animation: none; }
+  .crt-noise { display: none; }
+}
+
+/* ─── Real captures ──────────────────────────────────────────────────────
+   Actual frames out of the game. These get the heavier frame and the glow
+   that the diagrams deliberately do not, because here the distinction is
+   worth drawing: this one is the thing, that one is a drawing of it.
+   One up at full width, two or more side by side and squared off. */
+/* Hidden until an image actually decodes. The slots are wired up before the
+   files land, and a framed caption over an empty box is worse than nothing —
+   this way a missing capture shows nothing at all rather than a hole. */
+.shots:not(.ready) { display: none; }
+
+.shots {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 22px;
+  max-width: 62ch;
+}
+.shots:has(.shot + .shot) { grid-template-columns: 1fr 1fr; }
+
+.shot {
+  margin: 0;
+  border: 1px solid var(--p-line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 0 1px rgb(var(--rgb-signal) / 0.06),
+              0 6px 22px rgba(0, 0, 0, 0.55);
+}
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The site is one hue; a full-colour frame dropped into it fights that.
+     Pulling the saturation back and warming it lets the capture sit in the
+     page without pretending to be part of the terminal. Full colour on
+     hover, because the point of a screenshot is what it actually looks
+     like. */
+  filter: saturate(0.62) contrast(1.06) sepia(0.16);
+  transition: filter 0.45s ease;
+}
+.shot:hover img,
+.shot:focus-within img { filter: none; }
+
+.shot figcaption {
+  padding: 8px 12px 9px;
+  border-top: 1px solid var(--p-line);
+  background: rgb(var(--rgb-signal) / 0.02);
+  color: var(--p-half);
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  text-shadow: none;
+}
+
+/* Two across is already tight on a phone; stack them. */
+@media (max-width: 720px) {
+  .shots:has(.shot + .shot) { grid-template-columns: 1fr; }
+}
+
+/* ─── HUD diagrams in the dossier ────────────────────────────────────────
+   Drawings, not captures. The caption says so; the frame is deliberately
+   plainer than a screenshot would be so nobody mistakes one for the other. */
+.hud-fig {
+  margin: 0 0 22px;
+  max-width: 62ch;
+  border: 1px solid var(--gray-dim);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgb(var(--rgb-signal) / 0.02);
+}
+.hud-fig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: rgba(0, 0, 0, 0.4);
+}
+.hud-fig figcaption {
+  padding: 9px 13px 10px;
+  border-top: 1px solid var(--gray-dim);
+  color: var(--p-half);
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+.hud-fig .drawn {
+  display: block;
+  margin-top: 4px;
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--p-dim);
+  text-shadow: none;
+}
+.hud-fig text {
+  font-family: "VT323", monospace;
+  letter-spacing: 0.06em;
+  text-shadow: none;
+}
+.hud-fig text.hl  { font-size: 15px; fill: var(--p-half); text-transform: uppercase; }
+.hud-fig text.hlb { font-size: 18px; fill: var(--p-glow); }
+.hud-fig text.dim { fill: var(--p-dim); }
+/* Anything quoted from the game verbatim — dialogue, an item's own
+   description. .hl uppercases, which turns a spoken line into shouting. */
+.hud-fig text.hlq {
+  font-size: 16px;
+  fill: var(--p-body);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* the page's rain, borrowed by the cold open for its five seconds */
+.crt-inner > #matrix.in-crt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.55;
+  transition: transform 0.04s steps(1);
+}
+.crt-stage { z-index: 2; }
+.crt-noise { z-index: 3; }
+.crt-roll  { z-index: 4; }
+.crt-scan  { z-index: 5; }
+
+/* ─── footage ────────────────────────────────────────────────────────────
+   The frame is injected on click rather than sitting in the markup: no
+   third-party script loads for a video nobody watched, and where frames are
+   refused outright the caption's link is still there and still works. */
+.vid {
+  margin: 0 0 22px;
+  max-width: 62ch;
+  border: 1px solid var(--gray-dim);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgb(var(--rgb-signal) / 0.02);
+}
+.vid .box,
+.vid iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  background: #000;
+}
+.vid .box {
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  color: var(--p-glow);
+  font: inherit;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  transition: background 0.18s ease;
+  background:
+    radial-gradient(ellipse at center,
+      rgb(var(--rgb-signal) / 0.07), rgba(0, 0, 0, 0.9) 72%);
+}
+.vid .box:hover { background: radial-gradient(ellipse at center,
+  rgb(var(--rgb-signal) / 0.14), rgba(0, 0, 0, 0.86) 72%); }
+.vid .box:focus-visible { outline: 2px solid var(--p-signal); outline-offset: -4px; }
+.vid .play {
+  font-size: 30px;
+  line-height: 1;
+  width: 74px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--p-signal);
+  border-radius: 50%;
+  padding-left: 5px;
+  color: var(--p-signal);
+  text-shadow: none;
+  box-shadow: 0 0 22px rgb(var(--rgb-signal) / 0.25);
+}
+.vid .box:hover .play { color: var(--p-glow); border-color: var(--p-glow); }
+.vid .cue {
+  font-family: "VT323", monospace;
+  font-size: 19px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--p-half);
+  text-shadow: none;
+}
+.vid figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 13px 9px;
+  border-top: 1px solid var(--gray-dim);
+}
+.vid figcaption .drawn { margin: 0; }
+.vid figcaption a {
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--amber-dim);
+  text-shadow: none;
+}
+.vid figcaption a:hover { color: var(--orange-glow); border-bottom-color: var(--orange-glow); }
+
+/* An empty third-party frame paints white by default, which is a flashbang on
+   this page. Dark ground and colour-scheme keep it black whatever happens. */
+.vid iframe { background: #000; color-scheme: dark; }

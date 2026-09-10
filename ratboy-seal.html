@@ -1,0 +1,161 @@
+<title>Ratboy Seal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:   #ff9418;          /* the mark */
+    --ground:#050301;          /* the stage */
+    --spin:  26s;
+  }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--ground);
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .stage {
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 4vmin;
+    box-sizing: border-box;
+  }
+
+  svg.seal {
+    width: min(92vmin, 900px);
+    height: auto;
+    display: block;
+    /* the source mark is flat; this is just enough bloom to sit on a tube */
+    filter: drop-shadow(0 0 10px rgb(255 148 24 / 0.18));
+  }
+
+  /* Only the text ring turns. The outer rule, the inner rule and the face
+     all hold still, which is what makes the ring read as a bezel rather
+     than the whole mark wobbling. */
+  .ring-text {
+    transform-box: view-box;
+    transform-origin: 512px 512px;
+    animation: turn var(--spin) linear infinite;
+  }
+  @keyframes turn { to { transform: rotate(360deg); } }
+
+  /* The ring is legible at rest, so a paused animation costs nothing but
+     the motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .ring-text { animation: none; }
+  }
+
+  .ring-text text {
+    font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+                 "Meiryo", "MS PGothic", sans-serif;
+    font-weight: 700;
+    font-size: 70px;
+    fill: var(--ink);
+    letter-spacing: 0;
+  }
+</style>
+
+<div class="stage">
+  <svg class="seal" viewBox="0 0 1200 1024" role="img" aria-label="Ratboy seal: a crying face ringed by rotating Japanese text">
+
+    <defs>
+      <!-- clockwise from twelve o'clock, so the katakana sits upright along the top -->
+      <path id="ring" fill="none"
+            d="M 512 81 A 431 431 0 1 1 511.9 81" />
+      <!-- Cuts the upper arc off flush with the bar's underside. A square
+           linecap on a curve is angled, so it always leaves a tab poking below;
+           an axis-aligned clip gives a genuinely horizontal finish in line with
+           the bar. Nothing else on that arc reaches this low. -->
+      <clipPath id="loop-cut">
+        <rect x="0" y="0" width="1200" height="443.5"/>
+      </clipPath>
+      <!-- blanks the band where the handle crosses it -->
+      <mask id="ring-gap">
+        <rect x="0" y="0" width="1200" height="1024" fill="#fff"/>
+        <rect x="820" y="402" width="380" height="186" fill="#000"/>
+      </mask>
+    </defs>
+
+    <!-- Outer rule, broken on the right for the same reason as the inner one:
+         left whole it runs straight through the grip. -->
+    <path d="M 996 560 A 486 486 0 1 1 991 430" fill="none" stroke="var(--ink)"
+          stroke-width="14" stroke-linecap="round" />
+
+    <!-- The turning band. The mask goes on a still wrapper, never on the group
+         that spins: a mask resolves in its own element's user space, so putting it
+         on the rotating group carries the blank patch round with the text instead
+         of holding it over the grip. -->
+    <g mask="url(#ring-gap)">
+    <g class="ring-text">
+      <!-- Written as character references rather than raw katakana so the ring
+           does not depend on the file being served with a charset. Two turns of
+           [RATBOY EXECUTE][DEATHRE EXECUTE]; textLength stretches them to the
+           exact circumference so the loop has no seam. -->
+      <text dominant-baseline="middle">
+        <textPath href="#ring" startOffset="0" textLength="2708" lengthAdjust="spacing"
+        >&#x3010;&#x30E9;&#x30C3;&#x30C8;&#x30DC;&#x30FC;&#x30A4;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30C7;&#x30B9;&#x30EC;&#x30C3;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30E9;&#x30C3;&#x30C8;&#x30DC;&#x30FC;&#x30A4;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30C7;&#x30B9;&#x30EC;&#x30C3;&#x5B9F;&#x884C;&#x3011;</textPath>
+      </text>
+    </g>
+    </g>
+
+    <!-- Inner rule, in two arcs. Broken twice: on the right where the grip
+         opens out of it, and on the left under the brow bar. The upper arc runs
+         well PAST the bar — its outer edge has to stay left of the bar's end at
+         every height across the bar, or the curve crosses back inside near the top
+         and opens a hairline — and is then clipped flush at the bar's underside.
+         The visible gap therefore starts level with the bar's bottom edge. -->
+    <path d="M 879 560 A 370 370 0 0 1 143 480"
+          fill="none" stroke="var(--ink)" stroke-width="27" stroke-linecap="butt" />
+    <path d="M 145 455 A 370 370 0 0 1 873 430" clip-path="url(#loop-cut)"
+          fill="none" stroke="var(--ink)" stroke-width="27" stroke-linecap="butt" />
+
+    <!-- the face: brow bar, two shut eyes, two tears, one open frown -->
+    <!-- Brow bar and grip are one stroke: in at the left, across the face,
+         straight out past the right, round the end and back underneath onto the
+         loop. Both ends are cut square, not rounded — the left has to reach the
+         loop's outer edge to close the corner under the arc, and a disc there
+         curves away from it and opens a notch. The band is masked across the
+         opening so no katakana runs inside it. -->
+    <path d="M 141 430 L 1096 430 A 65 65 0 0 1 1096 560 L 866 560" fill="none" stroke="var(--ink)"
+          stroke-width="27" stroke-linejoin="round" stroke-linecap="butt" />
+
+
+    <g fill="none" stroke="var(--ink)" stroke-width="26" stroke-linecap="round"
+       stroke-linejoin="round">
+      <!-- The frown. Domed on top, flat underneath — the same half-disc as a
+           laughing mouth, turned over. Flat-top-and-round-bottom is an open
+           grin, which is what made the first pass read as happy. -->
+      <path d="M 316 762 L 708 762 A 196 140 0 0 0 316 762 Z" />
+    </g>
+
+    <!-- Shut eyes, and the tears off their outer tips.
+
+         The eyes are filled crescents rather than stroked arcs: the source
+         pair taper to a point at both ends and carry their weight in the
+         middle, which a constant-width stroke cannot do. Each is two cubics —
+         one out along the top edge, one back along the bottom — leaving the
+         curve flat where it meets the nose and hooking down hard at the
+         outside, where the tear picks it up. -->
+    <g fill="var(--ink)">
+      <path d="M 382 486 C 348 548 300 584 243 592
+               C 300 620 360 586 382 486 Z" />
+      <path d="M 642 486 C 676 548 724 584 781 592
+               C 724 620 664 586 642 486 Z" />
+      <path transform="rotate(-8 243 663)"
+            d="M 248 615
+               C 260 635 270 652 270 668
+               A 27 27 0 0 1 216 668
+               C 218 650 228 633 248 615 Z" />
+      <path transform="rotate(8 781 663)"
+            d="M 776 615
+               C 764 635 754 652 754 668
+               A 27 27 0 0 0 808 668
+               C 806 650 796 633 776 615 Z" />
+    </g>
+
+  </svg>
+</div>

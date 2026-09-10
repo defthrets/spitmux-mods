@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>spitmux ~ mods</title>
+  <meta name="description" content="GTA V script mods by defthrets — police, fuel, gore, HUD and the rest. ScriptHookVDotNet, no asset replacement, Legacy and Enhanced from one build." />
+  <link rel="canonical" href="https://defthrets.github.io/spitmux-mods/" />
+  <meta name="theme-color" content="#0a0603" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- The mark, not the whole seal: a tab icon is 32px and the katakana and
+       the grip both turn to mush at that size. See seal/make_site_art.py. -->
+  <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48" />
+  <link rel="icon" type="image/png" href="icon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+  <!-- what a link to this unfurls as -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="spitmux" />
+  <meta property="og:title" content="spitmux ~ mods" />
+  <meta property="og:description" content="GTA V script mods by defthrets — police, fuel, gore, HUD and the rest. ScriptHookVDotNet, no asset replacement, Legacy and Enhanced from one build." />
+  <meta property="og:url" content="https://defthrets.github.io/spitmux-mods/" />
+  <meta property="og:image" content="https://defthrets.github.io/spitmux-mods/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="The ratboy seal, and the words spitmux — mod archive, Grand Theft Auto V." />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@700&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- the cold open; intro.js fills this and then removes it -->
+  <div class="crt-intro" id="crt-intro"></div>
+
+  <canvas id="matrix"></canvas>
+  <div class="shadow-mask"></div>
+  <div class="vignette"></div>
+  <div class="flash"></div>
+
+  <main class="shell">
+    <div class="titlebar">
+      <div class="left">
+        <span class="dots"><span class="d-r">●</span> <span class="d-y">●</span> <span class="d-g">●</span></span>
+        &nbsp;&nbsp;<span>tty2</span>&nbsp;—&nbsp;<span>spitmux@pm.me</span>
+      </div>
+      <div class="right">
+        <span class="v-conn">conn <b>encrypted</b></span>
+        <span class="v-ver">shvdn <b>3.9</b></span>
+        <span class="v-clk" id="clock"><b>--:--:--</b></span>
+      </div>
+    </div>
+
+    <section class="frame-head">
+      <!-- The seal leans in from behind the right-hand side of the bezel. The
+           bezel already clips its own overflow, so the tuck is free — nothing
+           here is masked by hand. Amber rather than its native green: the page
+           holds one hue, and a lone green mark on it reads as a mistake.
+           Geometry is the same as ratboy-seal.html. -->
+      <div class="seal-peek" aria-hidden="true">
+        <svg viewBox="0 0 1200 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <path id="seal-ring" fill="none" d="M 512 81 A 431 431 0 1 1 511.9 81" />
+            <clipPath id="seal-loop-cut">
+              <rect x="0" y="0" width="1200" height="443.5"/>
+            </clipPath>
+            <mask id="seal-ring-gap">
+              <rect x="0" y="0" width="1200" height="1024" fill="#fff"/>
+              <rect x="820" y="402" width="380" height="186" fill="#000"/>
+            </mask>
+          </defs>
+          <path d="M 996 560 A 486 486 0 1 1 991 430" fill="none" stroke="currentColor"
+                stroke-width="14" stroke-linecap="round" />
+          <g mask="url(#seal-ring-gap)">
+          <g class="seal-ring-text">
+            <text dominant-baseline="middle">
+              <textPath href="#seal-ring" startOffset="0" textLength="2708" lengthAdjust="spacing"
+              >&#x3010;&#x30E9;&#x30C3;&#x30C8;&#x30DC;&#x30FC;&#x30A4;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30C7;&#x30B9;&#x30EC;&#x30C3;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30E9;&#x30C3;&#x30C8;&#x30DC;&#x30FC;&#x30A4;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30C7;&#x30B9;&#x30EC;&#x30C3;&#x5B9F;&#x884C;&#x3011;</textPath>
+            </text>
+          </g>
+          </g>
+          <path d="M 879 560 A 370 370 0 0 1 143 480" fill="none" stroke="currentColor"
+                stroke-width="27" stroke-linecap="butt" />
+          <path d="M 145 455 A 370 370 0 0 1 873 430" clip-path="url(#seal-loop-cut)"
+                fill="none" stroke="currentColor" stroke-width="27" stroke-linecap="butt" />
+          <path d="M 141 430 L 1096 430 A 65 65 0 0 1 1096 560 L 866 560" fill="none" stroke="currentColor"
+                stroke-width="27" stroke-linejoin="round" stroke-linecap="butt" />
+          <g fill="none" stroke="currentColor" stroke-width="26" stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M 316 762 L 708 762 A 196 140 0 0 0 316 762 Z" />
+          </g>
+          <g fill="currentColor">
+            <path d="M 382 486 C 348 548 300 584 243 592 C 300 620 360 586 382 486 Z" />
+            <path d="M 642 486 C 676 548 724 584 781 592 C 724 620 664 586 642 486 Z" />
+            <path transform="rotate(-8 243 663)" d="M 248 615 C 260 635 270 652 270 668 A 27 27 0 0 1 216 668 C 218 650 228 633 248 615 Z" />
+            <path transform="rotate(8 781 663)" d="M 776 615 C 764 635 754 652 754 668 A 27 27 0 0 0 808 668 C 806 650 796 633 776 615 Z" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="ascii-wrap" id="ascii-wrap" title="click for glitch">
+<pre class="ascii" id="wordmark">   .x+=:.                    .         s
+  z`    ^%                  @88&gt;      :8
+     .   &lt;k  .d``           %8P      .88       ..    .     :       x.    .        uL   ..
+   .@8Ned8"  @8Ne.   .u      .      :888ooo  .888: x888  x888.   .@88k  z88u    .@88b  @88R
+ .@^%8888"   %8888:u@88N   .@88u  -*8888888 ~`8888~'888X`?888f` ~"8888 ^8888   '"Y888k/"*P
+x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R      Y888L
+8888N=*8888    888I  888I   888E    8888      X888  888X '888&gt;    8888  888R       8888
+ %8"    R88    888I  888I   888E    8888      X888  888X '888&gt;    8888  888R       `888N
+  @8Wou 9%   uW888L  888'   888E   .8888Lu=   X888  888X '888&gt;    8888 ,888B .  .u./"888&amp;
+.888888P`   '*88888Nu88P    888&amp;   ^%888*    "*88%""*88" '888!`  "8888Y 8888"  d888" Y888*"
+`   ^"F     ~ '88888F`      R888"    'Y"       `~    "    `"`     `Y"   'YP    ` "Y   Y"
+               888 ^         ""
+               *8E
+               '8&gt;
+                "</pre>
+      </div>
+
+      <div class="sub-rule">mod archive <span class="dot">·</span> grand theft auto v</div>
+
+      <div class="tagline">
+        <span class="quote">»</span>
+        <span class="glitch" id="tagline">you will succumb to the poison you have tasted</span>
+        <span class="cursor">▍</span>
+      </div>
+
+      <span class="crt-label">CRT-1985 · DEFTHRETS</span>
+      <span class="crt-led"></span>
+    </section>
+
+    <div class="workspace">
+      <!-- LEFT: the index -->
+      <aside class="col left">
+        <div class="index-window">
+          <div class="index-banner"><span class="banner-word">mods</span></div>
+
+          <div class="index-header">
+            <span class="title"><span class="live-dot"></span>MOD.INDEX</span>
+            <span>@ defthrets</span>
+          </div>
+
+          <label class="index-filter">
+            <span class="caret">»</span>
+            <input id="filter" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="filter — police, hud, fuel…" aria-label="Filter mods" />
+          </label>
+
+          <div class="index-list" id="index-list" role="listbox" aria-label="Mods"></div>
+
+          <div class="index-footer">
+            <span id="node-count">13 nodes</span>
+            <a href="https://github.com/defthrets" target="_blank" rel="noopener">github.com/defthrets</a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTRE: the dossier -->
+      <section class="col center">
+        <section class="frame" id="frame">
+          <div class="frame-flash" id="frame-flash"></div>
+          <div id="out"></div>
+        </section>
+      </section>
+
+      <!-- RIGHT: build spec -->
+      <aside class="col right">
+        <div class="spec-window">
+          <div class="spec-roll"></div>
+          <div class="spec-header">
+            <span class="title">BUILD//SPEC</span>
+            <span id="spec-id">──────</span>
+          </div>
+          <div class="spec-body" id="spec-body"></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="statusbar">
+      <div class="left">
+        <span class="item online"><span class="dot"></span>online</span>
+        <span class="item tor">mods: <b id="stat-mods">13</b></span>
+        <span class="item matrix">src: <b id="stat-lines">—</b> lines</span>
+      </div>
+      <div class="right">
+        <span class="item">↑↓ select · / filter · esc clear</span>
+      </div>
+    </div>
+  </main>
+
+  <script src="matrix.js"></script>
+  <script src="effects.js"></script>
+  <script src="mods.js"></script>
+  <script src="huds.js"></script>
+  <script src="intro.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

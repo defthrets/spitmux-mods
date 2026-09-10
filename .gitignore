@@ -1,0 +1,7 @@
+# the single-file bundle is a build artifact of the files beside it
+dist/
+
+# intermediate seal renders; make_seal_png.py rebuilds them
+seal/icons/
+__pycache__/
+*.pyc
