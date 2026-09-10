@@ -322,19 +322,21 @@
       ["FILES", m.files]
     ];
 
+    // One block, not two. The build rows and the size chart were separate
+    // panels saying the same kind of thing about the same mod, with the
+    // operator card now taking the top of the column.
     var h = [];
     h.push('<div class="id-card">');
-    h.push('<div class="id-title">' + icon(m.id, "spec-icon") + 'ID//BUILD</div>');
-    h.push('<div class="id-num">── ' + esc(m.id.toUpperCase()) + " ────────────────</div>");
+    h.push('<div class="spec-header" style="border:0;background:none;padding:0 2px;">' +
+           '<span class="title">' + icon(m.id, "spec-icon") + 'BUILD // ARCHIVE</span>' +
+           '<span>' + esc(m.id.toUpperCase()) + '</span></div>');
     rows.forEach(function (r) {
       var cls = r[0] === "STATUS" && !m.repo ? " mute" : (r[0] === "STATUS" ? " on" : "");
       h.push('<div class="id-row"><span class="k">' + esc(r[0]) + '</span><span class="v' + cls + '">' + esc(r[1]) + "</span></div>");
     });
     h.push('<div class="id-barcode">┃┃│┃│ │┃│┃│ │┃┃│ ┃│┃ │┃│┃</div>');
-    h.push("</div>");
 
-    // size chart across the whole archive
-    h.push('<div class="spec-header" style="border:0;background:none;padding:0 2px;"><span class="title">SIZE // ARCHIVE</span><span>LOC</span></div>');
+    h.push('<div class="size-head"><span>size across the archive</span><span>loc</span></div>');
     h.push('<div class="size-list">');
     MODS.slice().sort(function (a, b) { return b.lines - a.lines; }).forEach(function (x) {
       var pct = Math.max(4, Math.round(Math.pow(x.lines / MAX_LINES, 0.55) * 100));
@@ -345,6 +347,7 @@
              '<span class="v">' + k + "</span></div>");
     });
     h.push("</div>");
+    h.push("</div>");   // id-card
 
     h.push('<div class="spec-note">' + num(TOTAL_LINES) + " lines of C# across " + MODS.length +
            " mods and " + num(TOTAL_FILES) + " files. Counted from src, excluding build, tools and release.</div>");

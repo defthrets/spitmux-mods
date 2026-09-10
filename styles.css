@@ -1626,3 +1626,92 @@ img.px {
 @media (prefers-reduced-motion: reduce) {
   img.px { transition: none; }
 }
+
+/* ─── The operator card ──────────────────────────────────────────────────
+   The head came off the dev page: 800px of blue-black on flat yellow, three
+   frames of a slow turn. Neither of those survives contact with this palette,
+   so seal/make_demon.py keys the backdrop out and remaps the head onto the
+   amber ramp — the same treatment the pixel icons get, for the same reason.
+
+   Static markup rather than part of renderSpec: nothing on it changes with
+   the selected mod, and rebuilding it on every click would restart the
+   animation each time a row was pressed. */
+.op-card {
+  position: relative;
+  z-index: 7;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--p-line);
+  border-radius: 6px;
+  background:
+    linear-gradient(135deg, rgb(var(--rgb-signal) / 0.05), transparent 62%),
+    rgba(0, 0, 0, 0.30);
+}
+
+.op-head {
+  width: 82px;
+  height: 82px;
+  display: block;
+  /* it is already amber; this is the tube it is being shown on */
+  filter: drop-shadow(0 0 7px rgb(var(--rgb-signal) / 0.30));
+}
+
+.op-fields { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.op-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  line-height: 1.25;
+  letter-spacing: 0.05em;
+}
+.op-row .k { color: var(--p-dim); text-transform: uppercase; }
+.op-row .v {
+  color: var(--p-body);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.op-row .v.on { color: var(--p-glow); text-shadow: var(--shadow-soft); }
+
+/* the katakana off the seal, running under the card like a signature strip */
+.op-strip {
+  grid-column: 1 / -1;
+  margin-top: 9px;
+  padding-top: 7px;
+  border-top: 1px dotted rgb(var(--rgb-signal) / 0.22);
+  font-family: "Noto Sans JP", "VT323", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--p-line);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-shadow: none;
+}
+
+/* the size chart now lives inside the build block rather than beside it */
+.size-head {
+  display: flex;
+  justify-content: space-between;
+  margin: 14px 0 6px;
+  padding-top: 9px;
+  border-top: 1px dotted rgb(var(--rgb-signal) / 0.22);
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--p-dim);
+  text-shadow: none;
+}
+
+@media (max-width: 1100px) {
+  .op-head { width: 64px; height: 64px; }
+}
