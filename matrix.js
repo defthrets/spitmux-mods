@@ -8,12 +8,31 @@
   let cols, drops, fontSize, w, h;
   const INTENSITY = 0.22;
 
+  /* The rain is decoration, and decoration should not cost a phone its
+     battery. Two things it must never do:
+
+       run at devicePixelRatio on a handset -- a DPR-3 screen means a canvas
+       with nine times the pixels you can actually see, repainted forever
+
+       run at all for somebody who has asked for less motion
+
+     So the backing store is capped at 1.5x whatever the device claims, and on
+     a narrow screen the whole thing bows out and leaves an empty canvas. The
+     page is built to read against the plain background anyway -- the rain only
+     ever sat behind it. */
+  const REDUCED = window.matchMedia &&
+                  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SMALL = window.matchMedia && window.matchMedia("(max-width: 820px)").matches;
+  if (REDUCED || SMALL) return;
+
+  const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+
   function resize() {
-    w = canvas.width = window.innerWidth * window.devicePixelRatio;
-    h = canvas.height = window.innerHeight * window.devicePixelRatio;
+    w = canvas.width = window.innerWidth * DPR;
+    h = canvas.height = window.innerHeight * DPR;
     canvas.style.width = window.innerWidth + "px";
     canvas.style.height = window.innerHeight + "px";
-    fontSize = 16 * window.devicePixelRatio;
+    fontSize = 16 * DPR;
     cols = Math.floor(w / fontSize);
     drops = Array(cols).fill(0).map(() => Math.random() * -50);
   }

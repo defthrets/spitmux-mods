@@ -92,27 +92,72 @@
       .catch(function () { /* offline, or rate limited: show nothing */ });
   }
 
-  function sweepIcons() {
-    var px = document.querySelectorAll("img.px");
-    for (var n = 0; n < px.length; n++) {
-      if (px[n].dataset.checked) continue;
-      px[n].dataset.checked = "1";
-      if (px[n].complete && !px[n].naturalWidth) {
-        px[n].parentNode.removeChild(px[n]);
-        continue;
+  /* Load an image once it is nearly in view, and not before.
+
+     loading="lazy" does the deferring -- the browser's own, which cannot fail
+     to fire. An IntersectionObserver was tried first and is the wrong tool:
+     it is invisible to verify (it does not fire at all in a pane that is not
+     compositing) and if it ever failed to run, nothing on the page would load
+     at all. Native lazy loading degrades to "load it now", which is the right
+     way round.
+
+     The reason it was avoided originally is gone: lazy never fires inside a
+     display:none container, and the gallery used to hide itself until an
+     image decoded, so a missing file could never error and its empty frame
+     sat open forever. The gallery reserves space instead now. */
+  function watchImage(img) {
+    if (img.dataset.watched) return;
+    img.dataset.watched = "1";
+
+    img.addEventListener("load", function () {
+      var fig = this.parentNode;
+      var wrap = fig && fig.parentNode;
+      if (wrap && wrap.classList && wrap.classList.contains("shots")) {
+        wrap.classList.add("ready");
       }
-      px[n].addEventListener("error", function () {
-        // gif first, png second, then give up and take the slot away.
-        var alt = this.dataset.alt;
-        if (alt) { this.dataset.alt = ""; this.src = alt; return; }
-        if (this.parentNode) this.parentNode.removeChild(this);
-      });
+    });
+
+    img.addEventListener("error", function () {
+      // A still that is not there falls back to the gif, and vice versa,
+      // before the slot is given up on entirely.
+      var alt = this.dataset.alt;
+      if (alt) { this.removeAttribute("data-alt"); this.src = alt; return; }
+      var fig = this.parentNode;
+      var isShot = fig && fig.classList && fig.classList.contains("shot");
+      var gone = isShot ? fig : this;
+      var wrap = gone.parentNode;
+      if (wrap) wrap.removeChild(gone);
+      if (wrap && wrap.classList && wrap.classList.contains("shots") &&
+          !wrap.querySelector(".shot") && wrap.parentNode) {
+        wrap.parentNode.removeChild(wrap);
+      }
+    });
+
+    // A cached image can already be complete before these listeners attach,
+    // in which case neither event will ever fire for it.
+    if (img.complete && img.naturalWidth) {
+      var fig = img.parentNode, wrap = fig && fig.parentNode;
+      if (wrap && wrap.classList && wrap.classList.contains("shots")) {
+        wrap.classList.add("ready");
+      }
     }
   }
 
+  function sweepIcons() {
+    var all = document.querySelectorAll("img.px, .shot img, .vid .poster");
+    for (var n = 0; n < all.length; n++) watchImage(all[n]);
+  }
+
   function icon(id, cls) {
-    return '<img class="px ' + cls + '" src="icons/' + esc(id) + '.gif" ' +
-           'data-alt="icons/' + esc(id) + '.png" alt="" aria-hidden="true">';
+    // Ten animated sprites down the index is weight and noise both. Rows and
+    // the spec panel take a still first frame -- a fifth of the bytes -- and
+    // the animation is kept for the head of the open dossier, where there is
+    // only ever one of it and it reads as deliberate rather than as wallpaper.
+    var moving = cls === "head-icon";
+    var a = "icons/" + esc(id) + (moving ? ".gif" : ".still.png");
+    var b = "icons/" + esc(id) + (moving ? ".still.png" : ".gif");
+    return '<img class="px ' + cls + '" src="' + a + '" loading="lazy" ' +
+           'data-alt="' + b + '" alt="" aria-hidden="true">';
   }
 
   function esc(s) {
@@ -229,16 +274,18 @@
     if (m.video && m.video.id) {
       var vid = esc(m.video.id);
       h.push('<figure class="vid">');
-      // The player mounts with the page rather than behind a click. It is the
-      // only frame on screen at a time — one dossier is open — so there is
-      // nothing to be gained by making somebody ask for it twice. No autoplay:
-      // sound starting on its own is a different thing from the video being
-      // ready, and browsers block it unmuted anyway.
-      h.push('<iframe class="player" data-vid="' + vid + '" loading="lazy" ' +
-             'src="https://www.youtube-nocookie.com/embed/' + vid + '?rel=0" ' +
-             'title="' + esc(m.video.label) + '" allowfullscreen ' +
-             'allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" ' +
-             'referrerpolicy="strict-origin-when-cross-origin"></iframe>');
+      // A YouTube embed pulls in about a megabyte of player before anybody
+      // has asked to watch anything, which on a phone is most of the page for
+      // a thing many visitors scroll straight past. So: YouTube's own still,
+      // around fifteen kilobytes, and the player only once it is clicked --
+      // which is a user gesture, so autoplay is allowed and the tap is not
+      // spent twice.
+      h.push('<button type="button" class="box" data-vid="' + vid + '" ' +
+             'aria-label="Play ' + esc(m.video.label) + '">' +
+             '<img class="poster" alt="" loading="lazy" ' +
+             'src="https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg">' +
+             '<span class="play">&#9654;</span>' +
+             '<span class="cue">' + esc(m.video.label) + '</span></button>');
       h.push('<figcaption><span class="drawn">footage</span>' +
              '<a href="https://www.youtube.com/watch?v=' + vid + '" ' +
              'target="_blank" rel="noopener">watch on youtube &#8599;</a></figcaption>');
@@ -258,7 +305,7 @@
                // and a lazy image inside a hidden element is never in the
                // viewport, so it never loads, so the block never shows: the
                // two rules deadlock each other.
-               '<img src="' + esc(src) + '" ' +
+               '<img src="' + esc(src) + '" loading="lazy" ' +
                'alt="' + esc(cap || (m.name + " in game")) + '">' +
                (cap ? '<figcaption>' + esc(cap) + "</figcaption>" : "") +
                "</figure>");
@@ -321,44 +368,40 @@
     sweepIcons();
     wireDownload(m);
 
-    var imgs = outEl.querySelectorAll(".shot img");
-    for (var i = 0; i < imgs.length; i++) {
-      imgs[i].addEventListener("load", function () {
-        this.parentNode.parentNode.classList.add("ready");
-      }, { once: true });
-      imgs[i].addEventListener("error", function () {
-        var fig = this.parentNode;
-        var wrap = fig && fig.parentNode;
-        if (fig) fig.parentNode.removeChild(fig);
-        if (wrap && !wrap.querySelector(".shot")) wrap.parentNode.removeChild(wrap);
-      }, { once: true });
-      // A cached image can be complete before the listener is attached, in
-      // which case neither event will ever fire.
-      if (imgs[i].complete && imgs[i].naturalWidth) {
-        imgs[i].parentNode.parentNode.classList.add("ready");
-      }
-    }
 
-    // Nothing reports a blocked frame — a sandbox that refuses third-party
-    // embeds does it silently — so the only signal available is that the load
-    // event never came. If it has not fired by then, swap in something that
-    // opens on YouTube instead of leaving a black rectangle.
-    var frame = outEl.querySelector(".vid .player");
-    if (frame) {
-      var landed = false;
-      frame.addEventListener("load", function () { landed = true; }, { once: true });
-      setTimeout(function () {
-        if (landed || !frame.parentNode) return;
-        var a = document.createElement("a");
-        a.className = "box";
-        a.href = "https://www.youtube.com/watch?v=" + frame.dataset.vid;
-        a.target = "_blank";
-        a.rel = "noopener";
-        a.innerHTML = '<span class="play">&#9654;</span>' +
-                      '<span class="cue">can&rsquo;t play here &mdash; ' +
-                      'opens on youtube</span>';
-        frame.parentNode.replaceChild(a, frame);
-      }, 4000);
+    // The still is swapped for the real player on click. That click is a
+    // user gesture, so autoplay is allowed and the tap is not spent twice.
+    var box = outEl.querySelector(".vid .box");
+    if (box) {
+      box.addEventListener("click", function () {
+        var f = document.createElement("iframe");
+        f.className = "player";
+        f.src = "https://www.youtube-nocookie.com/embed/" + box.dataset.vid +
+                "?rel=0&autoplay=1";
+        f.title = "Video";
+        f.allow = "accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen";
+        f.allowFullscreen = true;
+        f.referrerPolicy = "strict-origin-when-cross-origin";
+
+        // Nothing reports a blocked embed -- a sandbox that refuses third
+        // party frames does it silently -- so a load event that never arrives
+        // is still the only signal there is.
+        var landed = false;
+        f.addEventListener("load", function () { landed = true; }, { once: true });
+        box.parentNode.replaceChild(f, box);
+        setTimeout(function () {
+          if (landed || !f.parentNode) return;
+          var a = document.createElement("a");
+          a.className = "box";
+          a.href = "https://www.youtube.com/watch?v=" + box.dataset.vid;
+          a.target = "_blank";
+          a.rel = "noopener";
+          a.innerHTML = '<span class="play">&#9654;</span>' +
+                        '<span class="cue">can&rsquo;t play here &mdash; ' +
+                        'opens on youtube</span>';
+          f.parentNode.replaceChild(a, f);
+        }, 4000);
+      }, { once: true });
     }
     outEl.parentElement.scrollTop = 0;
     flash("frame-flash", window.crtFlashFrame);
