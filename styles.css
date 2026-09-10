@@ -322,8 +322,10 @@ html, body {
   gap: 6px;
   color: var(--amber-dim);
   font-family: "VT323", monospace;
-  font-size: 23px;
-  letter-spacing: 0.04em;
+  /* Down from 23px. It is an epigraph under the wordmark, not a second
+     heading -- at the old size it was arguing with the mark for the same job. */
+  font-size: 16px;
+  letter-spacing: 0.06em;
   line-height: 1;
   margin: 0;
   text-shadow: none;
@@ -396,7 +398,7 @@ html, body {
   .frame-head { padding: 16px 12px 20px; border-width: 6px; }
   /* tracking pulled in so the line does not break 'auto / v' */
   .sub-rule { font-size: 15px; letter-spacing: 0.1em; }
-  .tagline  { font-size: 19px; padding: 0 6px; text-align: center; }
+  .tagline  { font-size: 14px; padding: 0 6px; text-align: center; }
   .tagline .glitch { display: inline; }
   .crt-label { font-size: 8px; letter-spacing: 0.16em; }
 

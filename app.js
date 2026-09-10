@@ -561,6 +561,34 @@
     })();
   })();
 
+  /* The visitor count, in the status bar.
+
+     A static site cannot count its own visitors, so this is somebody else's
+     counter -- counterapi.com, which needs no key and sends the CORS header
+     that every other free counter does not. countapi.xyz and abacus are both
+     dead, hits.sh answers but blocks reads so its number can only be shown as
+     their badge, and every open CORS proxy over it is blocked as well.
+
+     It counts UNIQUE visitors, not page loads: the service dedupes by address,
+     so a reload does not move it. That is the number worth showing anyway.
+
+     The slot stays hidden until a number arrives. A counter that renders a
+     dash, a zero or NaN when the service is down is worse than one that is not
+     there -- and this one is free and unaccountable, so assume it will be down
+     one day.  */
+  (function visitors() {
+    var el = document.getElementById("stat-visitors");
+    if (!el) return;
+    fetch("https://counterapi.com/api/spitmux/site/up")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || typeof d.value !== "number") return;
+        el.querySelector("b").textContent = num(d.value);
+        el.hidden = false;
+      })
+      .catch(function () { /* stays hidden */ });
+  })();
+
   window.addEventListener("konami", function () {
     document.body.classList.toggle("unlocked");
     flash("flash", window.crtFlash);

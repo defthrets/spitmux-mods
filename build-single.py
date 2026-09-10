@@ -37,11 +37,12 @@ def build(artifact=False):
     # swap every <script src="x.js"> for the file itself, in place
     for name in SCRIPTS:
         src = read(name)
-        body = body.replace(
-            '<script src="%s"></script>' % name,
-            "<script>\n%s\n</script>" % src,
-        )
+        # The page's asset URLs carry a ?v= content hash (stamp.py), so this
+        # matches on the filename and ignores whatever query follows it.
+        pat = r'<script src="%s(?:\?[^"]*)?"></script>' % re.escape(name)
+        body = re.sub(pat, lambda _m, _s=src: "<script>\n%s\n</script>" % _s, body)
     left = re.findall(r'<script src="([^"]+)"></script>', body)
+    left = [x for x in left if not x.startswith('http')]
     if left:
         raise SystemExit("un-inlined scripts: %s" % ", ".join(left))
 
