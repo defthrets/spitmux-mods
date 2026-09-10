@@ -55,6 +55,10 @@
     </div>
 
     <section class="frame-head">
+      <!-- Balances the seal across the bezel. Not tied to any one mod: this is
+           the archive's own object, and it only appears if icons/archive.png
+           exists — app.js sweeps up any px icon whose file is missing. -->
+      <img class="px head-rig" src="icons/archive.png" alt="" aria-hidden="true">
       <!-- The seal leans in from behind the right-hand side of the bezel. The
            bezel already clips its own overflow, so the tuck is free — nothing
            here is masked by hand. Amber rather than its native green: the page

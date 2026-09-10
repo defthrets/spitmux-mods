@@ -1513,3 +1513,73 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
 /* An empty third-party frame paints white by default, which is a flashbang on
    this page. Dark ground and colour-scheme keep it black whatever happens. */
 .vid iframe { background: #000; color-scheme: dark; }
+
+/* ─── Pixel icons ────────────────────────────────────────────────────────
+   Sprite art, so it is scaled with pixelated rather than smoothed: the whole
+   character of these is hard square pixels, and the browser's default
+   bilinear filter turns them to mush the moment they are not at 1:1.
+
+   They are full colour in a page that holds one hue, so at rest they are
+   pulled most of the way down to the amber and only come up to full colour
+   where colour means something — the row under the cursor, the mod you have
+   open, and its own dossier head. Colour is the selection, not decoration.
+
+   Every one of these is addressed by convention (icons/<mod id>.png) and is
+   removed by app.js if the file is not there, so the grids below use :has()
+   and close up on their own when an icon is absent. */
+img.px {
+  image-rendering: crisp-edges;      /* older Firefox spelling, first... */
+  image-rendering: pixelated;        /* ...so this wins wherever it is known */
+  display: block;
+  object-fit: contain;
+  filter: saturate(0.3) brightness(0.86) sepia(0.34);
+  transition: filter 0.32s ease;
+}
+
+/* ── in the index, one per row ── */
+.mod-btn { display: grid; grid-template-columns: 1fr; align-items: start; }
+.mod-btn:has(.row-icon) { grid-template-columns: auto 1fr; column-gap: 11px; }
+.row-icon { width: 42px; height: 42px; margin-top: 1px; }
+.mod-btn:hover .row-icon,
+.mod-btn.active .row-icon { filter: none; }
+
+/* ── at the head of the dossier, the same file, large ── */
+.dossier-head { display: grid; grid-template-columns: 1fr; }
+.dossier-head:has(.head-icon) {
+  grid-template-columns: auto 1fr;
+  column-gap: 18px;
+  align-items: start;
+}
+.head-icon { width: 76px; height: 76px; filter: none; }
+
+/* ── and once more, small, in the spec panel ── */
+.spec-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: -4px;
+  margin-right: 7px;
+}
+
+/* ── the archive's own object, balancing the seal across the bezel ── */
+.head-rig {
+  position: absolute;
+  right: 26px;
+  bottom: 14px;
+  width: 92px;
+  height: 92px;
+  opacity: 0.9;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* On a phone the head is already carrying the seal and the wordmark. */
+@media (max-width: 1100px) {
+  .head-rig { display: none; }
+  .row-icon { width: 34px; height: 34px; }
+  .head-icon { width: 56px; height: 56px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  img.px { transition: none; }
+}

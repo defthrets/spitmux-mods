@@ -13,6 +13,37 @@
   var shown   = MODS.slice();
 
   // ── helpers ───────────────────────────────────────────────────────────
+  /* A mod's pixel icon, resolved from its id rather than declared anywhere.
+     Drop icons/<id>.png in and it appears in the list, at the head of its
+     dossier and in the spec panel at once; take it away and all three vanish.
+     There is no manifest to keep in step with the folder.
+
+     Absent files remove themselves rather than leaving a broken glyph -- see
+     the error handler where the dossier is wired up. */
+  /* Icons are addressed by convention, so most of them do not exist until the
+     art does. A missing one takes itself out and the layout closes up behind
+     it -- the grid columns are on :has(), so removing the image is enough.
+     Called after both renderers, since either can put new ones on the page. */
+  function sweepIcons() {
+    var px = document.querySelectorAll("img.px");
+    for (var n = 0; n < px.length; n++) {
+      if (px[n].dataset.checked) continue;
+      px[n].dataset.checked = "1";
+      if (px[n].complete && !px[n].naturalWidth) {
+        px[n].parentNode.removeChild(px[n]);
+        continue;
+      }
+      px[n].addEventListener("error", function () {
+        if (this.parentNode) this.parentNode.removeChild(this);
+      }, { once: true });
+    }
+  }
+
+  function icon(id, cls) {
+    return '<img class="px ' + cls + '" src="icons/' + esc(id) + '.png" ' +
+           'alt="" aria-hidden="true">';
+  }
+
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -74,16 +105,20 @@
         '<span class="grain-overlay"></span>' +
         '<span class="hover-sweep"></span>' +
         '<span class="status-tag' + (m.repo ? " ready" : "") + '">' + esc(m.repo ? "public" : "local") + "</span>" +
+        icon(m.id, "row-icon") +
+        '<span class="txt">' +
         '<span class="name">' + esc(m.name) + "</span>" +
         '<span class="desc">' + esc(m.tag) + "</span>" +
         '<span class="row"><span class="cat">' + esc(m.cat) + '</span>' +
-        '<span class="loc">' + num(m.lines) + " loc</span></span>";
+        '<span class="loc">' + num(m.lines) + " loc</span></span></span>";
       b.style.animationDelay = (i * 45) + "ms";
       b.addEventListener("click", function () { select(m.id); });
       listEl.appendChild(b);
       // next frame so the animation actually plays on a re-render
       requestAnimationFrame(function () { b.classList.add("in"); });
     });
+
+    sweepIcons();
   }
 
   // ── the dossier ───────────────────────────────────────────────────────
@@ -91,6 +126,8 @@
     var h = [];
 
     h.push('<div class="dossier-head">');
+    h.push(icon(m.id, "head-icon"));
+    h.push('<div class="head-text">');
     h.push('<div class="crumb">archive <span class="sep">/</span> <span class="cat">' + esc(m.cat) +
            '</span> <span class="sep">/</span> ' + esc(m.id) + "</div>");
     h.push('<h1 class="dossier-title" id="dossier-title">' + esc(m.name) + "</h1>");
@@ -106,8 +143,9 @@
     } else {
       h.push('<span class="chip mute">source · private</span>');
     }
-    h.push("</div>");
-    h.push("</div>");
+    h.push("</div>");   // chips
+    h.push("</div>");   // head-text
+    h.push("</div>");   // dossier-head
 
     h.push('<p class="blurb">' + esc(m.blurb) + "</p>");
 
@@ -203,6 +241,8 @@
 
     outEl.innerHTML = h.join("");
 
+    sweepIcons();
+
     var imgs = outEl.querySelectorAll(".shot img");
     for (var i = 0; i < imgs.length; i++) {
       imgs[i].addEventListener("load", function () {
@@ -276,7 +316,7 @@
 
     var h = [];
     h.push('<div class="id-card">');
-    h.push('<div class="id-title">ID//BUILD</div>');
+    h.push('<div class="id-title">' + icon(m.id, "spec-icon") + 'ID//BUILD</div>');
     h.push('<div class="id-num">── ' + esc(m.id.toUpperCase()) + " ────────────────</div>");
     rows.forEach(function (r) {
       var cls = r[0] === "STATUS" && !m.repo ? " mute" : (r[0] === "STATUS" ? " on" : "");
@@ -323,6 +363,9 @@
 
     renderDossier(m);
     renderSpec(m);
+    // After the spec panel too -- it renders last, so a sweep before it runs
+    // leaves its own icon behind as a broken glyph.
+    sweepIcons();
     if (!quiet && window.spitmuxAudio) window.spitmuxAudio.beep(660, 40);
     if (history.replaceState) history.replaceState(null, "", "#" + id);
   }
