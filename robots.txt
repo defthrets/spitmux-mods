@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://spitmux.me/sitemap.xml
+Sitemap: https://defthrets.github.io/spitmux-mods/sitemap.xml
