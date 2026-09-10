@@ -108,6 +108,7 @@
         '<span class="grain-overlay"></span>' +
         '<span class="hover-sweep"></span>' +
         '<span class="status-tag' + (m.repo ? " ready" : "") + '">' + esc(m.repo ? "public" : "local") + "</span>" +
+        '<span class="idx">' + (i + 1 < 10 ? "0" : "") + (i + 1) + "</span>" +
         icon(m.id, "row-icon") +
         '<span class="txt">' +
         '<span class="name">' + esc(m.name) + "</span>" +
@@ -164,7 +165,7 @@
       // nothing to be gained by making somebody ask for it twice. No autoplay:
       // sound starting on its own is a different thing from the video being
       // ready, and browsers block it unmuted anyway.
-      h.push('<iframe class="frame" data-vid="' + vid + '" loading="lazy" ' +
+      h.push('<iframe class="player" data-vid="' + vid + '" loading="lazy" ' +
              'src="https://www.youtube-nocookie.com/embed/' + vid + '?rel=0" ' +
              'title="' + esc(m.video.label) + '" allowfullscreen ' +
              'allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" ' +
@@ -272,7 +273,7 @@
     // embeds does it silently — so the only signal available is that the load
     // event never came. If it has not fired by then, swap in something that
     // opens on YouTube instead of leaving a black rectangle.
-    var frame = outEl.querySelector(".vid .frame");
+    var frame = outEl.querySelector(".vid .player");
     if (frame) {
       var landed = false;
       frame.addEventListener("load", function () { landed = true; }, { once: true });

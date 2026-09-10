@@ -16,7 +16,7 @@
   --p-signal: #ff9418;   /*  9.3:1  THE amber — prompt, LED, live edge    */
   --p-body:   #e7933b;   /*  8.5:1  body copy                             */
   --p-mid:    #bf7224;   /*  5.5:1  secondary labels, chips, code         */
-  --p-half:   #a86120;   /*  4.3:1  small caps labels, breadcrumbs        */
+  --p-half: #b56c28;   /* 4.7:1 on the lifted panel; #a86120 fell to 4.0 */
   --p-dim:    #8f511b;   /*  3.3:1  de-emphasised meta, comments          */
   --p-line:   #603614;   /*  2.0:1  borders and rules that must be seen   */
   --p-edge:   #3d220c;   /*  1.4:1  hairlines, barely-there structure     */
@@ -562,6 +562,9 @@ html, body {
 }
 
 /* the mod button */
+/* Ten bordered cards stacked up read as ten things competing, none of them
+   winning. This is a listing instead: hairline between the rows, the box and
+   its corner brackets kept back for the row you are actually pointing at. */
 .mod-btn {
   position: relative;
   display: block;
@@ -570,9 +573,10 @@ html, body {
   text-align: left;
   text-decoration: none;
   color: var(--gh-text);
-  padding: 9px 10px 8px;
-  background: var(--gh-bg-2);
-  border: 1px solid var(--gh-dim);
+  padding: 10px 10px 9px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 1px dotted rgb(var(--rgb-index) / 0.22);
   cursor: pointer;
   overflow: hidden;
   isolation: isolate;
@@ -594,9 +598,15 @@ html, body {
   border-top: 1px solid var(--gh-green);
   border-left: 1px solid var(--gh-green);
   z-index: 5;
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
+.mod-btn:hover::before, .mod-btn.active::before,
+.mod-btn:hover::after,  .mod-btn.active::after { opacity: 1; }
 .mod-btn::after {
   content: "";
+  opacity: 0;
+  transition: opacity 0.15s ease;
   position: absolute;
   bottom: -1px; right: -1px;
   width: 10px; height: 10px;
@@ -650,7 +660,7 @@ html, body {
 }
 .mod-btn:hover .hover-sweep { opacity: 1; animation: sweep-down 0.85s ease-out infinite; }
 
-.mod-btn:hover { border-color: var(--gh-green); background: rgb(var(--rgb-glow) / 0.05); }
+.mod-btn:hover { border-color: var(--gh-dim); background: rgb(var(--rgb-glow) / 0.05); }
 .mod-btn:hover .name { animation: title-tear 0.22s steps(2) 3; color: var(--gh-glow); }
 @keyframes title-tear {
   0%   { transform: translateX(0);    text-shadow: var(--gh-shadow-soft); }
@@ -662,6 +672,7 @@ html, body {
 
 .mod-btn.active {
   border-color: var(--gh-green);
+  border-bottom-style: solid;
   background: rgb(var(--rgb-glow) / 0.09);
   box-shadow: inset 0 0 20px rgb(var(--rgb-index) / 0.08);
 }
@@ -750,7 +761,11 @@ html, body {
 .frame {
   flex: 1;
   border: 1px solid var(--gray-dim);
-  background: rgba(10, 6, 3, 0.78);
+  /* Lifted off the page ground so the column you read reads as a surface
+     rather than a hole. Measured, not eyeballed: body copy sits at 7.9:1 on
+     this, still past AAA, and the whole ladder above --p-mid stays over 5:1.
+     Anything lighter starts costing the dim tones their AA. */
+  background: #140e08;
   padding: 18px 26px 22px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1452,7 +1467,7 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
   background: rgb(var(--rgb-signal) / 0.02);
 }
 .vid .box,
-.vid iframe {
+.vid .player {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -1522,7 +1537,7 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
 
 /* An empty third-party frame paints white by default, which is a flashbang on
    this page. Dark ground and colour-scheme keep it black whatever happens. */
-.vid iframe { background: #000; color-scheme: dark; }
+.vid .player { background: #000; color-scheme: dark; }
 
 /* ─── Pixel icons ────────────────────────────────────────────────────────
    Sprite art, so it is scaled with pixelated rather than smoothed: the whole
@@ -1547,8 +1562,26 @@ img.px {
 }
 
 /* ── in the index, one per row ── */
-.mod-btn { display: grid; grid-template-columns: 1fr; align-items: start; }
-.mod-btn:has(.row-icon) { grid-template-columns: auto 1fr; column-gap: 11px; }
+.mod-btn { display: grid; grid-template-columns: auto 1fr; column-gap: 10px;
+           align-items: start; }
+.mod-btn:has(.row-icon) { grid-template-columns: auto auto 1fr; }
+
+/* A fixed column of ordinals. The panel calls itself MOD.INDEX; an index has
+   numbers, and they give the eye somewhere to come back to when scanning. */
+.mod-btn .idx {
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  line-height: 1;
+  padding-top: 4px;
+  /* 3.3:1 at rest -- quiet enough to stay structure rather than content,
+     legible enough to actually anchor a scan. --p-line was 2:1 and vanished. */
+  color: var(--p-dim);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  transition: color 0.15s ease;
+}
+.mod-btn:hover .idx { color: var(--gh-dim); }
+.mod-btn.active .idx { color: var(--gh-green); text-shadow: var(--gh-shadow-soft); }
 .row-icon { width: 42px; height: 42px; margin-top: 1px; }
 .mod-btn:hover .row-icon,
 .mod-btn.active .row-icon { filter: none; }
