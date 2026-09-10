@@ -118,10 +118,16 @@
     if (m.video && m.video.id) {
       var vid = esc(m.video.id);
       h.push('<figure class="vid">');
-      h.push('<button type="button" class="box" data-vid="' + vid + '" ' +
-             'aria-label="Play ' + esc(m.video.label) + '">' +
-             '<span class="play">&#9654;</span>' +
-             '<span class="cue">' + esc(m.video.label) + '</span></button>');
+      // The player mounts with the page rather than behind a click. It is the
+      // only frame on screen at a time — one dossier is open — so there is
+      // nothing to be gained by making somebody ask for it twice. No autoplay:
+      // sound starting on its own is a different thing from the video being
+      // ready, and browsers block it unmuted anyway.
+      h.push('<iframe class="frame" data-vid="' + vid + '" loading="lazy" ' +
+             'src="https://www.youtube-nocookie.com/embed/' + vid + '?rel=0" ' +
+             'title="' + esc(m.video.label) + '" allowfullscreen ' +
+             'allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" ' +
+             'referrerpolicy="strict-origin-when-cross-origin"></iframe>');
       h.push('<figcaption><span class="drawn">footage</span>' +
              '<a href="https://www.youtube.com/watch?v=' + vid + '" ' +
              'target="_blank" rel="noopener">watch on youtube &#8599;</a></figcaption>');
@@ -215,43 +221,26 @@
       }
     }
 
-    var box = outEl.querySelector(".vid .box");
-    if (box) box.addEventListener("click", function () {
-      // Already found to be unembeddable here — send them to YouTube instead.
-      if (box.dataset.blocked) {
-        window.open("https://www.youtube.com/watch?v=" + box.dataset.vid,
-                    "_blank", "noopener");
-        return;
-      }
-
-      var f = document.createElement("iframe");
-      f.src = "https://www.youtube-nocookie.com/embed/" + box.dataset.vid +
-              "?autoplay=1&rel=0";
-      f.title = "Video";
-      f.allow = "accelerometer; autoplay; encrypted-media; picture-in-picture";
-      f.allowFullscreen = true;
-
-      var loaded = false;
-      f.addEventListener("load", function () { loaded = true; }, { once: true });
-      box.parentNode.replaceChild(f, box);
-
-      // A sandbox that refuses third-party frames leaves an empty white box and
-      // reports nothing at all, so silence is the only signal there is. If the
-      // frame has not loaded shortly, put the panel back and make the click
-      // open YouTube instead of doing nothing twice.
+    // Nothing reports a blocked frame — a sandbox that refuses third-party
+    // embeds does it silently — so the only signal available is that the load
+    // event never came. If it has not fired by then, swap in something that
+    // opens on YouTube instead of leaving a black rectangle.
+    var frame = outEl.querySelector(".vid .frame");
+    if (frame) {
+      var landed = false;
+      frame.addEventListener("load", function () { landed = true; }, { once: true });
       setTimeout(function () {
-        if (loaded || !f.parentNode) return;
-        f.parentNode.replaceChild(box, f);
-        box.dataset.blocked = "1";
-        var cue = box.querySelector(".cue");
-        if (cue) cue.textContent = "can't play here — opens on youtube";
-      }, 3000);
-    });
-
-    var title = document.getElementById("dossier-title");
-    if (title) {
-      scramble(title, 420);
-      title.addEventListener("click", function () { scramble(title, 500); });
+        if (landed || !frame.parentNode) return;
+        var a = document.createElement("a");
+        a.className = "box";
+        a.href = "https://www.youtube.com/watch?v=" + frame.dataset.vid;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.innerHTML = '<span class="play">&#9654;</span>' +
+                      '<span class="cue">can&rsquo;t play here &mdash; ' +
+                      'opens on youtube</span>';
+        frame.parentNode.replaceChild(a, frame);
+      }, 4000);
     }
     outEl.parentElement.scrollTop = 0;
     flash("frame-flash", window.crtFlashFrame);

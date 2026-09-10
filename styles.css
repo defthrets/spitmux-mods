@@ -31,6 +31,13 @@
   --rgb-spec:       255 195  67;
 
   /* grounds — the page sits below every panel, so panels read as objects */
+  /* The reading measure for the dossier column, in px rather than ch so that
+     the prose, the figures, the video and the tables all share one right edge
+     — ch is relative to each element's own font-size, so three blocks set to
+     the same ch value line up at three different places. About 62 characters
+     of JetBrains Mono at 15px, which is inside the comfortable 60-70. */
+  --read: 560px;
+
   --bg-deep: #050301;    /* the page itself   */
   --bg:      #0a0603;
   --rail:    #100a05;    /* titlebar, statusbar, panel headers */
@@ -833,30 +840,46 @@ html, body {
 
 .blurb {
   color: var(--amber-pale);
-  margin: 0 0 20px;
-  max-width: 74ch;
-  font-size: 1.02em;
-  line-height: 1.6;
+  margin: 0 0 26px;
+  max-width: var(--read);
+  font-size: 15.5px;
+  line-height: 1.68;
 }
 
 /* body sections */
-.point { margin: 0 0 16px; max-width: 78ch; position: relative; padding-left: 16px; }
+/* Points were 16px apart with the heading the same size as its own body copy,
+   so five of them read as one wall of text with some orange in it. The gap
+   does the separating and the heading now has a size of its own. */
+.point {
+  margin: 0 0 26px;
+  max-width: var(--read);
+  position: relative;
+  padding-left: 20px;
+}
 .point::before {
   content: "▸";
   position: absolute;
-  left: 0; top: 0;
-  color: var(--orange);
-  text-shadow: var(--shadow-soft);
+  left: 0; top: 1px;
+  /* Dimmer and unglowed: five of these down a column at full strength read as
+     decoration competing with the headings they point at. */
+  color: var(--p-half);
+  text-shadow: none;
 }
 .point h3 {
-  margin: 0 0 3px;
-  font-size: 1em;
+  margin: 0 0 7px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--orange-glow);
   letter-spacing: 0.01em;
   text-shadow: none;
 }
-.point p { margin: 0; color: var(--text-dim); line-height: 1.55; }
+
+.point p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.72;
+}
 .point p code, .blurb code { color: var(--amber-mid); }
 
 .sec-rule {
@@ -1294,8 +1317,8 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
 .shots {
   display: grid;
   gap: 12px;
-  margin: 0 0 22px;
-  max-width: 62ch;
+  margin: 0 0 26px;
+  max-width: var(--read);
 }
 .shots:has(.shot + .shot) { grid-template-columns: 1fr 1fr; }
 
@@ -1344,8 +1367,8 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
    Drawings, not captures. The caption says so; the frame is deliberately
    plainer than a screenshot would be so nobody mistakes one for the other. */
 .hud-fig {
-  margin: 0 0 22px;
-  max-width: 62ch;
+  margin: 0 0 26px;
+  max-width: var(--read);
   border: 1px solid var(--gray-dim);
   border-radius: 8px;
   overflow: hidden;
@@ -1411,8 +1434,8 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
    third-party script loads for a video nobody watched, and where frames are
    refused outright the caption's link is still there and still works. */
 .vid {
-  margin: 0 0 22px;
-  max-width: 62ch;
+  margin: 0 0 26px;
+  max-width: var(--read);
   border: 1px solid var(--gray-dim);
   border-radius: 8px;
   overflow: hidden;
