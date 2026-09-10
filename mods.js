@@ -172,7 +172,7 @@ window.MODS = [
   {
     id: "bare-minimum",
     shots: [
-      { src: "shots/hud-bars.png", cap: "the needs, down the left of the minimap" }
+      { src: "shots/hud-bars.png", cap: "the needs down the left of the minimap — health, sleep, food, water, energy" }
     ],
     name: "Bare Minimum",
     tag: "the needs the game left out, on a row of upright bars",

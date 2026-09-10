@@ -8,16 +8,14 @@ take it away and it vanishes and the layout closes up.
 
 WHAT WENT WHERE
 ---------------
-    archive.gif         CRT reading NO SIGNAL - the header, not a mod.
-                        The site opens on a no-signal cold open, so this
-                        is the archive's own object.
+    archive.gif         the tower on fire - the header, not a mod
     fumes.gif           a tank of orange liquid
     bare-minimum.gif    a battery reading FULL
     five0patrol.gif     a camera - being seen is the whole mod
     hoodrich.gif        a safe
     weapon-tweaks.gif   a bench of tools
     vehicle-tweaks.gif  switches and breakers
-    bloodymess.gif      the one on fire
+    bloodymess.gif      a CRT reading NO SIGNAL
     overspray.gif       a tower with its guts spilled out
     franklin-rp.gif     somebody at a desk
     streetgolf.gif      a wreck
