@@ -1715,3 +1715,18 @@ img.px {
 @media (max-width: 1100px) {
   .op-head { width: 64px; height: 64px; }
 }
+
+/* the release download chip, brighter than the source link beside it: one
+   is where the code lives, the other is the thing you actually came for */
+.chip.dl {
+  color: var(--p-core);
+  border-color: var(--p-mid);
+  background: rgb(var(--rgb-signal) / 0.10);
+  text-decoration: none;
+  cursor: pointer;
+}
+.chip.dl:hover { color: #000; background: var(--p-glow); border-color: var(--p-glow); }
+.chip.dl b { color: var(--p-glow); font-weight: 400; }
+.chip.dl:hover b, .chip.dl:hover .dl-n { color: #000; }
+.chip.dl .dl-n { color: var(--p-half); }
+.chip.dl .dl-n::before { content: "· "; }

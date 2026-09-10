@@ -26,7 +26,7 @@ window.MODS = [
     lines: 135048,
     files: 192,
     status: "ACTIVE",
-    repo: null,
+    repo: "https://github.com/defthrets/hoodrich",
     blurb:
       "You run with the Families. You buy weight off a plug, take it home and cut it, post up on a corner and let the trade come to you — and try to be gone before the police, or somebody else's people, decide you have been there long enough.",
     points: [
@@ -142,7 +142,7 @@ window.MODS = [
     lines: 25581,
     files: 60,
     status: "ACTIVE",
-    repo: null,
+    repo: "https://github.com/defthrets/fumes",
     blurb:
       "Every vanilla and online vehicle carries a real tank that empties as you drive and is still empty when you come back to it tomorrow. Refuelling is the point of the mod, and it is not a menu.",
     points: [
@@ -181,7 +181,7 @@ window.MODS = [
     lines: 32825,
     files: 70,
     status: "ACTIVE",
-    repo: null,
+    repo: "https://github.com/defthrets/bare-minimum",
     blurb:
       "Needs the game never gave Franklin, kept on game-clock time rather than real time — a full game day is roughly forty-eight minutes of play, so eating is something you do while getting on with the game rather than an errand.",
     points: [
@@ -209,7 +209,7 @@ window.MODS = [
     lines: 8294,
     files: 18,
     status: "ACTIVE",
-    repo: null,
+    repo: "https://github.com/defthrets/weapon-tweaks",
     blurb:
       "How fast it fires, how much it kicks, what comes out of it, how he holds it, what is bolted to it, and whether there is a red dot on whatever you are pointing at. All of it on a panel that applies a change the instant you make it.",
     points: [
@@ -241,7 +241,7 @@ window.MODS = [
     lines: 15157,
     files: 37,
     status: "ACTIVE",
-    repo: null,
+    repo: "https://github.com/defthrets/vehicle-tweaks",
     blurb:
       "Two small changes to how a car behaves. Neither of them says a word while it works, and neither adds a thing to the screen.",
     points: [
@@ -311,7 +311,7 @@ window.MODS = [
     lines: 6156,
     files: 20,
     status: "ACTIVE",
-    repo: null,
+    repo: "https://github.com/defthrets/franklin-rp",
     blurb:
       "Animations, searchable, with favourites — and a stand-in ped beside the panel playing whatever row the cursor is on.",
     points: [
@@ -345,7 +345,7 @@ window.MODS = [
     lines: 6482,
     files: 5,
     status: "ACTIVE",
-    repo: null,
+    repo: "https://github.com/defthrets/StreetGolf",
     blurb:
       "You stand where you are and hit ball after ball at the traffic. No hole, no course, no walking after the ball.",
     points: [

@@ -24,6 +24,74 @@
      art does. A missing one takes itself out and the layout closes up behind
      it -- the grid columns are on :has(), so removing the image is enough.
      Called after both renderers, since either can put new ones on the page. */
+  /* The latest release for a mod, as a download chip.
+
+     Asked of the GitHub API from the visitor's own browser rather than baked
+     into mods.js, because a version number written into a file is a version
+     number that goes stale the next time a release is cut. The API is
+     CORS-open and needs no token for a public repo.
+
+     Anonymous callers get 60 requests an hour per address, so this asks once
+     per mod and remembers the answer for the session -- including the answer
+     "there is no release", which is most of them today and would otherwise be
+     re-asked on every click.
+
+     A mod with no release shows nothing at all. There is no broken chip and
+     no "coming soon": the slot simply stays hidden, the same way a missing
+     icon or screenshot does. */
+  var RELEASES = {};
+
+  function wireDownload(m) {
+    if (!m.repo) return;
+    var slot = outEl.querySelector(".chip.dl");
+    if (!slot) return;
+
+    var slug = m.repo.replace(/^https?:\/\/github\.com\//, "").replace(/\/+$/, "");
+    var key = "rel:" + slug;
+
+    function paint(rel) {
+      if (!rel || !rel.url) return;
+      slot.href = rel.url;
+      slot.innerHTML = "&#8595; " + esc(rel.tag) +
+        (rel.size ? ' <b>' + Math.round(rel.size / 1024) + " kb</b>" : "") +
+        (rel.downloads ? ' <span class="dl-n">' + num(rel.downloads) + "</span>" : "");
+      slot.hidden = false;
+    }
+
+    if (RELEASES[slug]) { paint(RELEASES[slug]); return; }
+    try {
+      var cached = sessionStorage.getItem(key);
+      if (cached !== null) {
+        RELEASES[slug] = JSON.parse(cached);
+        paint(RELEASES[slug]);
+        return;
+      }
+    } catch (e) { /* private mode; just ask the network */ }
+
+    fetch("https://api.github.com/repos/" + slug + "/releases/latest")
+      .then(function (r) {
+        // 404 is the ordinary case: public repo, no release cut yet.
+        if (r.status === 404) return null;
+        // 403 is the rate limit. Do NOT cache that as "no release", or the
+        // whole session goes quiet over one bad minute.
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
+      .then(function (d) {
+        var asset = d && d.assets && d.assets.filter(function (a) {
+          return /\.zip$/i.test(a.name);
+        })[0];
+        var rel = asset ? { tag: d.tag_name, url: asset.browser_download_url,
+                            size: asset.size, downloads: asset.download_count } : {};
+        RELEASES[slug] = rel;
+        try { sessionStorage.setItem(key, JSON.stringify(rel)); } catch (e) {}
+        // Guard against a slow reply landing after the reader has moved
+        // on: paint only if this is still the mod on screen.
+        if (current === m.id) paint(rel);
+      })
+      .catch(function () { /* offline, or rate limited: show nothing */ });
+  }
+
   function sweepIcons() {
     var px = document.querySelectorAll("img.px");
     for (var n = 0; n < px.length; n++) {
@@ -143,6 +211,7 @@
     if (m.key && m.key !== "—") h.push('<span class="chip">menu <b>' + esc(m.key) + "</b></span>");
     h.push('<span class="chip">c<b>#</b> · shvdn 3</span>');
     if (m.repo) {
+      h.push('<a class="chip dl" hidden target="_blank" rel="noopener"></a>');
       h.push('<a class="chip link" href="' + esc(m.repo) + '" target="_blank" rel="noopener">source ↗</a>');
     } else {
       h.push('<span class="chip mute">source · private</span>');
@@ -250,6 +319,7 @@
     outEl.innerHTML = h.join("");
 
     sweepIcons();
+    wireDownload(m);
 
     var imgs = outEl.querySelectorAll(".shot img");
     for (var i = 0; i < imgs.length; i++) {
