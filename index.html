@@ -33,7 +33,7 @@
   <!-- Noto Sans JP is a very large family and this page uses 13 glyphs of it:
        the seal's ring and the operator card's strip. Subset to exactly those. -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=%E3%80%90%E3%80%91%E3%82%A4%E3%82%B9%E3%83%83%E3%83%87%E3%83%88%E3%83%9C%E3%83%A9%E3%83%AC%E3%83%BC%E5%AE%9F%E8%A1%8C&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=24f71a7b" />
+  <link rel="stylesheet" href="styles.css?v=dd1ab8d0" />
 </head>
 <body>
   <!-- the cold open; intro.js fills this and then removes it -->
@@ -58,10 +58,11 @@
     </div>
 
     <section class="frame-head">
-      <!-- Balances the seal across the bezel. Not tied to any one mod: this is
-           the archive's own object, and it only appears if icons/archive.png
-           exists — app.js sweeps up any px icon whose file is missing. -->
-      <img class="px head-rig" src="icons/archive.gif" data-alt="icons/archive.png" alt="" aria-hidden="true">
+      <!-- Balances the seal across the bezel: the seal tucks a third of itself
+           behind the left edge, this does the same on the right and leans the
+           other way, so the head reads as a window onto something wider than
+           itself rather than a box with two ornaments in it. -->
+      <img class="px head-rig" src="icons/five.png" alt="" aria-hidden="true">
       <!-- The seal leans in from behind the right-hand side of the bezel. The
            bezel already clips its own overflow, so the tuck is free — nothing
            here is masked by hand. Amber rather than its native green: the page
@@ -211,8 +212,8 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
   </main>
 
   <script src="matrix.js?v=7ed3812d"></script>
-  <script src="effects.js?v=89ee00f1"></script>
-  <script src="mods.js?v=05a47fa1"></script>
+  <script src="effects.js?v=73859b0d"></script>
+  <script src="mods.js?v=1160a7b1"></script>
   <script src="huds.js?v=75a231dd"></script>
   <script src="intro.js?v=c28b4213"></script>
   <script src="app.js?v=044aa71d"></script>

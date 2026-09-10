@@ -1606,14 +1606,22 @@ img.px {
 }
 
 /* ── the archive's own object, balancing the seal across the bezel ── */
-.head-rig {
+/* Cut off by the bezel, the way the seal is on the other side. The seal tucks
+   about a third of itself behind the left edge at 8 degrees; this mirrors that
+   — same fraction hidden, leaning the opposite way — so the pair frames the
+   wordmark instead of bracketing it. */
+img.head-rig {              /* img. to out-specify img.px, which sets a filter */
   position: absolute;
-  right: 26px;
-  bottom: 14px;
-  width: 92px;
-  height: 92px;
-  opacity: 0.9;
-  z-index: 2;
+  z-index: 0;
+  top: 50%;
+  right: -96px;                 /* the tuck: about a third sits past the edge */
+  width: 276px;
+  height: auto;
+  transform: translateY(-50%) rotate(-8deg);
+  opacity: 0.95;                /* the bezel vignette knocks this back a long way */
+  /* Already baked onto the amber ramp, so .px's resting filter would mute it
+     a second time and it comes out muddy. */
+  filter: none;
   pointer-events: none;
 }
 
