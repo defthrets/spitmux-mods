@@ -1618,11 +1618,30 @@ img.head-rig {              /* img. to out-specify img.px, which sets a filter *
   width: 276px;
   height: auto;
   transform: translateY(-50%) rotate(-8deg);
+
+  /* Hinged where it disappears, not through its middle. The origin sits at the
+     part behind the bezel, so the visible end swings and the hidden end stays
+     put — it reads as something hanging just out of frame rather than a
+     picture being rotated. Two degrees and three pixels; any more and it stops
+     being scenery and starts asking to be watched. */
+  transform-origin: 88% 50%;
+  animation: rig-sway 13s ease-in-out infinite alternate;
+
   opacity: 0.95;                /* the bezel vignette knocks this back a long way */
   /* Already baked onto the amber ramp, so .px's resting filter would mute it
      a second time and it comes out muddy. */
   filter: none;
   pointer-events: none;
+}
+
+@keyframes rig-sway {
+  from { transform: translateY(calc(-50% - 3px)) rotate(-9.2deg); }
+  to   { transform: translateY(calc(-50% + 3px)) rotate(-6.8deg); }
+}
+
+/* It is decoration; it does not need to move for somebody who asked it not to. */
+@media (prefers-reduced-motion: reduce) {
+  img.head-rig { animation: none; }
 }
 
 /* On a phone the head is already carrying the seal and the wordmark. */
