@@ -34,14 +34,17 @@
         continue;
       }
       px[n].addEventListener("error", function () {
+        // gif first, png second, then give up and take the slot away.
+        var alt = this.dataset.alt;
+        if (alt) { this.dataset.alt = ""; this.src = alt; return; }
         if (this.parentNode) this.parentNode.removeChild(this);
-      }, { once: true });
+      });
     }
   }
 
   function icon(id, cls) {
-    return '<img class="px ' + cls + '" src="icons/' + esc(id) + '.png" ' +
-           'alt="" aria-hidden="true">';
+    return '<img class="px ' + cls + '" src="icons/' + esc(id) + '.gif" ' +
+           'data-alt="icons/' + esc(id) + '.png" alt="" aria-hidden="true">';
   }
 
   function esc(s) {
@@ -181,7 +184,11 @@
         var src = typeof sh === "string" ? sh : sh.src;
         var cap = typeof sh === "string" ? "" : (sh.cap || "");
         h.push('<figure class="shot">' +
-               '<img src="' + esc(src) + '" loading="lazy" ' +
+               // NOT lazy. The block is display:none until an image decodes,
+               // and a lazy image inside a hidden element is never in the
+               // viewport, so it never loads, so the block never shows: the
+               // two rules deadlock each other.
+               '<img src="' + esc(src) + '" ' +
                'alt="' + esc(cap || (m.name + " in game")) + '">' +
                (cap ? '<figcaption>' + esc(cap) + "</figcaption>" : "") +
                "</figure>");

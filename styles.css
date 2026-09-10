@@ -1317,6 +1317,9 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
 .shots {
   display: grid;
   gap: 12px;
+  /* so a short capture sits at the top of its cell rather than floating in
+     the middle of a row a taller one set */
+  align-items: start;
   margin: 0 0 26px;
   max-width: var(--read);
 }
@@ -1334,7 +1337,14 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
 .shot img {
   display: block;
   width: 100%;
+  /* Captures come in whatever shape the game was in -- a phone screen is
+     twice as tall as it is wide and a dialogue panel is landscape. Side by
+     side and unconstrained, one portrait shot sets a row height the others
+     rattle around in, so they are capped and letterboxed onto the black
+     instead. */
+  max-height: 290px;
   height: auto;
+  object-fit: contain;
   /* The site is one hue; a full-colour frame dropped into it fights that.
      Pulling the saturation back and warming it lets the capture sit in the
      page without pretending to be part of the terminal. Full colour on

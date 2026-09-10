@@ -12,8 +12,10 @@ window.MODS = [
   {
     id: "hoodrich",
     shots: [
-      { src: "shots/posted-up.png", cap: "Gerald, and a line to answer" },
-      { src: "shots/armoury.png", cap: "Stretch's table" }
+      { src: "shots/phone.png", cap: "the home screen — eleven apps, and the bank underneath" },
+      { src: "shots/posted-up.webp", cap: "Gerald, and the lines you can answer with" },
+      { src: "shots/dealing.webp", cap: "stood on a corner with something to sell" },
+      { src: "shots/armoury.webp", cap: "Stretch's table, a gun picked out" }
     ],
     video: { id: "bcKNNGVBbXY", label: "Posted up on a corner" },
     install: ["scripts\\Hoodrich.dll", "scripts\\Hoodrich.ini", "scripts\\Hoodrich\\  (data + icons)"],
@@ -129,7 +131,7 @@ window.MODS = [
   {
     id: "fumes",
     shots: [
-      { src: "shots/fumes-pump.png", cap: "mid-fill at the Xero on Davis Avenue" },
+      { src: "shots/fumes-pump.webp", cap: "mid-fill at the Xero on Davis Avenue" },
       { src: "shots/hud-bars.png", cap: "the gauge, standing right of the minimap" }
     ],
     video: { id: "eq0v2n-2XJw", label: "Filling up" },
@@ -270,6 +272,9 @@ window.MODS = [
 
   {
     id: "overspray",
+    shots: [
+      { src: "shots/graffiti.webp", cap: "a tag going up, one pass of the can at a time" }
+    ],
     video: { id: "k0u4Gpqi_tw", label: "Spraying a wall" },
     name: "Overspray",
     tag: "spray paint on any surface in the city",
