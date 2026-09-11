@@ -273,11 +273,15 @@
       row.className = "tally-row";
       row.innerHTML =
         '<span class="rk">' + (idx + 1 < 10 ? "0" : "") + (idx + 1) + "</span>" +
+        '<img class="fl" alt="" loading="lazy" width="24" height="16" ' +
+        'src="https://flagcdn.com/' + r[0].toLowerCase() + '.svg">' +
         '<span class="cc">' + r[0] + "</span>" +
         '<span class="nm">' + p[2].replace(/</g, "&lt;") + "</span>" +
         '<span class="n">' + r[1] + "<small>" + Math.round(r[1] / sum * 100) + "%</small></span>" +
         '<span class="bar"><i></i></span>';
       row.addEventListener("click", function () { focus(r[0]); });
+      var fl = row.querySelector(".fl");
+      fl.addEventListener("error", function () { fl.parentNode && fl.parentNode.removeChild(fl); });
       tally.appendChild(row);
       rowsEl[r[0]] = row;
       // the bars grow in after layout, so the first paint is not the full one

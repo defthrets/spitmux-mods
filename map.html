@@ -239,8 +239,8 @@
     .tally-list { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--p-line) transparent; }
     .tally-row {
       display: grid;
-      grid-template-columns: 22px 30px minmax(0, 1fr) auto;
-      grid-template-areas: "rk cc name n" "rk cc bar bar";
+      grid-template-columns: 22px 26px 30px minmax(0, 1fr) auto;
+      grid-template-areas: "rk fl cc name n" "rk fl cc bar bar";
       column-gap: 8px;
       row-gap: 4px;
       align-items: center;
@@ -255,6 +255,20 @@
     }
     .tally-row:hover, .tally-row.on { background: rgb(var(--rgb-signal) / 0.06); }
     .tally-row .rk  { grid-area: rk; color: var(--p-dim); font-size: 14px; }
+    /* Flags come from flagcdn and are knocked back into the amber like the
+       pixel icons are; hover a row and it shows its true colours. A flag that
+       fails to load removes itself and the column simply stays empty. */
+    .tally-row .fl  {
+      grid-area: fl;
+      display: block;
+      width: 24px; height: 16px;
+      object-fit: cover;
+      border: 1px solid var(--p-edge);
+      border-radius: 2px;
+      filter: saturate(0.35) sepia(0.45) brightness(0.85);
+      transition: filter 0.15s;
+    }
+    .tally-row:hover .fl, .tally-row.on .fl { filter: none; }
     .tally-row .cc  { grid-area: cc; color: var(--p-signal); letter-spacing: 0.1em; }
     .tally-row .nm  { grid-area: name; color: var(--p-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .tally-row .n   { grid-area: n; color: var(--p-core); font-variant-numeric: tabular-nums; }
@@ -387,6 +401,6 @@
   </main>
 
   <script src="map-data.js?v=8b66d022"></script>
-  <script src="map.js?v=9f4fdab7"></script>
+  <script src="map.js?v=79210bd7"></script>
 </body>
 </html>
