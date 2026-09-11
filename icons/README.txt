@@ -10,7 +10,7 @@ WHAT WENT WHERE
 ---------------
     archive.gif         the tower on fire - the header, not a mod
     fumes.gif           a jerry can with the nozzle on
-    bare-minimum.gif    a burger and a bottle of water
+    bare-minimum.gif    a burger
     five0patrol.gif     a police light, turning
     hoodrich.gif        a bag of product
     weapon-tweaks.gif   a pistol
