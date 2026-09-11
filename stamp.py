@@ -38,7 +38,7 @@ def digest(path):
 # Icons and screenshots are addressed by name on purpose (drop a file in and
 # it appears), so they cannot carry their own hash. One version over the lot
 # goes into a meta tag the page reads, and onto any icon the markup names.
-ART_DIRS = ["icons", "shots"]
+ART_DIRS = ["icons", "shots", "strip"]
 ART_META = re.compile(r'<meta name="art-v" content="[0-9a-f]*" />\n')
 ART_SRC = re.compile(r'src="(?P<file>icons/[A-Za-z0-9._-]+\.(?:gif|png))(?:\?v=[0-9a-f]+)?"')
 
@@ -49,10 +49,11 @@ def art_version():
         p = os.path.join(HERE, d)
         if not os.path.isdir(p):
             continue
-        for name in sorted(os.listdir(p)):
-            f = os.path.join(p, name)
-            if os.path.isfile(f):
-                h.update(name.encode("utf-8"))
+        for base, dirs, files in os.walk(p):
+            dirs.sort()
+            for name in sorted(files):
+                f = os.path.join(base, name)
+                h.update(os.path.relpath(f, HERE).encode("utf-8"))
                 with open(f, "rb") as fh:
                     h.update(fh.read())
     return h.hexdigest()[:8]

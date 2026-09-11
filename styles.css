@@ -1823,6 +1823,47 @@ img.px {
   100%    { left: 140%; }
 }
 
+/* ─── the strip: a mod's own pixel art, tiled ─────────────────────────
+   Tiles hold the amber like every other picture until the pointer is on
+   them; then the art shows as drawn. */
+.strip { margin: 18px 0 6px; }
+.strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 10px 8px;
+  margin-top: 10px;
+}
+.tile {
+  margin: 0;
+  padding: 8px 4px 6px;
+  border: 1px solid var(--p-edge);
+  border-radius: 6px;
+  background: #0d0805;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.tile:hover { border-color: var(--p-line); }
+.tile img {
+  width: 48px; height: 48px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+.tile:hover img { filter: none; }
+.tile figcaption {
+  margin-top: 6px;
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  color: var(--p-half);
+  text-shadow: none;
+}
+.tile:hover figcaption { color: var(--p-pale); }
+@media (max-width: 600px) {
+  .strip-grid { grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 8px 6px; }
+  .tile img { width: 40px; height: 40px; }
+}
+
 /* ─── the speech bubble ───────────────────────────────────────────────
    An eight-bit dialogue box over the download button: square corners, a
    thick edge, a tail built out of four-pixel steps, and a pop that lands

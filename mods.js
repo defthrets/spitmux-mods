@@ -7,10 +7,22 @@
 //   lines   counted from the .cs under src/, excluding build, tools, release.
 //   points  the body of the dossier: a heading and a paragraph.
 //   ctrl    optional control table, [input, what it does].
+//   strip   optional row of the mod's own pixel art: { kind, items }, each
+//           item [path, caption]; kind picks the heading (product, menu).
 
 window.MODS = [
   {
     id: "hoodrich",
+    strip: { kind: "product", items: [
+      ["strip/hoodrich/weed.png", "weed"],
+      ["strip/hoodrich/coke.png", "coke"],
+      ["strip/hoodrich/crack.png", "crack"],
+      ["strip/hoodrich/meth.png", "meth"],
+      ["strip/hoodrich/heroin.png", "heroin"],
+      ["strip/hoodrich/lsd.png", "acid"],
+      ["strip/hoodrich/ecstasy.png", "ecstasy"],
+      ["strip/hoodrich/xanax.png", "xanax"]
+    ] },
     shots: [
       { src: "shots/phone.png", cap: "the home screen — eleven apps, and the bank underneath" },
       { src: "shots/posted-up.webp", cap: "Gerald, and the lines you can answer with" },
@@ -171,6 +183,24 @@ window.MODS = [
 
   {
     id: "bare-minimum",
+    strip: { kind: "menu", items: [
+      ["strip/bare-minimum/burger.png", "burger"],
+      ["strip/bare-minimum/chido_tacos.png", "tacos"],
+      ["strip/bare-minimum/bp_fishchips.png", "fish & chips"],
+      ["strip/bare-minimum/coop_donut.png", "donut"],
+      ["strip/bare-minimum/cluck_bucket.png", "cluck bucket"],
+      ["strip/bare-minimum/gv_pizza.png", "pizza"],
+      ["strip/bare-minimum/deli_sub.png", "deli sub"],
+      ["strip/bare-minimum/burrito.png", "burrito"],
+      ["strip/bare-minimum/diner_breakfast.png", "diner breakfast"],
+      ["strip/bare-minimum/bm_latte.png", "latte"],
+      ["strip/bare-minimum/beer.png", "beer"],
+      ["strip/bare-minimum/ecola.png", "e-cola"],
+      ["strip/bare-minimum/hotdog.png", "hot dog"],
+      ["strip/bare-minimum/fruit.png", "fruit"],
+      ["strip/bare-minimum/cb_frappe.png", "frappe"],
+      ["strip/bare-minimum/gv_salad.png", "salad"]
+    ] },
     shots: [
       { src: "shots/hud-bars.png", cap: "the needs down the left of the minimap — health, sleep, food, water, energy" }
     ],

@@ -110,6 +110,8 @@ UI = {
 
     "bubble.start": "download starting shortly…",
     "bubble.wip": "heads up: these mods are works in progress",
+    "strip.product": "the product",
+    "strip.menu": "on the menu",
 
     "map.title": "Where from",
     "map.tab": "where from",

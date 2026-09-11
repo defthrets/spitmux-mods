@@ -500,6 +500,21 @@
       h.push("</div>");
     }
 
+    // The mod's own pixel art, where it has some worth showing: what Posted
+    // Up sells, what Bare Minimum serves. Small tiles, in the amber until
+    // hovered, each with its name under it.
+    if (m.strip && m.strip.items && m.strip.items.length) {
+      h.push('<div class="strip">');
+      h.push('<div class="sec-rule">' + esc(T("strip." + (m.strip.kind || "product"))) + '</div>');
+      h.push('<div class="strip-grid">');
+      m.strip.items.forEach(function (it) {
+        h.push('<figure class="tile">' +
+               '<img class="px" src="' + esc(art(it[0])) + '" loading="lazy" alt="' + esc(it[1]) + '">' +
+               '<figcaption>' + esc(it[1]) + '</figcaption></figure>');
+      });
+      h.push('</div></div>');
+    }
+
     // A drawing of what the mod puts on screen, where there is one. These are
     // built from the mod's own ini and readme, so the layout and the meaning
     // are right — but they are drawings, and the caption says so rather than
