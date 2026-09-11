@@ -1823,6 +1823,71 @@ img.px {
   100%    { left: 140%; }
 }
 
+/* ─── the speech bubble ───────────────────────────────────────────────
+   An eight-bit dialogue box over the download button: square corners, a
+   thick edge, a tail built out of four-pixel steps, and a pop that lands
+   in five frames rather than a curve. */
+.chips.actions { position: relative; }
+.bubble {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 16px);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: min(340px, 82vw);
+  padding: 7px 12px 7px 8px;
+  background: #0a0603;
+  border: 3px solid var(--p-signal);
+  box-shadow: 0 0 0 3px #0a0603, 0 0 0 4px rgb(var(--rgb-signal) / 0.35), 0 8px 24px rgba(0, 0, 0, 0.7);
+  font-family: "VT323", monospace;
+  font-size: 17px;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  color: var(--p-pale);
+  text-shadow: none;
+  cursor: pointer;
+  transform-origin: 28px 100%;
+  animation: bubble-in 0.3s steps(5, end) both;
+}
+/* the tail: three rows of pixels stepping down to a point over the button */
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  bottom: -7px;
+  width: 4px; height: 4px;
+  background: var(--p-signal);
+  box-shadow:
+    4px 0 0 var(--p-signal), 8px 0 0 var(--p-signal),
+    4px 4px 0 var(--p-signal), 8px 4px 0 var(--p-signal),
+    8px 8px 0 var(--p-signal);
+}
+.bubble-head {
+  flex: none;
+  width: 44px; height: 44px;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  filter: saturate(0.3) brightness(0.86) sepia(0.34);
+}
+.bubble-text { display: flex; flex-direction: column; gap: 3px; }
+.bubble-text b { color: var(--p-core); font-weight: 400; }
+.bubble-text span { color: var(--p-half); font-size: 15px; }
+.bubble.out { animation: bubble-out 0.3s steps(4, end) forwards; }
+@keyframes bubble-in {
+  0%   { transform: translateY(8px) scale(0.6); opacity: 0; }
+  60%  { transform: translateY(-3px) scale(1.06); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes bubble-out {
+  to { transform: translateY(6px) scale(0.8); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bubble, .bubble.out { animation: none; }
+}
+
 /* under the actions: when it went up, when it last left, and from where */
 .dl-meta {
   display: flex;

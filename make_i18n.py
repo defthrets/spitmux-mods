@@ -108,6 +108,9 @@ UI = {
 
     "lang.label": "language",
 
+    "bubble.start": "download starting shortly…",
+    "bubble.wip": "heads up: these mods are works in progress",
+
     "map.title": "Where from",
     "map.tab": "where from",
     "map.sub": "visitor map · one pin per country · no addresses kept",

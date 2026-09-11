@@ -25,7 +25,8 @@ window.I18N = (function () {
     { code: "ja", flag: "jp", name: "日本語" },
     { code: "es", flag: "es", name: "Español" },
     { code: "de", flag: "de", name: "Deutsch" },
-    { code: "fr", flag: "fr", name: "Français" }
+    { code: "fr", flag: "fr", name: "Français" },
+    { code: "hi", flag: "in", name: "हिन्दी" }
   ];
   var KEY = "lang";
   var EN = window.I18N_EN || {};

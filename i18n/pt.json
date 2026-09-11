@@ -79,6 +79,8 @@
   "spec.size": "tamanho do acervo inteiro",
   "spec.note": "{lines} linhas de C# em {mods} mods e {files} arquivos. Contadas a partir de src, excluindo build, tools e release.",
   "lang.label": "idioma",
+  "bubble.start": "o download começa em instantes…",
+  "bubble.wip": "atenção: estes mods ainda estão em construção",
   "map.title": "De onde",
   "map.tab": "de onde",
   "map.sub": "mapa de visitantes · um pino por país · nenhum endereço guardado",

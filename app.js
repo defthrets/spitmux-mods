@@ -86,7 +86,7 @@
         up.title = new Date(rel.at).toUTCString();
         meta.hidden = false;
       }
-      slot.onclick = function () { grab(slug); };     // assigned, so never twice
+      slot.onclick = function () { grab(slug); bubble(); };   // assigned, so never twice
       wireLastGrab(m, slug);
     }
 
@@ -161,6 +161,36 @@
     GRABS[s] = { day: day, cc: VISITOR_CC };
     try { sessionStorage.setItem("grab:" + s, JSON.stringify(GRABS[s])); } catch (e) {}
     paintGrab(s);
+  }
+
+  /* The bubble. The file opens in a new tab, so the page is still here when
+     the click lands -- a moment to say two things: it is coming, and it is
+     not finished. Spoken by the little sprite in icons/bubble.gif, above
+     the button; goes on its own after a few seconds, or on a click. */
+  var bubbleTimer = null;
+  function bubble() {
+    var row = outEl.querySelector(".chips.actions");
+    if (!row) return;
+    var old = row.querySelector(".bubble");
+    if (old) old.parentNode.removeChild(old);
+    clearTimeout(bubbleTimer);
+
+    var b = document.createElement("div");
+    b.className = "bubble";
+    b.setAttribute("role", "status");
+    b.innerHTML =
+      '<img class="bubble-head" src="icons/bubble.gif" alt="" aria-hidden="true">' +
+      '<span class="bubble-text"><b>' + esc(T("bubble.start")) + '</b>' +
+      '<span>' + esc(T("bubble.wip")) + '</span></span>';
+    row.appendChild(b);
+
+    function go() {
+      clearTimeout(bubbleTimer);
+      b.classList.add("out");
+      setTimeout(function () { b.parentNode && b.parentNode.removeChild(b); }, 320);
+    }
+    b.addEventListener("click", go);
+    bubbleTimer = setTimeout(go, 6000);
   }
 
   function readCount(path) {
