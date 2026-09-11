@@ -179,7 +179,7 @@
     b.className = "bubble";
     b.setAttribute("role", "status");
     b.innerHTML =
-      '<img class="bubble-head" src="icons/bubble.gif" alt="" aria-hidden="true">' +
+      '<img class="bubble-head" src="' + art("icons/bubble.gif") + '" alt="" aria-hidden="true">' +
       '<span class="bubble-text"><b>' + esc(T("bubble.start")) + '</b>' +
       '<span>' + esc(T("bubble.wip")) + '</span></span>';
     row.appendChild(b);
@@ -328,8 +328,8 @@
     // the animation is kept for the head of the open dossier, where there is
     // only ever one of it and it reads as deliberate rather than as wallpaper.
     var moving = cls === "head-icon";
-    var a = "icons/" + esc(id) + (moving ? ".gif" : ".still.png");
-    var b = "icons/" + esc(id) + (moving ? ".still.png" : ".gif");
+    var a = art("icons/" + esc(id) + (moving ? ".gif" : ".still.png"));
+    var b = art("icons/" + esc(id) + (moving ? ".still.png" : ".gif"));
     return '<img class="px ' + cls + '" src="' + a + '" loading="lazy" ' +
            'data-alt="' + b + '" alt="" aria-hidden="true">';
   }
@@ -343,6 +343,14 @@
   // the language layer; identity when i18n.js is not there
   function T(k, v) { return window.I18N ? window.I18N.t(k, v) : k; }
   function TM(m) { return window.I18N ? window.I18N.mod(m) : m; }
+
+  // Art is addressed by name, never by hash, so a browser that has seen an
+  // icon keeps it for the ten minutes Pages allows -- a replaced sprite went
+  // unseen for that long. stamp.py hashes everything in icons/ and shots/
+  // into a meta tag, and that rides along as a query, so the new file shows
+  // the moment the page does. A data: URI (the single-file build) is left be.
+  var ART_V = (document.querySelector('meta[name="art-v"]') || {}).content || "";
+  function art(path) { return (ART_V && !/^data:/.test(path)) ? path + "?v=" + ART_V : path; }
 
   // scrambleEl runs on requestAnimationFrame, which a hidden or throttled tab
   // can stop dead — and it only writes the real text back on the final frame.
@@ -483,7 +491,7 @@
                // and a lazy image inside a hidden element is never in the
                // viewport, so it never loads, so the block never shows: the
                // two rules deadlock each other.
-               '<img src="' + esc(src) + '" loading="lazy" ' +
+               '<img src="' + esc(art(src)) + '" loading="lazy" ' +
                'alt="' + esc(cap || (m.name + " in game")) + '">' +
                (cap ? '<figcaption>' + esc(cap) + "</figcaption>" : "") +
                "</figure>");

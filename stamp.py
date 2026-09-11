@@ -35,6 +35,29 @@ def digest(path):
         return hashlib.sha1(fh.read()).hexdigest()[:8]
 
 
+# Icons and screenshots are addressed by name on purpose (drop a file in and
+# it appears), so they cannot carry their own hash. One version over the lot
+# goes into a meta tag the page reads, and onto any icon the markup names.
+ART_DIRS = ["icons", "shots"]
+ART_META = re.compile(r'<meta name="art-v" content="[0-9a-f]*" />\n')
+ART_SRC = re.compile(r'src="(?P<file>icons/[A-Za-z0-9._-]+\.(?:gif|png))(?:\?v=[0-9a-f]+)?"')
+
+
+def art_version():
+    h = hashlib.sha1()
+    for d in ART_DIRS:
+        p = os.path.join(HERE, d)
+        if not os.path.isdir(p):
+            continue
+        for name in sorted(os.listdir(p)):
+            f = os.path.join(p, name)
+            if os.path.isfile(f):
+                h.update(name.encode("utf-8"))
+                with open(f, "rb") as fh:
+                    h.update(fh.read())
+    return h.hexdigest()[:8]
+
+
 def main():
     for page in PAGES:
         stamp(page)
@@ -55,6 +78,17 @@ def stamp(PAGE):
         return '%s="%s?v=%s"' % (m.group("attr"), f, h)
 
     out = PATTERN.sub(swap, html)
+
+    if os.path.basename(PAGE) == "index.html":
+        v = art_version()
+        meta = '<meta name="art-v" content="%s" />\n' % v
+        if ART_META.search(out):
+            out = ART_META.sub(meta, out)
+        else:
+            out = out.replace('<meta name="viewport"', meta + '  <meta name="viewport"', 1)
+        out = ART_SRC.sub(lambda m: 'src="%s?v=%s"' % (m.group("file"), v), out)
+        seen.append(("icons/ shots/", v))
+
     if out != html:
         io.open(PAGE, "w", encoding="utf-8", newline="\n").write(out)
 
