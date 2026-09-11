@@ -18,7 +18,7 @@ WHAT WENT WHERE
     bloodymess.gif      blood, pooling
     overspray.gif       a can of paint
     franklin-rp.gif     the man in the green bandana, closer
-    streetgolf.gif      a wreck
+    streetgolf.gif      a golf ball, rolling
 
 Some of those are judgement calls rather than obvious matches. Swap any
 two files and the site follows - there is nothing else to change.
