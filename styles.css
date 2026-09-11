@@ -1796,6 +1796,62 @@ img.px {
 }
 .chip.dl:hover { background: var(--p-glow); transform: translateY(-1px); }
 .chip.dl b { color: #3a2006; font-weight: 400; }
+/* It breathes -- a slow glow -- and every few seconds a sheen crosses it.
+   Enough to catch the eye from the index; not enough to keep catching it. */
+.chip.dl {
+  position: relative;
+  overflow: hidden;
+  animation: dl-breathe 3.2s ease-in-out infinite;
+}
+.chip.dl::after {
+  content: "";
+  position: absolute;
+  top: -20%; bottom: -20%;
+  left: -70%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgb(var(--rgb-core) / 0.55), transparent);
+  transform: skewX(-22deg);
+  animation: dl-sheen 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes dl-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--rgb-signal) / 0); }
+  50%      { box-shadow: 0 0 16px 2px rgb(var(--rgb-signal) / 0.45); }
+}
+@keyframes dl-sheen {
+  0%, 55% { left: -70%; }
+  100%    { left: 140%; }
+}
+
+/* under the actions: when it went up, when it last left, and from where */
+.dl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 14px;
+  margin-top: 8px;
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--p-half);
+  text-shadow: none;
+}
+.dl-meta b { color: var(--p-body); font-weight: 400; }
+.dl-meta .last:empty { display: none; }
+.dl-meta .flag {
+  width: 18px; height: 12px;
+  object-fit: cover;
+  vertical-align: -1px;
+  margin: 0 3px 0 2px;
+  border: 1px solid var(--p-edge);
+  border-radius: 2px;
+  filter: saturate(0.35) sepia(0.45) brightness(0.85);
+  transition: filter 0.15s;
+}
+.dl-meta:hover .flag { filter: none; }
+@media (prefers-reduced-motion: reduce) {
+  .chip.dl, .chip.dl::after { animation: none; }
+}
 /* The counter sits beside the download rather than inside it. Inside, the
    number ran on after the file size and there was nothing to say which was
    which -- "406 kb 3" reads as a typo. */

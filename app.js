@@ -40,6 +40,18 @@
      no "coming soon": the slot simply stays hidden, the same way a missing
      icon or screenshot does. */
   var RELEASES = {};
+  var VISITOR_CC = null;      // learned by the visitor counter below, if it is
+
+  function since(iso) {       // a release date, as distance: "8 days ago"
+    var n = Math.round((Date.now() - new Date(iso).getTime()) / 864e5);
+    if (n <= 0) return "today";
+    if (n === 1) return "yesterday";
+    if (n < 14) return n + " days ago";
+    if (n < 60) return Math.round(n / 7) + " weeks ago";
+    if (n < 365) return Math.round(n / 30) + " months ago";
+    var y = Math.round(n / 365);
+    return y + (y === 1 ? " year ago" : " years ago");
+  }
 
   function wireDownload(m) {
     if (!m.repo) return;
@@ -66,6 +78,16 @@
         count.title = "counted across every release, not just this one";
         count.hidden = false;
       }
+
+      var meta = outEl.querySelector(".dl-meta");
+      if (meta && rel.at) {
+        var up = meta.querySelector(".up");
+        up.textContent = "updated " + since(rel.at);
+        up.title = new Date(rel.at).toUTCString();
+        meta.hidden = false;
+      }
+      slot.onclick = function () { grab(slug); };     // assigned, so never twice
+      wireLastGrab(m, slug);
     }
 
     if (RELEASES[slug]) { paint(RELEASES[slug]); return; }
@@ -102,7 +124,8 @@
           zips(r2).forEach(function (a) { total += a.download_count || 0; });
         });
         var rel = asset ? { tag: newest.tag_name, url: asset.browser_download_url,
-                            size: asset.size, downloads: total } : {};
+                            size: asset.size, downloads: total,
+                            at: newest.published_at || null } : {};
         RELEASES[slug] = rel;
         try { sessionStorage.setItem(key, JSON.stringify(rel)); } catch (e) {}
         // Guard against a slow reply landing after the reader has moved
@@ -110,6 +133,107 @@
         if (current === m.id) paint(rel);
       })
       .catch(function () { /* offline, or rate limited: show nothing */ });
+  }
+
+  /* When it was last taken from here, and from where.
+
+     GitHub counts downloads but never says when or from where, so the button
+     records its own clicks in the same counter the map uses: one key per mod
+     per UTC day, and one per mod per day per country. The service dedupes by
+     address on its side, so a reader who clicks twice is one. Reads are
+     ?readonly=true throughout, so looking never counts as taking.
+
+     What is stored is a day and a two-letter code. Nothing about who. */
+  var COUNTER = "https://counterapi.com/api/spitmux/";
+  var GRABS = {};
+
+  function dayKey(d) { return d.toISOString().slice(0, 10).replace(/-/g, ""); }
+  function slugKey(slug) { return slug.replace(/[^a-z0-9]+/gi, "-").toLowerCase(); }
+
+  function grab(slug) {
+    var s = slugKey(slug), day = dayKey(new Date());
+    var opts = { keepalive: true };
+    fetch(COUNTER + "dl/" + s + "-" + day, opts).catch(function () {});
+    if (VISITOR_CC) {
+      fetch(COUNTER + "dlat/" + s + "-" + day + "-" + VISITOR_CC, opts).catch(function () {});
+    }
+    // and show it at once, without waiting on the counter
+    GRABS[s] = { day: day, cc: VISITOR_CC };
+    try { sessionStorage.setItem("grab:" + s, JSON.stringify(GRABS[s])); } catch (e) {}
+    paintGrab(s);
+  }
+
+  function readCount(path) {
+    return fetch(COUNTER + path + "?readonly=true")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { return (d && d.value != null) ? +d.value : null; })
+      .catch(function () { return null; });
+  }
+
+  // the countries anyone has ever visited from: small, and bounded
+  function visitedFrom() {
+    return fetch("geo.json").then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (o) { return (o && o.rows) ? o.rows.map(function (r) { return r[0]; }) : []; })
+      .catch(function () { return []; });
+  }
+
+  function daysAgo(day) {     // "20260911" -> today / yesterday / 3 days ago
+    var d = Date.UTC(+day.slice(0, 4), +day.slice(4, 6) - 1, +day.slice(6, 8));
+    var n = Math.round((Date.now() - d) / 864e5);
+    if (n <= 0) return "today";
+    if (n === 1) return "yesterday";
+    return n + " days ago";
+  }
+
+  function paintGrab(s) {
+    var g = GRABS[s];
+    var meta = outEl.querySelector(".dl-meta");
+    var el = meta && meta.querySelector(".last");
+    if (!el || !g || !g.day) return;
+    el.innerHTML = "last grabbed <b>" + esc(daysAgo(g.day)) + "</b>" +
+      (g.cc ? ' from <img class="flag" alt="" width="18" height="12" ' +
+              'src="https://flagcdn.com/' + esc(g.cc.toLowerCase()) + '.svg"> ' + esc(g.cc) : "");
+    var f = el.querySelector(".flag");
+    if (f) f.addEventListener("error", function () { f.parentNode && f.parentNode.removeChild(f); });
+    meta.hidden = false;
+  }
+
+  function wireLastGrab(m, slug) {
+    var s = slugKey(slug);
+    if (GRABS[s]) { paintGrab(s); return; }
+    try {
+      var c = sessionStorage.getItem("grab:" + s);
+      if (c !== null) { GRABS[s] = JSON.parse(c); paintGrab(s); return; }
+    } catch (e) { /* private mode */ }
+
+    // Walk back a day at a time until one answers. Two weeks is far enough:
+    // past that the line is not news, and the slot just says when it went up.
+    var days = [];
+    for (var i = 0; i < 14; i++) days.push(dayKey(new Date(Date.now() - i * 864e5)));
+
+    function done(g) {
+      GRABS[s] = g;
+      try { sessionStorage.setItem("grab:" + s, JSON.stringify(g)); } catch (e) {}
+      if (current === m.id) paintGrab(s);
+    }
+    function whereFrom(day) {
+      visitedFrom().then(function (ccs) {
+        return Promise.all(ccs.map(function (cc) {
+          return readCount("dlat/" + s + "-" + day + "-" + cc)
+            .then(function (n) { return [cc, n || 0]; });
+        }));
+      }).then(function (pairs) {
+        pairs.sort(function (a, b) { return b[1] - a[1]; });
+        done({ day: day, cc: (pairs.length && pairs[0][1] > 0) ? pairs[0][0] : null });
+      });
+    }
+    (function step(i) {
+      if (current !== m.id && !GRABS[s]) { /* reader moved on; finish quietly */ }
+      if (i >= days.length) { done({}); return; }
+      readCount("dl/" + s + "-" + days[i]).then(function (n) {
+        if (n > 0) whereFrom(days[i]); else step(i + 1);
+      });
+    })(0);
   }
 
   /* Load an image once it is nearly in view, and not before.
@@ -281,6 +405,7 @@
       h.push('<span class="chip mute">source · private</span>');
     }
     h.push("</div>");   // chips
+    if (m.repo) h.push('<div class="dl-meta" hidden><span class="up"></span><span class="last"></span></div>');
     h.push("</div>");   // head-text
     h.push("</div>");   // dossier-head
 
@@ -667,6 +792,7 @@
       .then(function (d) {
         var cc = d && d.country;
         if (!cc || !/^[A-Z]{2}$/.test(cc)) return;
+        VISITOR_CC = cc;
         return fetch("https://counterapi.com/api/spitmux/geo/" + cc);
       })
       .catch(function () { /* the count still stands, just unplaced */ });
