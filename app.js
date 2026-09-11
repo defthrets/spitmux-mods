@@ -44,13 +44,13 @@
 
   function since(iso) {       // a release date, as distance: "8 days ago"
     var n = Math.round((Date.now() - new Date(iso).getTime()) / 864e5);
-    if (n <= 0) return "today";
-    if (n === 1) return "yesterday";
-    if (n < 14) return n + " days ago";
-    if (n < 60) return Math.round(n / 7) + " weeks ago";
-    if (n < 365) return Math.round(n / 30) + " months ago";
+    if (n <= 0) return T("time.today");
+    if (n === 1) return T("time.yesterday");
+    if (n < 14) return T("time.days", { n: n });
+    if (n < 60) return T("time.weeks", { n: Math.round(n / 7) });
+    if (n < 365) return T("time.months", { n: Math.round(n / 30) });
     var y = Math.round(n / 365);
-    return y + (y === 1 ? " year ago" : " years ago");
+    return y === 1 ? T("time.year") : T("time.years", { n: y });
   }
 
   function wireDownload(m) {
@@ -74,15 +74,15 @@
       // fact -- a release that has just gone up SHOULD say 0.
       if (count) {
         var n = rel.downloads || 0;
-        count.innerHTML = num(n) + " <b>" + (n === 1 ? "download" : "downloads") + "</b>";
-        count.title = "counted across every release, not just this one";
+        count.innerHTML = num(n) + " <b>" + esc(n === 1 ? T("chip.download") : T("chip.downloads")) + "</b>";
+        count.title = T("chip.count_title");
         count.hidden = false;
       }
 
       var meta = outEl.querySelector(".dl-meta");
       if (meta && rel.at) {
         var up = meta.querySelector(".up");
-        up.textContent = "updated " + since(rel.at);
+        up.textContent = T("meta.updated", { when: since(rel.at) });
         up.title = new Date(rel.at).toUTCString();
         meta.hidden = false;
       }
@@ -180,9 +180,9 @@
   function daysAgo(day) {     // "20260911" -> today / yesterday / 3 days ago
     var d = Date.UTC(+day.slice(0, 4), +day.slice(4, 6) - 1, +day.slice(6, 8));
     var n = Math.round((Date.now() - d) / 864e5);
-    if (n <= 0) return "today";
-    if (n === 1) return "yesterday";
-    return n + " days ago";
+    if (n <= 0) return T("time.today");
+    if (n === 1) return T("time.yesterday");
+    return T("time.days", { n: n });
   }
 
   function paintGrab(s) {
@@ -190,8 +190,8 @@
     var meta = outEl.querySelector(".dl-meta");
     var el = meta && meta.querySelector(".last");
     if (!el || !g || !g.day) return;
-    el.innerHTML = "last grabbed <b>" + esc(daysAgo(g.day)) + "</b>" +
-      (g.cc ? ' from <img class="flag" alt="" width="18" height="12" ' +
+    el.innerHTML = T("meta.grabbed", { when: "<b>" + esc(daysAgo(g.day)) + "</b>" }) +
+      (g.cc ? " " + esc(T("meta.from")) + ' <img class="flag" alt="" width="18" height="12" ' +
               'src="https://flagcdn.com/' + esc(g.cc.toLowerCase()) + '.svg"> ' + esc(g.cc) : "");
     var f = el.querySelector(".flag");
     if (f) f.addEventListener("error", function () { f.parentNode && f.parentNode.removeChild(f); });
@@ -310,6 +310,9 @@
       .replace(/"/g, "&quot;");
   }
   function num(n) { return n.toLocaleString("en-GB"); }
+  // the language layer; identity when i18n.js is not there
+  function T(k, v) { return window.I18N ? window.I18N.t(k, v) : k; }
+  function TM(m) { return window.I18N ? window.I18N.mod(m) : m; }
 
   // scrambleEl runs on requestAnimationFrame, which a hidden or throttled tab
   // can stop dead — and it only writes the real text back on the final frame.
@@ -339,7 +342,7 @@
 
   document.getElementById("stat-mods").textContent  = MODS.length;
   document.getElementById("stat-lines").textContent = num(TOTAL_LINES);
-  document.getElementById("node-count").textContent = MODS.length + " nodes";
+  document.getElementById("node-count").textContent = T("index.nodes", { n: MODS.length });
 
   // ── the index ─────────────────────────────────────────────────────────
   function renderList() {
@@ -348,7 +351,7 @@
     if (!shown.length) {
       var empty = document.createElement("div");
       empty.className = "index-empty";
-      empty.textContent = "» no match";
+      empty.textContent = T("index.nomatch");
       listEl.appendChild(empty);
       return;
     }
@@ -362,14 +365,14 @@
       b.setAttribute("aria-selected", m.id === current ? "true" : "false");
       b.innerHTML =
         '<span class="marker"></span>' +
-        '<span class="status-tag' + (m.repo ? " ready" : "") + '">' + esc(m.repo ? "public" : "local") + "</span>" +
+        '<span class="status-tag' + (m.repo ? " ready" : "") + '">' + esc(m.repo ? T("index.public") : T("index.local")) + "</span>" +
         '<span class="idx">' + (i + 1 < 10 ? "0" : "") + (i + 1) + "</span>" +
         icon(m.id, "row-icon") +
         '<span class="txt">' +
         '<span class="name">' + esc(m.name) + "</span>" +
-        '<span class="desc">' + esc(m.tag) + "</span>" +
+        '<span class="desc">' + esc(TM(m).tag) + "</span>" +
         '<span class="row"><span class="cat">' + esc(m.cat) + '</span>' +
-        '<span class="loc">' + num(m.lines) + " loc</span></span></span>";
+        '<span class="loc">' + num(m.lines) + " " + esc(T("index.loc")) + "</span></span></span>";
       b.style.animationDelay = (i * 45) + "ms";
       b.addEventListener("click", function () { select(m.id); });
       listEl.appendChild(b);
@@ -380,29 +383,30 @@
 
   // ── the dossier ───────────────────────────────────────────────────────
   function renderDossier(m) {
+    m = TM(m);                       // the prose in the reader's language
     var h = [];
 
     h.push('<div class="dossier-head">');
     h.push(icon(m.id, "head-icon"));
     h.push('<div class="head-text">');
-    h.push('<div class="crumb">archive <span class="sep">/</span> <span class="cat">' + esc(m.cat) +
+    h.push('<div class="crumb">' + esc(T("crumb.archive")) + ' <span class="sep">/</span> <span class="cat">' + esc(m.cat) +
            '</span> <span class="sep">/</span> ' + esc(m.id) + "</div>");
     h.push('<h1 class="dossier-title" id="dossier-title">' + esc(m.name) + "</h1>");
     h.push('<div class="dossier-tag">' + esc(m.tag) + "</div>");
 
     h.push('<div class="chips">');
-    h.push('<span class="chip">' + num(m.lines) + " <b>loc</b></span>");
-    h.push('<span class="chip">' + m.files + " <b>files</b></span>");
-    if (m.key && m.key !== "—") h.push('<span class="chip">menu <b>' + esc(m.key) + "</b></span>");
+    h.push('<span class="chip">' + num(m.lines) + " <b>" + esc(T("chip.loc")) + "</b></span>");
+    h.push('<span class="chip">' + m.files + " <b>" + esc(T("chip.files")) + "</b></span>");
+    if (m.key && m.key !== "—") h.push('<span class="chip">' + esc(T("chip.menu")) + ' <b>' + esc(m.key) + "</b></span>");
     h.push('<span class="chip">c<b>#</b> · shvdn 3</span>');
     h.push("</div>");   // chips: the facts
     h.push('<div class="chips actions">');
     if (m.repo) {
       h.push('<a class="chip dl" hidden target="_blank" rel="noopener"></a>');
       h.push('<span class="chip dl-count" hidden></span>');
-      h.push('<a class="chip link" href="' + esc(m.repo) + '" target="_blank" rel="noopener">source ↗</a>');
+      h.push('<a class="chip link" href="' + esc(m.repo) + '" target="_blank" rel="noopener">' + esc(T("chip.source")) + '</a>');
     } else {
-      h.push('<span class="chip mute">source · private</span>');
+      h.push('<span class="chip mute">' + esc(T("chip.private")) + '</span>');
     }
     h.push("</div>");   // chips
     if (m.repo) h.push('<div class="dl-meta" hidden><span class="up"></span><span class="last"></span></div>');
@@ -425,14 +429,14 @@
       // which is a user gesture, so autoplay is allowed and the tap is not
       // spent twice.
       h.push('<button type="button" class="box" data-vid="' + vid + '" ' +
-             'aria-label="Play ' + esc(m.video.label) + '">' +
+             'aria-label="' + esc(T("video.play")) + ' ' + esc(m.video.label) + '">' +
              '<img class="poster" alt="" loading="lazy" ' +
              'src="https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg">' +
              '<span class="play">&#9654;</span>' +
              '<span class="cue">' + esc(m.video.label) + '</span></button>');
-      h.push('<figcaption><span class="drawn">footage</span>' +
+      h.push('<figcaption><span class="drawn">' + esc(T("video.footage")) + '</span>' +
              '<a href="https://www.youtube.com/watch?v=' + vid + '" ' +
-             'target="_blank" rel="noopener">watch on youtube &#8599;</a></figcaption>');
+             'target="_blank" rel="noopener">' + esc(T("video.watch")) + '</a></figcaption>');
       h.push("</figure>");
     }
 
@@ -480,7 +484,7 @@
     });
 
     if (m.ctrl && m.ctrl.length) {
-      h.push('<div class="sec-rule">controls</div>');
+      h.push('<div class="sec-rule">' + esc(T("sec.controls")) + '</div>');
       h.push('<table class="ctrl-table"><tbody>');
       m.ctrl.forEach(function (r) {
         h.push('<tr><td class="k"><kbd>' + esc(r[0]) + '</kbd></td><td class="v">' + esc(r[1]) + "</td></tr>");
@@ -488,23 +492,23 @@
       h.push("</tbody></table>");
     }
 
-    h.push('<div class="sec-rule">install</div>');
+    h.push('<div class="sec-rule">' + esc(T("sec.install")) + '</div>');
     h.push('<div class="codeblock">');
-    h.push('<span class="c">; requires ScriptHookV + ScriptHookVDotNet 3</span>\n');
+    h.push('<span class="c">' + esc(T("install.requires")) + '</span>\n');
     if (m.install && m.install.length) {
       h.push(m.install.map(function (f) { return '<span class="f">' + esc(f) + "</span>"; }).join("\n"));
     } else {
       h.push('<span class="f">scripts\\' + esc(m.name.replace(/[^A-Za-z0-9]/g, "")) + ".dll</span>\n" +
              '<span class="f">scripts\\' + esc(m.name.replace(/[^A-Za-z0-9]/g, "")) + ".ini</span>");
     }
-    h.push('\n<span class="c">; one build, GTA V Legacy and Enhanced</span>');
+    h.push('\n<span class="c">' + esc(T("install.onebuild")) + '</span>');
     h.push("</div>");
 
     h.push('<div class="foot-note">');
-    h.push("<span>no asset replacement · no RPF edits · no gameconfig</span>");
+    h.push("<span>" + esc(T("foot.none")) + "</span>");
     h.push(m.repo
       ? '<a href="' + esc(m.repo) + '" target="_blank" rel="noopener">' + esc(m.repo.replace("https://", "")) + "</a>"
-      : "<span>not yet published</span>");
+      : "<span>" + esc(T("foot.unpublished")) + "</span>");
     h.push("</div>");
 
     outEl.innerHTML = h.join("");
@@ -541,8 +545,7 @@
           a.target = "_blank";
           a.rel = "noopener";
           a.innerHTML = '<span class="play">&#9654;</span>' +
-                        '<span class="cue">can&rsquo;t play here &mdash; ' +
-                        'opens on youtube</span>';
+                        '<span class="cue">' + esc(T("video.blocked")) + '</span>';
           f.parentNode.replaceChild(a, f);
         }, 4000);
       }, { once: true });
@@ -567,16 +570,16 @@
     specId.textContent = "ID-" + String(idx + 1).padStart(2, "0") + "/" + MODS.length;
 
     var rows = [
-      ["MOD", m.name],
-      ["CLASS", m.cat],
-      ["STATUS", m.repo ? "PUBLIC" : "LOCAL BUILD"],
-      ["LANGUAGE", "C#"],
-      ["RUNTIME", "SHVDN 3"],
-      ["EDITIONS", "LEGACY + ENH"],
-      ["ASSETS", "NONE"],
-      ["MENU", m.key || "—"],
-      ["SOURCE", num(m.lines) + " LOC"],
-      ["FILES", m.files]
+      [T("spec.mod"), m.name],
+      [T("spec.class"), m.cat],
+      [T("spec.status"), m.repo ? T("spec.public") : T("spec.localbuild"), "status"],
+      [T("spec.language"), "C#"],
+      [T("spec.runtime"), "SHVDN 3"],
+      [T("spec.editions"), "LEGACY + ENH"],
+      [T("spec.assets"), T("spec.none")],
+      [T("spec.menu"), m.key || "—"],
+      [T("spec.source"), num(m.lines) + " LOC"],
+      [T("spec.files"), m.files]
     ];
 
     // One block, not two. The build rows and the size chart were separate
@@ -585,15 +588,15 @@
     var h = [];
     h.push('<div class="id-card">');
     h.push('<div class="spec-header" style="border:0;background:none;padding:0 2px;">' +
-           '<span class="title">' + icon(m.id, "spec-icon") + 'BUILD // ARCHIVE</span>' +
+           '<span class="title">' + icon(m.id, "spec-icon") + esc(T("spec.archive")) + '</span>' +
            '<span>' + esc(m.id.toUpperCase()) + '</span></div>');
     rows.forEach(function (r) {
-      var cls = r[0] === "STATUS" && !m.repo ? " mute" : (r[0] === "STATUS" ? " on" : "");
+      var cls = r[2] === "status" ? (m.repo ? " on" : " mute") : "";
       h.push('<div class="id-row"><span class="k">' + esc(r[0]) + '</span><span class="v' + cls + '">' + esc(r[1]) + "</span></div>");
     });
     h.push('<div class="id-barcode">┃┃│┃│ │┃│┃│ │┃┃│ ┃│┃ │┃│┃</div>');
 
-    h.push('<div class="size-head"><span>size across the archive</span><span>loc</span></div>');
+    h.push('<div class="size-head"><span>' + esc(T("spec.size")) + '</span><span>' + esc(T("chip.loc")) + '</span></div>');
     h.push('<div class="size-list">');
     MODS.slice().sort(function (a, b) { return b.lines - a.lines; }).forEach(function (x) {
       var pct = Math.max(4, Math.round(Math.pow(x.lines / MAX_LINES, 0.55) * 100));
@@ -606,8 +609,8 @@
     h.push("</div>");
     h.push("</div>");   // id-card
 
-    h.push('<div class="spec-note">' + num(TOTAL_LINES) + " lines of C# across " + MODS.length +
-           " mods and " + num(TOTAL_FILES) + " files. Counted from src, excluding build, tools and release.</div>");
+    h.push('<div class="spec-note">' + esc(T("spec.note", {
+      lines: num(TOTAL_LINES), mods: MODS.length, files: num(TOTAL_FILES) })) + "</div>");
 
     specEl.innerHTML = h.join("");
 
@@ -645,7 +648,7 @@
       return (m.name + " " + m.id + " " + m.tag + " " + m.cat + " " + m.blurb).toLowerCase().indexOf(q) > -1;
     });
     document.getElementById("node-count").textContent =
-      shown.length === MODS.length ? MODS.length + " nodes" : shown.length + " / " + MODS.length + " nodes";
+      T("index.nodes", { n: shown.length === MODS.length ? MODS.length : shown.length + " / " + MODS.length });
     renderList();
   }
   filterEl.addEventListener("input", applyFilter);
@@ -797,6 +800,25 @@
       })
       .catch(function () { /* the count still stands, just unplaced */ });
   })();
+
+  // ── language ──────────────────────────────────────────────────────────
+  // The flag in the title bar. When the language changes, everything a
+  // script built is built again; the static text swaps itself.
+  if (window.I18N) {
+    window.I18N.mount(document.getElementById("lang"));
+    window.addEventListener("i18n", function () {
+      var tg = document.getElementById("tagline");
+      if (tg) delete tg.dataset.realText;        // so the scrambler re-reads it
+      applyFilter();
+      if (current) {
+        var m = byId(current);
+        renderDossier(m);
+        renderSpec(m);
+        sweepIcons();
+        wireDownload(m);
+      }
+    });
+  }
 
   window.addEventListener("konami", function () {
     document.body.classList.toggle("unlocked");

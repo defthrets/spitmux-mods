@@ -33,7 +33,7 @@
   <!-- Noto Sans JP is a very large family and this page uses 13 glyphs of it:
        the seal's ring and the operator card's strip. Subset to exactly those. -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=%E3%80%90%E3%80%91%E3%82%A4%E3%82%B9%E3%83%83%E3%83%87%E3%83%88%E3%83%9C%E3%83%A9%E3%83%AC%E3%83%BC%E5%AE%9F%E8%A1%8C&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=7288f2ab" />
+  <link rel="stylesheet" href="styles.css?v=0bf2c7c8" />
 </head>
 <body>
   <!-- the cold open; intro.js fills this and then removes it -->
@@ -51,7 +51,8 @@
         &nbsp;&nbsp;<span>tty2</span>&nbsp;—&nbsp;<span>spitmux@pm.me</span>
       </div>
       <div class="right">
-        <span class="v-conn">conn <b>encrypted</b></span>
+        <span class="lang" id="lang"></span>
+        <span class="v-conn"><span data-i18n="titlebar.conn">conn</span> <b data-i18n="titlebar.encrypted">encrypted</b></span>
         <span class="v-ver">shvdn <b>3.9</b></span>
         <span class="v-clk" id="clock"><b>--:--:--</b></span>
       </div>
@@ -122,11 +123,11 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
                 "</pre>
       </div>
 
-      <div class="sub-rule">mod archive <span class="dot">·</span> grand theft auto v</div>
+      <div class="sub-rule" data-i18n="head.subrule">mod archive · grand theft auto v</div>
 
       <div class="tagline">
         <span class="quote">»</span>
-        <span class="glitch" id="tagline">you will succumb to the poison you have tasted ...</span>
+        <span class="glitch" id="tagline" data-i18n="head.tagline">you will succumb to the poison you have tasted ...</span>
         <span class="cursor">▍</span>
       </div>
 
@@ -138,17 +139,18 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
       <!-- LEFT: the index -->
       <aside class="col left">
         <div class="index-window">
-          <div class="index-banner"><span class="banner-word">mods</span></div>
+          <div class="index-banner"><span class="banner-word" data-i18n="index.banner">mods</span></div>
 
           <div class="index-header">
-            <span class="title"><span class="live-dot"></span>MOD.INDEX</span>
+            <span class="title"><span class="live-dot"></span><span data-i18n="index.title">MOD.INDEX</span></span>
             <span>@ defthrets</span>
           </div>
 
           <label class="index-filter">
             <span class="caret">»</span>
             <input id="filter" type="text" autocomplete="off" spellcheck="false"
-                   placeholder="filter — police, hud, fuel…" aria-label="Filter mods" />
+                   placeholder="filter — police, hud, fuel…" aria-label="Filter mods"
+                   data-i18n-placeholder="index.filter" data-i18n-aria="index.filter_aria" />
           </label>
 
           <div class="index-list" id="index-list" role="listbox" aria-label="Mods"></div>
@@ -172,18 +174,18 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
       <aside class="col right">
         <div class="spec-window">
           <div class="spec-header">
-            <span class="title">BUILD//SPEC</span>
+            <span class="title" data-i18n="spec.title">BUILD//SPEC</span>
             <span id="spec-id">──────</span>
           </div>
           <div class="op-card">
             <img class="op-head" src="icons/demon.gif" alt="" aria-hidden="true">
             <div class="op-fields">
-              <div class="op-row"><span class="k">operator</span><span class="v">SPITMUX</span></div>
-              <div class="op-row"><span class="k">alias</span><span class="v">DEFTHRETS</span></div>
-              <div class="op-row"><span class="k">node</span><span class="v">TTY2</span></div>
-              <div class="op-row"><span class="k">issued</span><span class="v">1991</span></div>
-              <div class="op-row"><span class="k">expires</span><span class="v on">NEVER</span></div>
-              <div class="op-row"><span class="k">clearance</span><span class="v">ROOT</span></div>
+              <div class="op-row"><span class="k" data-i18n="op.operator">operator</span><span class="v">SPITMUX</span></div>
+              <div class="op-row"><span class="k" data-i18n="op.alias">alias</span><span class="v">DEFTHRETS</span></div>
+              <div class="op-row"><span class="k" data-i18n="op.node">node</span><span class="v">TTY2</span></div>
+              <div class="op-row"><span class="k" data-i18n="op.issued">issued</span><span class="v">1991</span></div>
+              <div class="op-row"><span class="k" data-i18n="op.expires">expires</span><span class="v on" data-i18n="op.never">NEVER</span></div>
+              <div class="op-row"><span class="k" data-i18n="op.clearance">clearance</span><span class="v" data-i18n="op.root">ROOT</span></div>
             </div>
             <div class="op-strip">ラットボーイ実行 · R4TB0Y$ · ラットボーイ実行</div>
           </div>
@@ -194,13 +196,13 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
 
     <div class="statusbar">
       <div class="left">
-        <span class="item online"><span class="dot"></span>online</span>
-        <span class="item tor">mods: <b id="stat-mods">13</b></span>
-        <a class="item visitors" id="stat-visitors" href="map.html" hidden title="where they came from">visitors: <b>&#8212;</b></a>
-        <span class="item matrix">src: <b id="stat-lines">—</b> lines</span>
+        <span class="item online"><span class="dot"></span><span data-i18n="status.online">online</span></span>
+        <span class="item tor"><span data-i18n="status.mods">mods:</span> <b id="stat-mods">13</b></span>
+        <a class="item visitors" id="stat-visitors" href="map.html" hidden title="where they came from" data-i18n-title="status.visitors_title"><span data-i18n="status.visitors">visitors:</span> <b>&#8212;</b></a>
+        <span class="item matrix"><span data-i18n="status.src">src:</span> <b id="stat-lines">—</b> <span data-i18n="status.lines">lines</span></span>
       </div>
       <div class="right">
-        <span class="item">↑↓ select · / filter · esc clear</span>
+        <span class="item" data-i18n="status.keys">↑↓ select · / filter · esc clear</span>
       </div>
     </div>
   </main>
@@ -210,6 +212,8 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
   <script src="mods.js?v=03900ae7"></script>
   <script src="huds.js?v=75a231dd"></script>
   <script src="intro.js?v=0ca464f2"></script>
-  <script src="app.js?v=fc8737db"></script>
+  <script src="i18n/en.js?v=13fb79d2"></script>
+  <script src="i18n.js?v=9826b41e"></script>
+  <script src="app.js?v=93639be8"></script>
 </body>
 </html>

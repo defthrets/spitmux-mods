@@ -27,7 +27,7 @@ PAGES = [os.path.join(HERE, "index.html"), os.path.join(HERE, "map.html")]
 # are handled by their own fallbacks; a hash on those would defeat the "drop a
 # file in and it appears" arrangement.
 PATTERN = re.compile(
-    r'(?P<attr>href|src)="(?P<file>(?:styles\.css|[a-z-]+\.js))(?:\?v=[0-9a-f]+)?"')
+    r'(?P<attr>href|src)="(?P<file>(?:styles\.css|[a-z0-9/-]+\.js))(?:\?v=[0-9a-f]+)?"')
 
 
 def digest(path):

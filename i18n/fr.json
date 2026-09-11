@@ -1,0 +1,362 @@
+{
+ "ui": {
+  "titlebar.conn": "conn",
+  "titlebar.encrypted": "chiffré",
+  "head.subrule": "archive de mods · grand theft auto v",
+  "head.tagline": "tu succomberas au poison que tu as goûté ...",
+  "index.banner": "mods",
+  "index.title": "INDEX.MODS",
+  "index.filter": "filtrer — police, hud, essence…",
+  "index.filter_aria": "Filtrer les mods",
+  "index.nodes": "{n} nœuds",
+  "index.nomatch": "» aucun résultat",
+  "index.public": "public",
+  "index.local": "local",
+  "index.loc": "loc",
+  "spec.title": "BUILD//SPEC",
+  "op.operator": "opérateur",
+  "op.alias": "alias",
+  "op.node": "nœud",
+  "op.issued": "délivré",
+  "op.expires": "expire",
+  "op.clearance": "habilitation",
+  "op.never": "JAMAIS",
+  "op.root": "ROOT",
+  "status.online": "en ligne",
+  "status.mods": "mods :",
+  "status.visitors": "visiteurs :",
+  "status.visitors_title": "d'où ils venaient",
+  "status.src": "src :",
+  "status.lines": "lignes",
+  "status.keys": "↑↓ choisir · / filtrer · échap effacer",
+  "crumb.archive": "archive",
+  "chip.loc": "loc",
+  "chip.files": "fichiers",
+  "chip.menu": "menu",
+  "chip.download": "télécharger",
+  "chip.downloads": "téléchargements",
+  "chip.count_title": "comptés sur toutes les versions, pas seulement celle-ci",
+  "chip.source": "source ↗",
+  "chip.private": "source · privée",
+  "meta.updated": "mis à jour {when}",
+  "meta.grabbed": "dernière récup {when}",
+  "meta.from": "depuis",
+  "time.today": "aujourd'hui",
+  "time.yesterday": "hier",
+  "time.days": "il y a {n} jours",
+  "time.weeks": "il y a {n} semaines",
+  "time.months": "il y a {n} mois",
+  "time.year": "il y a 1 an",
+  "time.years": "il y a {n} ans",
+  "time.justnow": "à l'instant",
+  "time.min": "il y a {n} min",
+  "time.hour": "il y a 1 heure",
+  "time.hours": "il y a {n} heures",
+  "video.play": "Lire",
+  "video.footage": "séquence",
+  "video.watch": "voir sur youtube ↗",
+  "video.blocked": "lecture impossible ici — s'ouvre sur youtube",
+  "sec.controls": "commandes",
+  "sec.install": "installation",
+  "install.requires": "; nécessite ScriptHookV + ScriptHookVDotNet 3",
+  "install.onebuild": "; un seul build, GTA V Legacy et Enhanced",
+  "foot.none": "aucun asset remplacé · aucune modif RPF · pas de gameconfig",
+  "foot.unpublished": "pas encore publié",
+  "spec.archive": "BUILD // ARCHIVE",
+  "spec.mod": "MOD",
+  "spec.class": "CLASSE",
+  "spec.status": "STATUT",
+  "spec.public": "PUBLIC",
+  "spec.localbuild": "BUILD LOCAL",
+  "spec.language": "LANGAGE",
+  "spec.runtime": "RUNTIME",
+  "spec.editions": "ÉDITIONS",
+  "spec.assets": "ASSETS",
+  "spec.none": "AUCUN",
+  "spec.menu": "MENU",
+  "spec.source": "SOURCE",
+  "spec.files": "FICHIERS",
+  "spec.size": "taille de toute l'archive",
+  "spec.note": "{lines} lignes de C# réparties sur {mods} mods et {files} fichiers. Comptées depuis src, hors build, tools et release.",
+  "lang.label": "langue",
+  "map.title": "Provenance",
+  "map.tab": "provenance",
+  "map.sub": "carte des visiteurs · une épingle par pays · aucune adresse conservée",
+  "map.visits": "visites",
+  "map.countries": "pays",
+  "map.top": "top",
+  "map.placed": "placés sur la carte",
+  "map.of": "sur {n} au total",
+  "map.scope": "zone",
+  "map.world": "monde",
+  "map.legend": "une épingle par pays · la taille suit le nombre",
+  "map.bycountry": "par pays",
+  "map.foot": "compté une fois par adresse · cliquer une ligne pour trouver son épingle",
+  "map.back": "← retour à l'archive",
+  "map.esc": "échap · retour",
+  "map.scanning": "scan…",
+  "map.scanning_n": "scan {d}/{n}…",
+  "map.nobody": "personne pour l'instant",
+  "map.none": "aucun pays enregistré pour l'instant",
+  "map.note": "{visits} visites depuis {countries} pays",
+  "map.cached": "en cache",
+  "map.lastread": "dernière lecture {ago} · scan…",
+  "map.unreachable": "compteur injoignable",
+  "map.showing": "affiche la dernière lecture {ago}",
+  "map.unanswered": "{n} sans réponse",
+  "map.tip": "{n} visites",
+  "map.status_countries": "pays :",
+  "map.status_visits": "visites :",
+  "map.reading": "lecture…"
+ },
+ "mods": {
+  "hoodrich": {
+   "tag": "deal et vie de gang, pilotés depuis un téléphone qui remplace celui du jeu",
+   "blurb": "Tu traînes avec les Families. Tu achètes de la quantité à un grossiste, tu la ramènes chez toi pour la couper, tu te postes à un coin de rue et tu laisses le commerce venir à toi — et tu tâches d'avoir filé avant que la police, ou les gars de quelqu'un d'autre, décident que tu es resté là assez longtemps.",
+   "points": [
+    {
+     "h": "Tout passe par le téléphone",
+     "t": "Appuie sur la touche téléphone et le combiné apparaît à droite. Deal, Contacts, Gangs, Inventaire et Réseaux sur l'écran d'accueil ; dans chacun, une liste avec l'icône, le nom, ce que ça fait et sa valeur sur une seule ligne. Les flèches déplacent, Entrée ouvre, Retour arrière revient et le range. Ta roue des armes n'est pas touchée."
+    },
+    {
+     "h": "Zéro dépendance externe",
+     "t": "Une DLL, un peu de JSON, ScriptHookVDotNet. Pas de Lua, pas de NativeUI, pas de framework de config, pas d'installeur. Le parseur INI et le parseur JSON sont tous deux faits maison et vivent dans src/Hoodrich/Core."
+    },
+    {
+     "h": "Le HUD s'efface tant qu'il est ouvert",
+     "t": "Le combiné se tient là où vivent les infos du coin de rue et le bandeau de permis, alors ceux-là s'écartent tant qu'il est ouvert."
+    },
+    {
+     "h": "105 icônes dessinées de zéro",
+     "t": "Dix fichiers de données et un jeu d'icônes construit plutôt qu'emprunté, parce que le jeu n'a pas de sprite pour la plupart de ce que ce mod a à dire."
+    }
+   ],
+   "shots": [
+    "l'écran d'accueil — onze applis, et la banque en dessous",
+    "Gerald, et ce qu'on peut lui répondre",
+    "planté à un coin de rue avec quelque chose à vendre",
+    "la table de Stretch, un flingue choisi"
+   ],
+   "video": "Posté à un coin de rue",
+   "ctrl": [
+    "Ouvrir et fermer le combiné",
+    "Naviguer entre applis et lignes",
+    "Ouvrir",
+    "Retour, et le ranger"
+   ]
+  },
+  "five0patrol": {
+   "tag": "la jauge de suspicion qui se remplit avant la première étoile de recherche",
+   "blurb": "La police de GTA V a deux états — rien du tout, et un niveau de recherche — et le passage de l'un à l'autre est instantané. Se faire remarquer n'existe pas. Five0 Patrol est le milieu qui manquait.",
+   "points": [
+    {
+     "h": "La suspicion, puis les étoiles",
+     "t": "La suspicion monte quand quelqu'un te voit faire un truc mesquin et redescend quand personne ne regarde. Les étoiles restent celles du jeu et veulent dire ce qu'elles ont toujours voulu dire ; ceci, c'est ce qui se passe en chemin."
+    },
+    {
+     "h": "La jauge se remplit et quelqu'un s'approche",
+     "t": "Un agent te pose la question, te fouille, et te laisse repartir ou non. Avouer, nier et se taire ont chacun un chemin vers la sortie, et tous les trois un chemin vers une étoile. Ce qui tranche, c'est ce que tu portes vraiment sur toi et si ça colle avec ce que tu lui as dit."
+    },
+    {
+     "h": "Une étoile, c'est quand ça tourne mal",
+     "t": "À une étoile, la police sort le taser plutôt que l'arme de poing, et tu peux lever les mains et te rendre plutôt que courir."
+    },
+    {
+     "h": "Et il y a des flics dehors pour s'en charger",
+     "t": "Des patrouilles à pied font leur ronde sur les trottoirs, certaines avec un chien. Des voitures sérigraphiées sillonnent les routes et les ruelles, projecteur allumé une fois la nuit tombée."
+    },
+    {
+     "h": "Il s'efface",
+     "t": "Si LSPDFR est installé, il se retire par défaut — ce mod-là possède le système de recherche, et deux mods qui dessinent par-dessus les mêmes étoiles, c'est très dur à diagnostiquer depuis l'intérieur du jeu."
+    }
+   ]
+  },
+  "bloodymess": {
+   "tag": "du sang qui reste sur le monde, et qui rentre à la maison sous tes chaussures",
+   "blurb": "Plus de sang sort des gens, le sang reste sur le monde, et tu le traînes hors des flaques. Une .dll, un .ini, un fichier de données — aucun asset remplacé, aucune modif RPF, pas de gameconfig.",
+   "points": [
+    {
+     "h": "Tirer sur les gens salit davantage",
+     "t": "Chaque impact tamponne des décalques de blessure en plus, déclenche les particules de sang du jeu à l'entrée et à la sortie, et projette un cône d'éclaboussures de l'autre côté qui atterrit sur ce qui se trouve réellement derrière. Les fusils à pompe en envoient plus que les pistolets. Tue quelqu'un à bout portant et ça te revient dessus."
+    },
+    {
+     "h": "Les corps se vident",
+     "t": "Une flaque s'étend sous quiconque tombe, grandissant sur environ une demi-minute — luisante sur le bitume, absorbée dans l'herbe. Un blessé qui marche encore laisse une traînée espacée selon la distance parcourue, donc rester immobile ne laisse rien et personne ne saigne éternellement."
+    },
+    {
+     "h": "Et tu le promènes",
+     "t": "Marche dans du sang frais et il te suit : une traînée de pas qui s'estompe, gauche et droite, dans le sens de ta marche. Ça marche pour les PNJ qui fuient une scène, et pour les pneus qui roulent dans une flaque."
+    },
+    {
+     "h": "Un seul registre, un plafond ferme",
+     "t": "Le jeu a une réserve de décalques fixe et les décalques de script se la disputent avec ses propres impacts de balles. Dépasser ne plante pas et ne logue rien — les décalques cessent simplement d'apparaître. Donc tout ce que ce mod dessine passe par un budget avec un plafond, une limite de débit et une limite de portée, et il évince ses propres plus anciens plutôt que de laisser le moteur choisir. Ce budget n'est délibérément pas indexé sur le niveau de gore : monter le gore ne peut pas couper la sécurité."
+    },
+    {
+     "h": "Chaque partie se coupe séparément",
+     "t": "Éclaboussures, flaques, traînées et empreintes sont quatre réglages séparés, depuis l'ini ou le menu F10. Le saignement tourne sur une fenêtre qui expire et se relance à chaque blessure, donc personne ne saigne pour une égratignure. Chaque réglage moteur que le mod touche est rendu à l'arrêt et au rechargement des scripts."
+    }
+   ]
+  },
+  "fumes": {
+   "tag": "un vrai réservoir, et un pistolet que tu portes toi-même jusqu'à la voiture",
+   "blurb": "Chaque véhicule vanilla et online embarque un vrai réservoir qui se vide en roulant et qui est toujours vide quand tu reviens le lendemain. Faire le plein est tout l'intérêt du mod, et ce n'est pas un menu.",
+   "points": [
+    {
+     "h": "Descends et marche jusqu'à la pompe",
+     "t": "Décroche le pistolet de la pompe — il passe dans la main de Franklin et le tuyau le suit. Amène-le sur le côté de la voiture, là où se trouve réellement la trappe de ce modèle. Fais le plein. Ramène-le et raccroche-le. Va trop loin et le tuyau t'arrache le pistolet des mains."
+    },
+    {
+     "h": "La consommation est physique",
+     "t": "Les réservoirs sont dimensionnés d'après le fPetrolTankVolume du modèle, donc une Blista, un Phantom et une Bati diffèrent tous. Distance × litres aux 100 km pour la classe, plus la consommation au ralenti, le tout multiplié par la charge moteur tirée du régime. Un moteur abîmé boit plus. Le carburant persiste par véhicule, indexé sur le modèle et la plaque, d'une session à l'autre."
+    },
+    {
+     "h": "Un tuyau noir avec sa physique",
+     "t": "Il court de la pompe à ta main, et pend, balance et se drape tout seul. GTA ne sait pas teinter une corde, alors la corde fait la physique et la couleur est peinte le long de ses propres sommets. Si les cordes refusent d'apparaître sur ton installation, il en dessine une à la place, et le dit dans le log."
+    },
+    {
+     "h": "Le dernier demi-litre",
+     "t": "Un moteur qui accroche et retombe sans arrêt. À sec il cale, et le démarreur tourne tant que tu insistes. Un réservoir percé fuit sur la route, moteur allumé ou non. Les véhicules électriques affichent CHARGE au lieu de FUEL."
+    },
+    {
+     "h": "Trouvée par objet, pas par coordonnée",
+     "t": "Les pompes sont repérées en demandant au jeu devant quel objet pompe tu te tiens, donc ça marche à toutes les stations — y compris celles ajoutées par des mods de map."
+    }
+   ],
+   "shots": [
+    "plein en cours au Xero de Davis Avenue",
+    "la jauge, plantée à droite de la minimap"
+   ],
+   "video": "Le plein"
+  },
+  "bare-minimum": {
+   "tag": "les besoins que le jeu a laissés de côté, sur une rangée de barres verticales",
+   "blurb": "Des besoins que le jeu n'a jamais donnés à Franklin, tenus sur l'horloge du jeu plutôt que le temps réel — une journée complète en jeu fait à peu près quarante-huit minutes, donc manger est quelque chose qu'on fait en jouant plutôt qu'une corvée.",
+   "points": [
+    {
+     "h": "Ralenti exprès",
+     "t": "Cinquante-deux heures de jeu entre le ventre plein et le ventre vide, sans bouger. Ralenti depuis vingt-huit, parce que moins d'une heure entre rassasié et affamé faisait de manger l'activité principale au lieu d'un truc fait en passant."
+    },
+    {
+     "h": "L'ini est le fichier que tu édites",
+     "t": "Il n'est jamais écrasé par une mise à jour. Le menu F7 y écrit, oui — mais seulement les lignes dont tu as changé la valeur, et seulement une fois que tu arrêtes d'appuyer. Tes commentaires, ton ordre et tout ce que tu as édité d'autre restent exactement en l'état."
+    },
+    {
+     "h": "Il connaît les autres",
+     "t": "Les drogues portées dans Posted Up de Hoodrich apparaissent dans la poche de ce mod, et tu peux en prendre une de là. Elles n'occupent jamais un emplacement de nourriture. Il ne fait rien du tout si ce mod-là n'est pas installé."
+    }
+   ],
+   "shots": [
+    "les besoins le long de la gauche de la minimap — santé, sommeil, nourriture, eau, énergie"
+   ]
+  },
+  "weapon-tweaks": {
+   "tag": "cinquante-huit choses que le jeu fait à une arme sans jamais te laisser y toucher",
+   "blurb": "À quelle vitesse elle tire, combien elle recule, ce qui en sort, comment il la tient, ce qui est vissé dessus, et s'il y a un point rouge sur ce que tu vises. Le tout sur un panneau qui applique un changement à l'instant où tu le fais.",
+   "points": [
+    {
+     "h": "Un script ne peut pas changer la cadence d'une arme",
+     "t": "La cadence de tir vit dans weapons.meta, un fichier d'asset. Chaque mod qui prétend la changer depuis un script fait autre chose et, en général, ne dit pas quoi. Donc celui-ci fait l'autre chose, et dit quoi."
+    },
+    {
+     "h": "Rien n'est injecté",
+     "t": "Une semi-automatique tire sur le front montant de la commande d'attaque. L'astuce évidente — désactiver la commande et la réinjecter via SET_CONTROL_VALUE_NEXT_FRAME — est une bagarre : l'injection vaut pour la frame suivante, la désactivation pour celle-ci, et ça marche sur une machine et bégaie sur une autre. À la place, tu tiens vraiment la gâchette enfoncée, et le mod retire la commande sur les frames entre deux tirs."
+    },
+    {
+     "h": "Ce que ça te donne",
+     "t": "Chaque pistolet, revolver et fusil de précision devient entièrement automatique à la cadence que tu fixes. N'importe quelle arme peut être ralentie — une carabine tenue à trois coups par seconde, c'est une discipline de rafale que le jeu ne te donne pas autrement. Il ne peut pas rendre une automatique plus rapide que son propre cycle."
+    },
+    {
+     "h": "Cinquante-huit réglages, un seul panneau",
+     "t": "Le recul et jusqu'où il grimpe, la dispersion, ce qui sort du canon, la prise avec laquelle il la tient, ce qui est vissé sur le rail, et s'il y a un point rouge sur ce que tu vises. F7 l'ouvre et un changement s'applique à l'instant où tu le fais — sans recharger, sans redémarrer."
+    }
+   ]
+  },
+  "vehicle-tweaks": {
+   "tag": "contact manuel, et des clignotants au volant",
+   "blurb": "Deux petits changements au comportement d'une voiture. Aucun des deux ne dit un mot pendant qu'il travaille, et aucun n'ajoute quoi que ce soit à l'écran.",
+   "points": [
+    {
+     "h": "Le moteur, c'est toi qui le manœuvres",
+     "t": "Maintiens la touche de sortie et le moteur s'arrête pendant que tu restes au siège. Tape-la et tu descends en laissant la voiture exactement comme elle est — en marche si elle tournait, éteinte si tu l'as coupée avant. Remonte et rien ne démarre avant que tu touches l'accélérateur, et là le démarreur tourne avant que le moteur accroche."
+    },
+    {
+     "h": "Laissée comme elle est",
+     "t": "En marche, radio allumée, phares allumés, et portière ouverte. La radio garde sa station, assez fort pour l'entendre de dehors. Les phares restent allumés. La portière reste béante jusqu'à ce que tu remontes, ou qu'une voiture qui passe la referme pour toi. Coupe le moteur d'abord et tout s'éteint avec — une voiture morte avec l'autoradio en marche, c'est une batterie à plat, pas une fonctionnalité."
+    },
+    {
+     "h": "Au-dessus du pas rapide, la touche est rendue",
+     "t": "Passé 2,5 m/s, la touche de sortie est rendue telle quelle au jeu, entière et intacte, donc le maintien-pour-sauter du vanilla marche exactement comme avant. Une pression qui t'éjecte à cent à l'heure, ce n'est pas ce qu'une pression devrait faire."
+    },
+    {
+     "h": "Les clignotants au volant",
+     "t": "Tiens le volant braqué une seconde et ce côté s'allume. Relâcher n'annule pas — c'est toute la conception plutôt qu'un détail, parce que c'est ce qui te laisse signaler à un feu rouge puis lâcher le volant. Seul un braquage maintenu de l'autre côté annule ; un petit coup pour aligner la voiture, non."
+    }
+   ],
+   "ctrl": [
+    "Couper le moteur, rester au siège",
+    "Descendre, la laisser comme elle est",
+    "Warnings — les deux côtés à la fois",
+    "Warnings, à la manette"
+   ]
+  },
+  "overspray": {
+   "tag": "de la bombe sur n'importe quelle surface de la ville",
+   "blurb": "Maintiens la gâchette avec une bombe en main et ce que tu vises prend la peinture. Murs, rideaux de fer, bordures, la route, le flanc d'une benne, un plafond — tout ce qui est solide. La peinture reste où tu l'as mise et elle est encore là quand tu reviens.",
+   "points": [
+    {
+     "h": "Treize couleurs et trois caps",
+     "t": "Chrome et or parmi elles, et des caps fin, standard et fat pour la bombe — un fat cap pose une large bande douce, un fin trace un trait."
+    },
+    {
+     "h": "Ça reste",
+     "t": "Une pièce posée sur un mur de Strawberry est sur ce mur la prochaine fois que tu passes devant."
+    },
+    {
+     "h": "Une DLL, les deux éditions",
+     "t": "Legacy et Enhanced depuis le même build. Exige ScriptHookVDotNet 3.9.0 ou plus récent — une version plus ancienne refuse de le charger, et ça ressemble à rien du tout."
+    }
+   ],
+   "shots": [
+    "un tag qui monte, un passage de bombe à la fois"
+   ],
+   "video": "Un mur à la bombe"
+  },
+  "franklin-rp": {
+   "tag": "un panneau d'emotes avec un type planté à côté qui fait l'emote",
+   "blurb": "Des animations, avec recherche et favoris — et un ped doublure à côté du panneau qui joue la ligne où se trouve le curseur.",
+   "points": [
+    {
+     "h": "L'aperçu est vraiment planté là",
+     "t": "Un script n'a aucun moyen de rendre un modèle en image, alors c'est un vrai ped sans collision que rien dans le monde ne peut viser. Contre un mur ou dans un intérieur étroit, il rentre dedans, parce qu'il n'a nulle part ailleurs où être."
+    },
+    {
+     "h": "Sprinter termine une boucle",
+     "t": "Donc on sort d'une emote en courant plutôt qu'en l'arrêtant."
+    },
+    {
+     "h": "Il reprend les raccourcis de GTA",
+     "t": "F1, c'est le replay de l'éditeur Rockstar. Le mod supprime les raccourcis du replay et l'indication à l'écran, avec une option plus radicale qui coupe l'enregistreur tout net pour ceux qui ne s'en servent jamais."
+    },
+    {
+     "h": "Stop est sur le pavé numérique",
+     "t": "Parce que chaque touche F de cette installation appartient déjà à un autre mod."
+    }
+   ]
+  },
+  "streetgolf": {
+   "tag": "un practice n'importe où dans Los Santos",
+   "blurb": "Tu restes où tu es et tu envoies balle après balle dans la circulation. Pas de trou, pas de parcours, pas de marche derrière la balle.",
+   "points": [
+    {
+     "h": "Bâti sur le mini-jeu de golf du jeu",
+     "t": "Les vraies animations de swing, les quatre vrais props de clubs, prop_golf_ball propulsée par la physique du jeu, et le jeu de sons et les particules de golf du jeu. Ça ressemble et ça sonne comme le vrai parce que c'est le vrai."
+    },
+    {
+     "h": "Deux fichiers",
+     "t": "Un .cs et un .ini dans scripts/. ScriptHookVDotNet compile la source au lancement du jeu, donc Insert le recharge sans redémarrer."
+    }
+   ],
+   "video": "Un drive dans la circulation"
+  }
+ }
+}

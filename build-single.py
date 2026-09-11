@@ -19,7 +19,7 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCRIPTS = ["matrix.js", "effects.js", "mods.js", "huds.js", "intro.js", "app.js"]
+SCRIPTS = ["matrix.js", "effects.js", "mods.js", "huds.js", "intro.js", "i18n/en.js", "i18n.js", "app.js"]
 
 
 def read(name):

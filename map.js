@@ -45,6 +45,7 @@
   if (!M || !svg) return;
 
   var $ = function (id) { return document.getElementById(id); };
+  function T(k, v) { return window.I18N ? window.I18N.t(k, v) : k; }
   function num(n) { return n.toLocaleString("en-GB"); }
 
   // ── the map itself ──────────────────────────────────────────────────────
@@ -229,14 +230,15 @@
 
   function ago(at) {
     var m = Math.round((Date.now() - at) / 60000);
-    if (m < 2) return "just now";
-    if (m < 60) return m + " min ago";
+    if (m < 2) return T("time.justnow");
+    if (m < 60) return T("time.min", { n: m });
     var h = Math.round(m / 60);
-    if (h < 48) return h + (h === 1 ? " hour" : " hours") + " ago";
-    return Math.round(h / 24) + " days ago";
+    if (h < 48) return h === 1 ? T("time.hour") : T("time.hours", { n: h });
+    return T("time.days", { n: Math.round(h / 24) });
   }
 
   // ── drawing what came back ──────────────────────────────────────────────
+  var lastRows = null;
   var pins = {};     // cc -> <g>
   var rowsEl = {};   // cc -> tally row
   var onCc = null;
@@ -249,6 +251,7 @@
   }
 
   function render(rows) {
+    lastRows = rows;
     var hits = rows.filter(function (r) { return r[1] > 0 && M.pins[r[0]]; });
     hits.sort(function (a, b) { return b[1] - a[1]; });
 
@@ -279,7 +282,7 @@
       lbl.textContent = cc + " · " + n;
       var hit = el("circle", { "class": "hit", cx: p[0], cy: p[1], r: Math.max(9, rad + 4) }, g);
       hit.addEventListener("mouseenter", function () {
-        tip.innerHTML = "<b>" + n + "</b> " + (n === 1 ? "visit" : "visits") +
+        tip.innerHTML = T("map.tip", { n: "<b>" + n + "</b>" }) +
                         " <span>&#183;</span> " + p[2].replace(/</g, "&lt;") +
                         " <span>&#183; " + Math.round(n / sum * 100) + "%</span>";
         tip.hidden = false;
@@ -298,13 +301,13 @@
       var t = hits[0];
       $("ro-top").textContent = t[0];
       $("ro-top-s").textContent = M.pins[t[0]][2] + " · " + Math.round(t[1] / sum * 100) + "%";
-      $("ro-visits-s").textContent = "placed on the map";
-      $("ro-countries-s").textContent = "of " + Object.keys(M.pins).length + " on it";
+      $("ro-visits-s").textContent = T("map.placed");
+      $("ro-countries-s").textContent = T("map.of", { n: Object.keys(M.pins).length });
     }
 
     if (!hits.length) {
-      tally.innerHTML = '<div class="tally-empty">nobody yet</div>';
-      note.textContent = "no countries recorded yet";
+      tally.innerHTML = '<div class="tally-empty">' + T("map.nobody") + '</div>';
+      note.textContent = T("map.none");
       return;
     }
 
@@ -333,14 +336,13 @@
       else bar.style.width = w;
     });
 
-    note.textContent = sum + (sum === 1 ? " visit" : " visits") + " from " +
-      hits.length + (hits.length === 1 ? " country" : " countries");
+    note.textContent = T("map.note", { visits: sum, countries: hits.length });
   }
 
   var have = cached();
   if (have) {
     render(have);
-    note.textContent += "  \u00b7  cached";
+    note.textContent += "  \u00b7  " + T("map.cached");
   } else {
     // Whatever can be shown now is shown now: the nightly snapshot if it is
     // there, else the last picture this browser saw, whichever is newer.
@@ -371,7 +373,7 @@
       take(o);
       if (seenAt) {
         render(rows());
-        note.textContent = "last read " + ago(seenAt) + "  \u00b7  scanning\u2026";
+        note.textContent = T("map.lastread", { ago: ago(seenAt) });
       }
 
       // most likely first, then anything the snapshot knew, then the rest
@@ -384,7 +386,7 @@
       readAll(order, function (d, n, pair) {
         if (pair[1] !== null) live[pair[0]] = pair[1];   // a failed read changes nothing
         if (pair[1] > 0 || known[pair[0]]) repaint();
-        if (!seenAt) note.textContent = "scanning " + d + "/" + n + "\u2026";
+        if (!seenAt) note.textContent = T("map.scanning_n", { d: d, n: n });
       }).then(function () {
         clearTimeout(pending);
         pending = null;
@@ -393,12 +395,12 @@
         render(final);
         if (!answered) {
           note.textContent = seenAt
-            ? "counter unreachable  \u00b7  showing last read " + ago(seenAt)
-            : "counter unreachable";
+            ? T("map.unreachable") + "  \u00b7  " + T("map.showing", { ago: ago(seenAt) })
+            : T("map.unreachable");
           return;
         }
         if (answered === order.length) keep(final);   // only a complete scan is worth remembering
-        else note.textContent += "  \u00b7  " + (order.length - answered) + " unanswered";
+        else note.textContent += "  \u00b7  " + T("map.unanswered", { n: order.length - answered });
       });
     });
   }
@@ -406,4 +408,9 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") location.href = "./";
   });
+
+  if (window.I18N) {
+    window.I18N.mount($("lang"));
+    window.addEventListener("i18n", function () { if (lastRows) render(lastRows); });
+  }
 })();

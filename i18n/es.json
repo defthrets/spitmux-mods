@@ -1,0 +1,362 @@
+{
+ "ui": {
+  "titlebar.conn": "conex",
+  "titlebar.encrypted": "cifrado",
+  "head.subrule": "archivo de mods · grand theft auto v",
+  "head.tagline": "sucumbirás al veneno que has probado ...",
+  "index.banner": "mods",
+  "index.title": "ÍNDICE.MODS",
+  "index.filter": "filtrar — policía, hud, gasolina…",
+  "index.filter_aria": "Filtrar mods",
+  "index.nodes": "{n} nodos",
+  "index.nomatch": "» sin coincidencias",
+  "index.public": "público",
+  "index.local": "local",
+  "index.loc": "loc",
+  "spec.title": "BUILD//ESPEC",
+  "op.operator": "operador",
+  "op.alias": "alias",
+  "op.node": "nodo",
+  "op.issued": "emitido",
+  "op.expires": "expira",
+  "op.clearance": "acceso",
+  "op.never": "NUNCA",
+  "op.root": "ROOT",
+  "status.online": "en línea",
+  "status.mods": "mods:",
+  "status.visitors": "visitantes:",
+  "status.visitors_title": "de dónde vinieron",
+  "status.src": "src:",
+  "status.lines": "líneas",
+  "status.keys": "↑↓ elegir · / filtrar · esc limpiar",
+  "crumb.archive": "archivo",
+  "chip.loc": "loc",
+  "chip.files": "archivos",
+  "chip.menu": "menú",
+  "chip.download": "descargar",
+  "chip.downloads": "descargas",
+  "chip.count_title": "contadas en todas las versiones, no solo en esta",
+  "chip.source": "código ↗",
+  "chip.private": "código · privado",
+  "meta.updated": "actualizado {when}",
+  "meta.grabbed": "última descarga {when}",
+  "meta.from": "de",
+  "time.today": "hoy",
+  "time.yesterday": "ayer",
+  "time.days": "hace {n} días",
+  "time.weeks": "hace {n} semanas",
+  "time.months": "hace {n} meses",
+  "time.year": "hace 1 año",
+  "time.years": "hace {n} años",
+  "time.justnow": "recién",
+  "time.min": "hace {n} min",
+  "time.hour": "hace 1 hora",
+  "time.hours": "hace {n} horas",
+  "video.play": "Reproducir",
+  "video.footage": "metraje",
+  "video.watch": "ver en youtube ↗",
+  "video.blocked": "no se puede reproducir aquí — se abre en youtube",
+  "sec.controls": "controles",
+  "sec.install": "instalación",
+  "install.requires": "; requiere ScriptHookV + ScriptHookVDotNet 3",
+  "install.onebuild": "; una sola build, GTA V Legacy y Enhanced",
+  "foot.none": "sin reemplazo de assets · sin edición de RPF · sin gameconfig",
+  "foot.unpublished": "aún sin publicar",
+  "spec.archive": "BUILD // ARCHIVO",
+  "spec.mod": "MOD",
+  "spec.class": "CLASE",
+  "spec.status": "ESTADO",
+  "spec.public": "PÚBLICO",
+  "spec.localbuild": "BUILD LOCAL",
+  "spec.language": "LENGUAJE",
+  "spec.runtime": "RUNTIME",
+  "spec.editions": "EDICIONES",
+  "spec.assets": "ASSETS",
+  "spec.none": "NINGUNO",
+  "spec.menu": "MENÚ",
+  "spec.source": "CÓDIGO",
+  "spec.files": "ARCHIVOS",
+  "spec.size": "tamaño en todo el archivo",
+  "spec.note": "{lines} líneas de C# en {mods} mods y {files} archivos. Contadas desde src, sin contar build, tools ni release.",
+  "lang.label": "idioma",
+  "map.title": "De dónde",
+  "map.tab": "de dónde",
+  "map.sub": "mapa de visitas · un pin por país · no se guardan direcciones",
+  "map.visits": "visitas",
+  "map.countries": "países",
+  "map.top": "top",
+  "map.placed": "ubicados en el mapa",
+  "map.of": "de {n} en él",
+  "map.scope": "alcance",
+  "map.world": "mundo",
+  "map.legend": "un pin por país · el tamaño sigue la cuenta",
+  "map.bycountry": "por país",
+  "map.foot": "contadas una vez por dirección · clic en una fila para ubicar su pin",
+  "map.back": "← volver al archivo",
+  "map.esc": "esc · volver",
+  "map.scanning": "escaneando…",
+  "map.scanning_n": "escaneando {d}/{n}…",
+  "map.nobody": "nadie todavía",
+  "map.none": "todavía no hay países registrados",
+  "map.note": "{visits} visitas desde {countries} países",
+  "map.cached": "en caché",
+  "map.lastread": "última lectura {ago} · escaneando…",
+  "map.unreachable": "contador inalcanzable",
+  "map.showing": "mostrando la última lectura {ago}",
+  "map.unanswered": "{n} sin respuesta",
+  "map.tip": "{n} visitas",
+  "map.status_countries": "países:",
+  "map.status_visits": "visitas:",
+  "map.reading": "leyendo…"
+ },
+ "mods": {
+  "hoodrich": {
+   "tag": "tráfico de drogas y vida de pandilla, todo desde un teléfono que reemplaza al del juego",
+   "blurb": "Andas con the Families. Le compras mercancía a un conecte, la llevas a casa y la cortas, te plantas en una esquina y dejas que la venta venga sola — y tratas de irte antes de que la policía, o la gente de alguien más, decida que ya llevas ahí demasiado tiempo.",
+   "points": [
+    {
+     "h": "Todo corre desde el teléfono",
+     "t": "Presiona el botón del teléfono y el aparato aparece a la derecha. Venta, Contactos, Pandillas, Inventario y Redes en la pantalla de inicio; dentro de cada uno, una lista con el ícono, el nombre, qué hace y su valor en una sola línea. Las flechas mueven, Enter abre, Retroceso vuelve y lo guarda. La rueda de armas queda intacta."
+    },
+    {
+     "h": "Cero dependencias externas",
+     "t": "Una DLL, algo de JSON, ScriptHookVDotNet. Sin Lua, sin NativeUI, sin framework de configuración, sin instalador. El parser de INI y el parser de JSON están hechos a mano y viven en src/Hoodrich/Core."
+    },
+    {
+     "h": "El HUD se aparta mientras está abierto",
+     "t": "El aparato se para donde viven el marcador de Posted Up y la franja de la licencia, así que esos se hacen a un lado mientras esté abierto."
+    },
+    {
+     "h": "105 íconos dibujados desde cero",
+     "t": "Diez archivos de datos y un set de íconos construido en vez de prestado, porque el juego no tiene sprite para casi nada de lo que este mod necesita decir."
+    }
+   ],
+   "shots": [
+    "la pantalla de inicio — once apps, y el banco debajo",
+    "Gerald, y las líneas con las que puedes responder",
+    "parado en una esquina con algo que vender",
+    "la mesa de Stretch, un arma elegida"
+   ],
+   "video": "Plantado en una esquina",
+   "ctrl": [
+    "Abrir y cerrar el teléfono",
+    "Moverse entre apps y filas",
+    "Abrir",
+    "Volver, y guardarlo"
+   ]
+  },
+  "five0patrol": {
+   "tag": "la barra de calor que se llena antes de la primera estrella de búsqueda",
+   "blurb": "La policía de GTA V tiene dos estados — nada en absoluto, y un nivel de búsqueda — y el paso entre ambos es instantáneo. No existe una versión de que te noten. Five0 Patrol es el punto medio que faltaba.",
+   "points": [
+    {
+     "h": "Calor, luego estrellas",
+     "t": "El calor sube cuando alguien te ve hacer algo menor y baja cuando nadie te ve. Las estrellas siguen siendo las del juego y siguen significando lo de siempre; esto es lo que pasa en el camino."
+    },
+    {
+     "h": "La barra se llena y alguien se acerca",
+     "t": "Un oficial te pregunta al respecto, te revisa, y te deja seguir o no. Admitirlo, negarlo y callarte tienen cada uno un camino para salir caminando, y los tres tienen un camino hacia una estrella. Lo que lo decide es lo que realmente llevas encima y si coincide con lo que le dijiste."
+    },
+    {
+     "h": "Una estrella es lo que pasa cuando eso sale mal",
+     "t": "Con una estrella la policía lleva pistolas eléctricas en vez de armas de fuego, y puedes levantar las manos y entregarte en lugar de correr."
+    },
+    {
+     "h": "Y hay policías afuera para hacerlo",
+     "t": "Patrullas a pie hacen rondas por las aceras, algunas con perro. Los autos marcados trabajan las calles y los callejones con un reflector al caer la noche."
+    },
+    {
+     "h": "Se hace a un lado",
+     "t": "Si LSPDFR está instalado, se retira por defecto — ese mod es dueño del sistema de búsqueda, y dos mods dibujando sobre las mismas estrellas es muy difícil de diagnosticar desde dentro del juego."
+    }
+   ]
+  },
+  "bloodymess": {
+   "tag": "sangre que se queda en el mundo, y vuelve a casa en tus zapatos",
+   "blurb": "Sale más sangre de la gente, la sangre se queda en el mundo, y tú la arrastras fuera de los charcos. Una .dll, una .ini, un archivo de datos — sin reemplazo de assets, sin edición de RPF, sin gameconfig.",
+   "points": [
+    {
+     "h": "Dispararle a la gente ensucia más",
+     "t": "Cada impacto estampa decals de herida extra, dispara las propias partículas de sangre del juego en la entrada y la salida, y lanza un cono de salpicadura por el otro lado que cae sobre lo que realmente haya detrás. Las escopetas lanzan más que las pistolas. Mata a alguien a un brazo de distancia y te vuelve encima."
+    },
+    {
+     "h": "Los cuerpos se desangran",
+     "t": "Un charco se extiende debajo de cualquiera que cae, creciendo durante más o menos medio minuto — húmedo sobre el asfalto, absorbido en el pasto. Alguien herido y todavía caminando deja un rastro espaciado por la distancia recorrida, así que quedarse quieto no deja nada y nadie sangra para siempre."
+    },
+    {
+     "h": "Y tú la paseas",
+     "t": "Pisa sangre fresca y se va contigo: un rastro de huellas que se desvanece, izquierda y derecha, apuntando hacia donde caminas. Funciona con los NPC que huyen de una escena, y con las llantas que pasan por un charco."
+    },
+    {
+     "h": "Un solo registro, un tope duro",
+     "t": "El juego tiene un pool fijo de decals y los decals de script compiten por él con sus propios agujeros de bala. Pasarse no crashea ni deja log — los decals simplemente dejan de aparecer. Así que todo lo que esto dibuja pasa por un presupuesto con un tope, un límite de ritmo y un límite de distancia, y desaloja sus propios decals más viejos en vez de dejar que el motor elija. Ese presupuesto a propósito no escala con el nivel de gore: subir el gore no puede apagar la seguridad."
+    },
+    {
+     "h": "Cada parte se apaga por separado",
+     "t": "Salpicaduras, charcos, rastros y huellas son cuatro ajustes separados, desde el ini o el menú F10. El sangrado corre en una ventana que expira y se renueva al recibir daño, así que nadie sangra por un rasguño de una vez. Cada ajuste del motor que el mod toca se devuelve al cerrar y al recargar el script."
+    }
+   ]
+  },
+  "fumes": {
+   "tag": "un tanque de verdad, y una boquilla que tú mismo llevas hasta el auto",
+   "blurb": "Cada vehículo vanilla y de online lleva un tanque de verdad que se vacía mientras manejas y sigue vacío cuando vuelves mañana. Cargar gasolina es el punto del mod, y no es un menú.",
+   "points": [
+    {
+     "h": "Bájate y camina hasta la bomba",
+     "t": "Saca la boquilla de la bomba — queda en la mano de Franklin y la manguera va con él. Llévala al costado del auto, hasta donde realmente esté la entrada del tanque de ese modelo. Llena. Regrésala y cuélgala. Aléjate demasiado y la manguera te arranca la boquilla de las manos."
+    },
+    {
+     "h": "El consumo es físico",
+     "t": "Los tanques se dimensionan según el fPetrolTankVolume del propio modelo, así que un Blista, un Phantom y una Bati son distintos. Distancia × litros por 100 km de la clase, más el consumo en ralentí, por la carga del motor tomada de las RPM. Un motor dañado bebe más. La gasolina persiste por vehículo, indexada por modelo y placa, entre sesiones."
+    },
+    {
+     "h": "Una manguera negra con físicas",
+     "t": "Va de la bomba a tu mano y se comba, se mece y cuelga por su cuenta. GTA no puede teñir una cuerda, así que la cuerda hace la física y el color se pinta a lo largo de sus propios vértices. Si las cuerdas no aparecen en tu instalación, dibuja una en su lugar, y lo dice en el log."
+    },
+    {
+     "h": "El último medio litro",
+     "t": "Un motor que prende y se apaga una y otra vez. En vacío se ahoga, y el arranque gira mientras sigas insistiendo. Un tanque baleado gotea sobre la calle esté el motor encendido o no. Los vehículos eléctricos marcan CARGA en vez de COMBUSTIBLE."
+    },
+    {
+     "h": "Encontradas por objeto, no por coordenada",
+     "t": "Las bombas se ubican preguntándole al juego junto a qué objeto de bomba estás parado, así que funciona en todas las estaciones — incluidas las que agregan los mods de mapa."
+    }
+   ],
+   "shots": [
+    "a media carga en la Xero de Davis Avenue",
+    "el medidor, a la derecha del minimapa"
+   ],
+   "video": "Cargando gasolina"
+  },
+  "bare-minimum": {
+   "tag": "las necesidades que el juego dejó fuera, en una fila de barras verticales",
+   "blurb": "Necesidades que el juego nunca le dio a Franklin, llevadas en tiempo del reloj del juego y no en tiempo real — un día completo de juego son unos cuarenta y ocho minutos de partida, así que comer es algo que haces mientras sigues jugando y no un mandado.",
+   "points": [
+    {
+     "h": "Bajado a propósito",
+     "t": "Cincuenta y dos horas de juego de un estómago lleno a uno vacío, sin moverte. Bajado desde veintiocho, porque menos de una hora de lleno a muerto de hambre hacía de comer la cosa que estabas haciendo en vez de la cosa que hacías de paso."
+    },
+    {
+     "h": "El ini es el archivo que editas",
+     "t": "Ninguna actualización lo sobrescribe. El menú F7 sí escribe en él — pero solo las líneas cuyos valores cambiaste, y solo cuando dejas de presionar. Tus comentarios, tu orden y cualquier otra cosa que hayas editado se quedan exactamente como están."
+    },
+    {
+     "h": "Sabe de los otros",
+     "t": "Las drogas que llevas en Posted Up de Hoodrich aparecen en el bolsillo de este mod, y puedes tomar una desde ahí. Nunca ocupan un espacio de comida. No hace absolutamente nada si ese mod no está instalado."
+    }
+   ],
+   "shots": [
+    "las necesidades a la izquierda del minimapa — salud, sueño, comida, agua, energía"
+   ]
+  },
+  "weapon-tweaks": {
+   "tag": "cincuenta y ocho cosas que el juego le hace a un arma y nunca te deja cambiar",
+   "blurb": "Qué tan rápido dispara, cuánto patea, qué sale de ella, cómo la sostiene, qué lleva atornillado, y si hay un punto rojo sobre lo que sea que estés apuntando. Todo en un panel que aplica el cambio en el instante en que lo haces.",
+   "points": [
+    {
+     "h": "Un script no puede cambiar la cadencia de un arma",
+     "t": "La cadencia de tiro vive en weapons.meta, un archivo de assets. Todo mod que dice cambiarla desde un script está haciendo otra cosa y por lo general no dice cuál. Así que este hace esa otra cosa, y dice cuál."
+    },
+    {
+     "h": "No se inyecta nada",
+     "t": "Una semiautomática dispara en el flanco de subida del control de ataque. El truco obvio — desactivar el control y devolverlo por SET_CONTROL_VALUE_NEXT_FRAME — es una pelea: la inyección es para el siguiente frame, la desactivación es para este, y funciona en una máquina y tartamudea en otra. En cambio, de verdad tienes el gatillo apretado, y el mod te quita el control en los frames entre disparos."
+    },
+    {
+     "h": "Lo que eso te da",
+     "t": "Toda pistola, revólver y rifle de tirador se vuelve totalmente automático a la cadencia que pongas. Cualquier arma se puede frenar — una carabina limitada a tres tiros por segundo es una disciplina de ráfaga que el juego no te da de otra forma. No puede hacer una automática más rápida que su propio ciclo."
+    },
+    {
+     "h": "Cincuenta y ocho ajustes, un panel",
+     "t": "El retroceso y cuánto sube, la dispersión, qué sale por la boca del cañón, el agarre con que la sostiene, qué lleva atornillado al riel, y si hay un punto rojo sobre lo que sea que estés apuntando. F7 lo abre y un cambio se aplica en el instante en que lo haces — sin recargar, sin reiniciar."
+    }
+   ]
+  },
+  "vehicle-tweaks": {
+   "tag": "encendido manual, y direccionales que activas con el volante",
+   "blurb": "Dos cambios pequeños en cómo se comporta un auto. Ninguno dice una palabra mientras trabaja, y ninguno agrega nada a la pantalla.",
+   "points": [
+    {
+     "h": "El motor es algo que tú operas",
+     "t": "Mantén la tecla de salir y el motor se apaga mientras sigues en el asiento. Tócala y te bajas con el auto exactamente como está — encendido si estaba encendido, muerto si lo apagaste antes. Vuelve a subir y nada arranca hasta que toques el acelerador, y entonces el arranque gira antes de que el motor prenda."
+    },
+    {
+     "h": "Se queda como está",
+     "t": "Encendido, sonando, con luces, y con la puerta abierta. La radio conserva su estación, lo bastante fuerte para oírse desde afuera. Los faros siguen prendidos. La puerta queda abierta hasta que vuelves a subir, o hasta que un auto que pasa te la cierra. Apaga el motor primero y todo se va con él — un auto muerto con el estéreo puesto es una batería descargada, no una función."
+    },
+    {
+     "h": "Más rápido que un paso ligero, la tecla se devuelve",
+     "t": "Pasados los 2.5 m/s la tecla de salir se le entrega directo al juego, entera e intacta, así que el mantener-para-tirarse de vanilla funciona exactamente como siempre. Un toque que te expulsa a sesenta no es lo que un toque debería hacer."
+    },
+    {
+     "h": "Direccionales en el volante",
+     "t": "Mantén el volante girado un segundo y ese lado se enciende. Soltarlo no la cancela — eso es todo el diseño y no un detalle, porque es lo que te permite señalizar en un semáforo en rojo y luego soltar el volante. Solo un giro sostenido hacia el otro lado la cancela; un toque para enderezar el auto no."
+    }
+   ],
+   "ctrl": [
+    "Apagar el motor, seguir en el asiento",
+    "Bajarse, dejarlo como está",
+    "Intermitentes — ambos lados a la vez",
+    "Intermitentes, con control"
+   ]
+  },
+  "overspray": {
+   "tag": "pintura en aerosol sobre cualquier superficie de la ciudad",
+   "blurb": "Mantén el gatillo con una lata en la mano y lo que estés apuntando recibe pintura. Paredes, cortinas metálicas, bordes de acera, la calle, el costado de un contenedor, un techo — cualquier cosa sólida. La pintura se queda donde la pusiste y sigue ahí cuando vuelves.",
+   "points": [
+    {
+     "h": "Trece colores y tres boquillas",
+     "t": "Cromo y dorado entre ellos, y boquillas fina, de fábrica y ancha para la lata — una ancha deja una banda amplia y suave, una fina traza una línea."
+    },
+    {
+     "h": "Persiste",
+     "t": "Una pieza que dejas en una pared de Strawberry sigue en esa pared la próxima vez que pasas manejando."
+    },
+    {
+     "h": "Una DLL, ambas ediciones",
+     "t": "Legacy y Enhanced desde la misma build. Necesita ScriptHookVDotNet 3.9.0 o más nuevo — uno más viejo se niega a cargarlo, y eso se ve como absolutamente nada."
+    }
+   ],
+   "shots": [
+    "un tag subiendo, una pasada de lata a la vez"
+   ],
+   "video": "Pintando una pared"
+  },
+  "franklin-rp": {
+   "tag": "un panel de emotes con un tipo parado al lado haciendo el emote",
+   "blurb": "Animaciones, con búsqueda y favoritos — y un ped de relleno junto al panel reproduciendo la fila en la que esté el cursor.",
+   "points": [
+    {
+     "h": "La vista previa de verdad está parada ahí",
+     "t": "No hay forma de que un script renderice un modelo en una imagen, así que es un ped real sin colisión al que nada en el mundo puede apuntar. Contra una pared o en un interior estrecho se mete dentro, porque no hay otro lugar donde pueda estar."
+    },
+    {
+     "h": "Correr termina un loop",
+     "t": "Así que sales corriendo de un emote en vez de detenerlo."
+    },
+    {
+     "h": "Recupera las teclas rápidas del propio GTA",
+     "t": "F1 es la repetición de acción del Rockstar Editor. El mod suprime las teclas de repetición y el aviso en pantalla, con una opción más dura que detiene la grabadora por completo para quien nunca la usa."
+    },
+    {
+     "h": "Detener está en el teclado numérico",
+     "t": "Porque cada tecla F de esta instalación ya pertenece a otro mod."
+    }
+   ]
+  },
+  "streetgolf": {
+   "tag": "un campo de práctica en cualquier parte de Los Santos",
+   "blurb": "Te paras donde estés y pegas bola tras bola hacia el tráfico. Sin hoyo, sin campo, sin caminar detrás de la bola.",
+   "points": [
+    {
+     "h": "Construido sobre el propio minijuego de golf",
+     "t": "Las animaciones reales del swing, los cuatro palos reales como props, prop_golf_ball volando con la física del juego, y el set de sonidos y partículas de golf del juego. Se ve y suena como lo real porque lo es."
+    },
+    {
+     "h": "Dos archivos",
+     "t": "Un .cs y un .ini en scripts/. ScriptHookVDotNet compila el código al arrancar el juego, así que Insert lo recarga sin reiniciar."
+    }
+   ],
+   "video": "Tirando al tráfico desde el tee"
+  }
+ }
+}

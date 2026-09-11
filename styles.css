@@ -1858,6 +1858,72 @@ img.px {
 .chip.dl-count { color: var(--p-half); cursor: default; }
 .chip.dl-count b { color: var(--p-half); font-weight: 400; }
 
+/* ─── language: a flag in the title bar ───────────────────────────────
+   Flags are knocked into the amber like everything else; the one you are
+   on, and the one under the pointer, show in colour. */
+.lang { position: relative; display: inline-flex; align-items: center; }
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--p-half);
+  font: inherit;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.lang-btn:hover, .lang.open .lang-btn { border-color: var(--p-line); color: var(--p-glow); }
+.lang .flag {
+  width: 18px; height: 12px;
+  object-fit: cover;
+  border: 1px solid var(--p-edge);
+  border-radius: 2px;
+  filter: saturate(0.35) sepia(0.45) brightness(0.85);
+}
+.lang-btn:hover .flag, .lang-opt:hover .flag, .lang-opt.on .flag { filter: none; }
+.lang-code { text-transform: uppercase; font-size: 11px; letter-spacing: 0.14em; }
+.lang-caret { font-size: 9px; color: var(--p-dim); }
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  min-width: 172px;
+  padding: 6px;
+  border: 1px solid #1f1408;
+  border-radius: 8px;
+  background: #0a0603;
+  box-shadow: inset 0 0 0 1px rgb(var(--rgb-signal) / 0.10), 0 8px 24px rgba(0, 0, 0, 0.7);
+  display: grid;
+  gap: 2px;
+}
+.lang-menu[hidden] { display: none; }
+.lang-opt {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: var(--p-body);
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-shadow: none;
+  cursor: pointer;
+}
+.lang-opt:hover { background: rgb(var(--rgb-signal) / 0.08); color: var(--p-pale); }
+.lang-opt.on { color: var(--p-core); }
+.lang-opt .lang-code { color: var(--p-dim); }
+.lang-opt .flag { width: 20px; height: 13px; }
+
 /* the visitor count opens the map */
 a.item.visitors { text-decoration: none; cursor: pointer; }
 a.item.visitors:hover { color: var(--p-glow); }
