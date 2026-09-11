@@ -11,12 +11,26 @@
 // archive page and turned into a single +1 against a two-letter code; what is
 // stored is "N from GB", never who.
 //
+// The counter cannot list its keys, so the live picture takes 174 requests,
+// and the service speaks HTTP/1.1 so a browser runs six of them at a time --
+// seven seconds or so however it is asked. Nobody waits on that: the page
+// paints the nightly snapshot (geo.json) or the last picture this browser
+// saw straight away, then scans behind it, most likely countries first, and
+// redraws as answers land.
+//
 
 (function () {
   var API = "https://counterapi.com/api/spitmux/geo/";
-  var CACHE = "geo:v1";
+  var CACHE = "geo:v1";                // sessionStorage: fresh enough, no rescan
+  var LAST = "geo:last";               // localStorage: the last picture, painted at once
   var CACHE_MS = 10 * 60 * 1000;
-  var LANES = 8;                       // parallel reads; it is a free service
+  var LANES = 6;                       // the browser allows six to a host; more only queue
+  // Asked first, so the pins that exist tend to land in the first second.
+  var LIKELY = ["AU", "US", "GB", "DE", "CA", "NZ", "FR", "NL", "BR", "IN", "JP",
+                "SE", "PL", "ES", "IT", "MX", "RU", "TR", "ID", "PH", "AR", "KR",
+                "NO", "DK", "FI", "BE", "CH", "AT", "IE", "PT", "CZ", "UA", "RO",
+                "ZA", "EG", "NG", "SA", "AE", "IL", "TH", "VN", "MY", "SG", "CL",
+                "CO", "PE", "HU", "GR", "TW", "PK"];
   var SWEEP_S = 9;                     // the beam's lap, and the pulse period
 
   var M = window.MAP;
@@ -158,8 +172,8 @@
   function readOne(cc) {
     return fetch(API + cc + "?readonly=true")
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { return [cc, (d && +d.value) || 0]; })
-      .catch(function () { return [cc, 0]; });
+      .then(function (d) { return [cc, (d && d.value != null) ? +d.value : null]; })
+      .catch(function () { return [cc, null]; });      // unknown, never zero
   }
 
   function readAll(codes, onProgress) {
@@ -172,7 +186,7 @@
       var cc = codes[i++];
       return readOne(cc).then(function (pair) {
         out.push(pair);
-        onProgress(++done, codes.length);
+        onProgress(++done, codes.length, pair);
         return lane();
       });
     }
@@ -192,15 +206,41 @@
   }
 
   function keep(rows) {
+    rows = rows.filter(function (r) { return r[1] > 0; });   // the zeros are implied
+    var packed = JSON.stringify({ at: Date.now(), rows: rows });
+    try { sessionStorage.setItem(CACHE, packed); } catch (e) { /* private mode */ }
+    try { localStorage.setItem(LAST, packed); } catch (e) { /* private mode */ }
+  }
+
+  function last() {
     try {
-      sessionStorage.setItem(CACHE, JSON.stringify({ at: Date.now(), rows: rows }));
-    } catch (e) { /* private mode */ }
+      var o = JSON.parse(localStorage.getItem(LAST) || "null");
+      return (o && o.rows) ? o : null;
+    } catch (e) { return null; }
+  }
+
+  // the nightly snapshot next to the page; absent until the first night
+  function snapshot() {
+    return fetch("geo.json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (o) { return (o && o.rows) ? o : null; })
+      .catch(function () { return null; });
+  }
+
+  function ago(at) {
+    var m = Math.round((Date.now() - at) / 60000);
+    if (m < 2) return "just now";
+    if (m < 60) return m + " min ago";
+    var h = Math.round(m / 60);
+    if (h < 48) return h + (h === 1 ? " hour" : " hours") + " ago";
+    return Math.round(h / 24) + " days ago";
   }
 
   // ── drawing what came back ──────────────────────────────────────────────
   var pins = {};     // cc -> <g>
   var rowsEl = {};   // cc -> tally row
   var onCc = null;
+  var painted = false;
 
   function focus(cc) {
     if (onCc && pins[onCc]) { pins[onCc].classList.remove("on"); rowsEl[onCc].classList.remove("on"); }
@@ -218,6 +258,8 @@
     pinLayer.textContent = "";
     pins = {};
     rowsEl = {};
+    var first = !painted;
+    painted = true;
 
     hits.forEach(function (r, idx) {
       var cc = r[0], n = r[1];
@@ -225,7 +267,7 @@
       // Area with the count, not radius -- a country with ten visits should
       // look ten times as much, and radius-scaling would make it a hundred.
       var rad = 2.4 + 7 * Math.sqrt(n / max);
-      var g = el("g", { "class": "pin" + (idx < 6 ? " top" : ""),
+      var g = el("g", { "class": "pin" + (idx < 6 ? " top" : "") + (cc === onCc ? " on" : ""),
                         style: "--d:" + ((p[0] + 120) / (M.w + 120) * SWEEP_S).toFixed(2) + "s" }, pinLayer);
       el("circle", { "class": "halo", cx: p[0], cy: p[1], r: rad * 3.2 }, g);
       el("circle", { "class": "pulse", cx: p[0], cy: p[1], r: rad + 1.5 }, g);
@@ -270,7 +312,7 @@
     hits.forEach(function (r, idx) {
       var p = M.pins[r[0]];
       var row = document.createElement("div");
-      row.className = "tally-row";
+      row.className = "tally-row" + (r[0] === onCc ? " on" : "");
       row.innerHTML =
         '<span class="rk">' + (idx + 1 < 10 ? "0" : "") + (idx + 1) + "</span>" +
         '<img class="fl" alt="" loading="lazy" width="24" height="16" ' +
@@ -284,9 +326,11 @@
       fl.addEventListener("error", function () { fl.parentNode && fl.parentNode.removeChild(fl); });
       tally.appendChild(row);
       rowsEl[r[0]] = row;
-      // the bars grow in after layout, so the first paint is not the full one
+      // the bars grow in on the first paint; after that they just are
       var bar = row.querySelector(".bar i");
-      setTimeout(function () { bar.style.width = (r[1] / max * 100) + "%"; }, 40 + idx * 30);
+      var w = (r[1] / max * 100) + "%";
+      if (first) setTimeout(function () { bar.style.width = w; }, 40 + idx * 30);
+      else bar.style.width = w;
     });
 
     note.textContent = sum + (sum === 1 ? " visit" : " visits") + " from " +
@@ -296,14 +340,66 @@
   var have = cached();
   if (have) {
     render(have);
-    note.textContent += "  ·  cached";
+    note.textContent += "  \u00b7  cached";
   } else {
-    var codes = Object.keys(M.pins);
-    readAll(codes, function (d, n) {
-      note.textContent = "scanning " + d + "/" + n + "…";
-    }).then(function (rows) {
-      keep(rows);
-      render(rows);
+    // Whatever can be shown now is shown now: the nightly snapshot if it is
+    // there, else the last picture this browser saw, whichever is newer.
+    var known = {};                      // cc -> count, as they are learned
+    var seenAt = 0;
+    function take(o) {
+      if (!o || o.at <= seenAt) return;
+      seenAt = o.at;
+      known = {};
+      o.rows.forEach(function (r) { known[r[0]] = r[1]; });
+    }
+    take(last());
+
+    var live = {};                       // cc -> count, from this scan
+    var pending = null;
+    function rows() {
+      var out = [], cc;
+      for (cc in known) if (known.hasOwnProperty(cc) && !live.hasOwnProperty(cc)) out.push([cc, known[cc]]);
+      for (cc in live) if (live.hasOwnProperty(cc)) out.push([cc, live[cc]]);
+      return out;
+    }
+    function repaint() {
+      if (pending) return;
+      pending = setTimeout(function () { pending = null; render(rows()); }, 300);
+    }
+
+    snapshot().then(function (o) {
+      take(o);
+      if (seenAt) {
+        render(rows());
+        note.textContent = "last read " + ago(seenAt) + "  \u00b7  scanning\u2026";
+      }
+
+      // most likely first, then anything the snapshot knew, then the rest
+      var order = [], done = {};
+      function add(cc) { if (M.pins[cc] && !done[cc]) { done[cc] = true; order.push(cc); } }
+      Object.keys(known).forEach(add);
+      LIKELY.forEach(add);
+      Object.keys(M.pins).forEach(add);
+
+      readAll(order, function (d, n, pair) {
+        if (pair[1] !== null) live[pair[0]] = pair[1];   // a failed read changes nothing
+        if (pair[1] > 0 || known[pair[0]]) repaint();
+        if (!seenAt) note.textContent = "scanning " + d + "/" + n + "\u2026";
+      }).then(function () {
+        clearTimeout(pending);
+        pending = null;
+        var final = rows();
+        var answered = Object.keys(live).length;
+        render(final);
+        if (!answered) {
+          note.textContent = seenAt
+            ? "counter unreachable  \u00b7  showing last read " + ago(seenAt)
+            : "counter unreachable";
+          return;
+        }
+        if (answered === order.length) keep(final);   // only a complete scan is worth remembering
+        else note.textContent += "  \u00b7  " + (order.length - answered) + " unanswered";
+      });
     });
   }
 
