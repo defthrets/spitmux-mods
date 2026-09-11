@@ -11,13 +11,13 @@ WHAT WENT WHERE
     archive.gif         the tower on fire - the header, not a mod
     fumes.gif           a tank of orange liquid
     bare-minimum.gif    a battery reading FULL
-    five0patrol.gif     a camera - being seen is the whole mod
-    hoodrich.gif        a safe
-    weapon-tweaks.gif   a bench of tools
+    five0patrol.gif     a police light, turning
+    hoodrich.gif        a bag of product
+    weapon-tweaks.gif   a pistol
     vehicle-tweaks.gif  switches and breakers
-    bloodymess.gif      a CRT reading NO SIGNAL
+    bloodymess.gif      blood, pooling
     overspray.gif       a tower with its guts spilled out
-    franklin-rp.gif     somebody at a desk
+    franklin-rp.gif     the man in the green bandana
     streetgolf.gif      a wreck
 
 Some of those are judgement calls rather than obvious matches. Swap any
