@@ -1,4 +1,4 @@
-"""Stamp a content hash onto the asset URLs in index.html.
+"""Stamp a content hash onto the asset URLs in index.html and map.html.
 
 GitHub Pages serves styles.css and the scripts with Cache-Control: max-age=600
 and a filename that never changes, so for ten minutes after a deploy a browser
@@ -21,7 +21,7 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PAGE = os.path.join(HERE, "index.html")
+PAGES = [os.path.join(HERE, "index.html"), os.path.join(HERE, "map.html")]
 
 # Only things the page itself pulls in. Images are addressed by convention and
 # are handled by their own fallbacks; a hash on those would defeat the "drop a
@@ -36,6 +36,12 @@ def digest(path):
 
 
 def main():
+    for page in PAGES:
+        stamp(page)
+    return 0
+
+
+def stamp(PAGE):
     html = io.open(PAGE, encoding="utf-8").read()
     seen = []
 
@@ -54,9 +60,9 @@ def main():
 
     for f, h in seen:
         print("  %-14s ?v=%s" % (f, h))
-    print("%d asset%s stamped%s" % (len(seen), "" if len(seen) == 1 else "s",
-                                    "" if out != html else " (unchanged)"))
-    return 0
+    print("%s: %d asset%s stamped%s" % (os.path.basename(PAGE), len(seen),
+                                        "" if len(seen) == 1 else "s",
+                                        "" if out != html else " (unchanged)"))
 
 
 if __name__ == "__main__":

@@ -11,86 +11,282 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=VT323&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=%E3%80%90%E3%80%91%E3%82%A4%E3%82%B9%E3%83%83%E3%83%87%E3%83%88%E3%83%9C%E3%83%A9%E3%83%AC%E3%83%BC%E5%AE%9F%E8%A1%8C&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=5ffdebbc" />
   <style>
-    /* Only what this page adds; the palette, the bezel and the type all come
-       from the site's own stylesheet. */
-    .scope-wrap { padding: 14px 18px 18px; }
-    .scope-grid {
-      display: grid;
-      grid-template-columns: 1fr 260px;
-      gap: 16px;
-      align-items: start;
-    }
-    @media (max-width: 900px) { .scope-grid { grid-template-columns: 1fr; } }
+    /* Only what this page adds. The bezels, the palette, the seal and the
+       type all come from the site's own stylesheet. */
 
+    /* ── head: the same bezel as the archive, carrying the numbers ── */
+    .scope-head { padding: 22px 30px 20px; }
+    .scope-title {
+      font-family: "VT323", monospace;
+      font-size: clamp(34px, 6vw, 56px);
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      line-height: 1;
+      color: var(--p-pale);
+      text-shadow: none;
+      margin: 4px 0 0 0.34em;     /* the tracking hangs off the right; recentre */
+    }
+    .scope-head .sub-rule { font-size: 16px; margin: 12px 0 16px; }
+
+    .readouts {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      margin: 0 auto;
+      max-width: 620px;
+    }
+    .ro {
+      flex: 1;
+      padding: 8px 10px 6px;
+      border-left: 1px solid var(--p-edge);
+    }
+    .ro:first-child { border-left: 0; }
+    .ro b {
+      display: block;
+      font-family: "VT323", monospace;
+      font-weight: normal;
+      font-size: clamp(30px, 4.6vw, 44px);
+      line-height: 1;
+      color: var(--p-core);
+      font-variant-numeric: tabular-nums;
+      text-shadow: none;
+    }
+    .ro span {
+      display: block;
+      margin-top: 6px;
+      font-family: "VT323", monospace;
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--p-half);
+      text-shadow: none;
+    }
+    .ro small {
+      display: block;
+      margin-top: 2px;
+      font-family: "VT323", monospace;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      color: var(--p-dim);
+      text-shadow: none;
+      min-height: 1em;
+    }
+
+    /* ── the two panels ── */
+    .scope-grid {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 12px;
+      align-items: stretch;
+    }
+    @media (max-width: 900px) { .scope-grid { grid-template-columns: minmax(0, 1fr); } }
+
+    .scope-frame { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 13px 16px 11px;
+      border-bottom: 1px solid var(--p-edge);
+      font-family: "VT323", monospace;
+      font-size: 15px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--p-half);
+      text-shadow: none;
+      line-height: 1.1;
+    }
+    .panel-head .live { color: var(--p-glow); }
+    .panel-head #coords {
+      letter-spacing: 0.08em;
+      text-transform: none;
+      color: var(--p-dim);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* the scope itself: corner brackets, a hairline frame, the map inside */
     .scope {
       position: relative;
-      border: 1px solid var(--p-line);
-      border-radius: 6px;
-      background: #0b0704;
+      margin: 14px 16px 10px;
+      background:
+        radial-gradient(ellipse at 50% 45%, rgb(var(--rgb-signal) / 0.06), transparent 62%),
+        #0a0603;
+      border: 1px solid var(--p-edge);
       overflow: hidden;
+      cursor: crosshair;
     }
-    .scope svg { display: block; width: 100%; height: auto; }
+    .scope::before, .scope::after,
+    .scope-corner::before, .scope-corner::after {
+      content: "";
+      position: absolute;
+      width: 14px; height: 14px;
+      border: 1px solid var(--p-mid);
+      pointer-events: none;
+      z-index: 3;
+    }
+    .scope::before        { top: 6px; left: 6px;   border-width: 1px 0 0 1px; }
+    .scope::after         { top: 6px; right: 6px;  border-width: 1px 1px 0 0; }
+    .scope-corner::before { bottom: 6px; left: 6px;  border-width: 0 0 1px 1px; }
+    .scope-corner::after  { bottom: 6px; right: 6px; border-width: 0 1px 1px 0; }
+    .scope svg { display: block; width: 100%; height: auto; position: relative; z-index: 1; }
 
-    .grat  { stroke: rgb(var(--rgb-signal) / 0.10); stroke-width: 0.6; fill: none; }
-    .coast { fill: rgb(var(--rgb-signal) / 0.055); stroke: var(--p-dim);
-             stroke-width: 0.5; stroke-linejoin: round; }
+    /* the seal, faint and turning, behind the ocean */
+    .scope-mark {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 44%;
+      transform: translate(-50%, -50%) rotate(8deg);
+      color: var(--p-signal);
+      opacity: 0.07;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .scope-mark svg { width: 100%; height: auto; display: block; }
 
-    /* A pin is a disc plus a ring that sits outside it, so a small count is
-       still visible against the coastline and a large one does not simply
-       become a blob. */
-    .pin      { fill: var(--p-signal); fill-opacity: 0.85; }
-    .pin-ring { fill: none; stroke: var(--p-glow); stroke-width: 0.9; opacity: 0.55; }
-    .pin-hit  { fill: transparent; cursor: pointer; }
-    .pin-hit:hover ~ .pin,
-    .pin.on   { fill: var(--p-core); }
+    /* ── what is drawn in the svg ── */
+    .grat  { stroke: rgb(var(--rgb-signal) / 0.09); stroke-width: 0.5; fill: none; }
+    .grat.eq { stroke: rgb(var(--rgb-signal) / 0.18); }
+    .tick  { stroke: var(--p-line); stroke-width: 0.8; }
+    .tick-lbl {
+      font-family: "VT323", monospace;
+      font-size: 9px;
+      fill: var(--p-dim);
+      letter-spacing: 0.06em;
+    }
+    .coast { fill: none; stroke: rgb(var(--rgb-signal) / 0.28); stroke-width: 0.45; stroke-linejoin: round; }
+    .beam  { fill: url(#beam-g); animation: sweep 9s linear infinite; }
+    @keyframes sweep { from { transform: translateX(-120px); } to { transform: translateX(1000px); } }
+
+    .pin .halo  { fill: url(#halo-g); }
+    .pin .ring  { fill: none; stroke: var(--p-glow); stroke-width: 0.8; opacity: 0.55; }
+    .pin .pulse {
+      fill: none; stroke: var(--p-signal); stroke-width: 0.9;
+      transform-box: fill-box; transform-origin: center;
+      animation: pulse 9s linear infinite;
+      animation-delay: var(--d);
+      opacity: 0;
+    }
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: 0; }
+      2%   { opacity: 0.9; }
+      14%  { transform: scale(3.2); opacity: 0; }
+      100% { transform: scale(3.2); opacity: 0; }
+    }
+    .pin .core  { fill: var(--p-signal); }
+    .pin .hit   { fill: transparent; }
+    .pin .lbl {
+      font-family: "VT323", monospace;
+      font-size: 11px;
+      fill: var(--p-glow);
+      letter-spacing: 0.06em;
+      opacity: 0;
+      transition: opacity 0.12s;
+      paint-order: stroke;
+      stroke: #0a0603; stroke-width: 3px; stroke-linejoin: round;
+    }
+    .pin.top .lbl, .pin:hover .lbl, .pin.on .lbl { opacity: 1; }
+    .pin:hover .core, .pin.on .core { fill: var(--p-core); }
+    .pin:hover .ring, .pin.on .ring { opacity: 1; stroke: var(--p-core); }
+
+    .xh { stroke: rgb(var(--rgb-signal) / 0.22); stroke-width: 0.6; pointer-events: none; opacity: 0; }
+    .scope:hover .xh { opacity: 1; }
+
+    /* hover card */
+    .tip {
+      position: absolute;
+      z-index: 4;
+      pointer-events: none;
+      transform: translate(12px, -50%);
+      padding: 6px 10px 7px;
+      border: 1px solid #1f1408;
+      border-radius: 6px;
+      background: #0a0603;
+      box-shadow: inset 0 0 0 1px rgb(var(--rgb-signal) / 0.10), 0 4px 16px rgba(0,0,0,0.6);
+      font-family: "VT323", monospace;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      color: var(--p-pale);
+      white-space: nowrap;
+      text-shadow: none;
+    }
+    .tip b { color: var(--p-core); font-weight: normal; }
+    .tip span { color: var(--p-half); }
+    .tip[hidden] { display: none; }
 
     .scope-note {
-      margin: 10px 2px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 16px 14px;
       color: var(--p-half);
       font-family: "VT323", monospace;
       font-size: 16px;
       letter-spacing: 0.05em;
       text-shadow: none;
     }
+    .scope-note .legend { color: var(--p-dim); white-space: nowrap; }
+    .scope-note .legend i { color: var(--p-signal); font-style: normal; }
 
-    .tally { border: 1px solid var(--p-line); border-radius: 6px; overflow: hidden; }
-    .tally-head {
-      display: flex; justify-content: space-between;
-      padding: 6px 10px;
-      border-bottom: 1px solid var(--p-line);
-      background: #100a05;
-      font-family: "VT323", monospace;
-      font-size: 16px; letter-spacing: 0.16em; text-transform: uppercase;
-      color: var(--p-glow); text-shadow: none;
-    }
-    .tally-list { max-height: 460px; overflow-y: auto; }
+    /* ── the tally ── */
+    .tally-window { min-height: 260px; }
+    .tally-list { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--p-line) transparent; }
     .tally-row {
       display: grid;
-      grid-template-columns: 26px 1fr auto;
-      gap: 8px;
+      grid-template-columns: 22px 30px minmax(0, 1fr) auto;
+      grid-template-areas: "rk cc name n" "rk cc bar bar";
+      column-gap: 8px;
+      row-gap: 4px;
       align-items: center;
-      padding: 4px 10px;
-      border-bottom: 1px dotted rgb(var(--rgb-signal) / 0.14);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--p-edge);
       font-family: "VT323", monospace;
-      font-size: 16px;
+      font-size: 17px;
+      letter-spacing: 0.04em;
       color: var(--p-body);
       text-shadow: none;
-      cursor: default;
+      cursor: pointer;
     }
-    .tally-row:hover { background: rgb(var(--rgb-signal) / 0.07); }
-    .tally-row .cc { color: var(--p-dim); letter-spacing: 0.06em; }
-    .tally-row .n  { color: var(--p-glow); font-variant-numeric: tabular-nums; }
-    .tally-empty { padding: 12px 10px; color: var(--p-dim);
-                   font-family: "VT323", monospace; font-size: 16px; }
+    .tally-row:hover, .tally-row.on { background: rgb(var(--rgb-signal) / 0.06); }
+    .tally-row .rk  { grid-area: rk; color: var(--p-dim); font-size: 14px; }
+    .tally-row .cc  { grid-area: cc; color: var(--p-signal); letter-spacing: 0.1em; }
+    .tally-row .nm  { grid-area: name; color: var(--p-pale); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tally-row .n   { grid-area: n; color: var(--p-core); font-variant-numeric: tabular-nums; }
+    .tally-row .n small { color: var(--p-half); font-size: 13px; margin-left: 6px; }
+    .tally-row .bar { grid-area: bar; height: 3px; background: var(--p-edge); border-radius: 2px; overflow: hidden; }
+    .tally-row .bar i { display: block; height: 100%; background: var(--p-signal); width: 0; transition: width 0.5s ease-out; }
+    .tally-empty { padding: 14px 12px; color: var(--p-half); font-family: "VT323", monospace; font-size: 16px; }
+    .tally-foot {
+      padding: 10px 12px;
+      border-top: 1px solid var(--p-edge);
+      font-family: "VT323", monospace;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      color: var(--p-dim);
+      text-shadow: none;
+    }
 
-    .scope-back { color: var(--cyan); text-decoration: none;
-                  border-bottom: 1px dashed var(--amber-dim); }
-    .scope-back:hover { color: var(--orange-glow); }
+    .scope-back { color: var(--p-glow); text-decoration: none; border-bottom: 1px dashed var(--p-line); }
+    .scope-back:hover { color: var(--p-core); }
+
+    @media (max-width: 600px) { .scope-note .legend { display: none; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .beam, .pin .pulse { animation: none; }
+      .beam { display: none; }
+    }
   </style>
 </head>
 <body>
+  <div class="shadow-mask" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
   <main class="shell">
     <div class="titlebar">
       <div class="tb-left">
@@ -102,43 +298,95 @@
       </div>
     </div>
 
-    <section class="col center" style="flex:1;min-height:0;">
-      <div class="frame">
-        <div class="scope-wrap">
-          <div class="crumb" style="margin-bottom:10px;">
-            archive <span class="sep">/</span> <span class="cat">VISITORS</span>
-            <span class="sep">/</span> where from
-          </div>
-          <h1 class="dossier-title" style="margin:0 0 4px;">Where from</h1>
-          <div class="dossier-tag" style="margin-bottom:16px;">
-            one pin per country, counted once per address &#183; no addresses are kept
-          </div>
+    <section class="frame-head scope-head">
+      <div class="seal-peek" aria-hidden="true">
+        <svg viewBox="0 0 1200 1024" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <path id="seal-ring" fill="none" d="M 512 81 A 431 431 0 1 1 511.9 81" />
+            <clipPath id="seal-loop-cut">
+              <rect x="0" y="0" width="1200" height="443.5"/>
+            </clipPath>
+            <mask id="seal-ring-gap">
+              <rect x="0" y="0" width="1200" height="1024" fill="#fff"/>
+              <rect x="820" y="402" width="380" height="186" fill="#000"/>
+            </mask>
+          </defs>
+          <path d="M 996 560 A 486 486 0 1 1 991 430" fill="none" stroke="currentColor"
+                stroke-width="14" stroke-linecap="round" />
+          <g mask="url(#seal-ring-gap)">
+          <g class="seal-ring-text">
+            <text dominant-baseline="middle">
+              <textPath href="#seal-ring" startOffset="0" textLength="2708" lengthAdjust="spacing"
+              >&#x3010;&#x30E9;&#x30C3;&#x30C8;&#x30DC;&#x30FC;&#x30A4;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30C7;&#x30B9;&#x30EC;&#x30C3;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30E9;&#x30C3;&#x30C8;&#x30DC;&#x30FC;&#x30A4;&#x5B9F;&#x884C;&#x3011;&#x3010;&#x30C7;&#x30B9;&#x30EC;&#x30C3;&#x5B9F;&#x884C;&#x3011;</textPath>
+            </text>
+          </g>
+          </g>
+          <path d="M 879 560 A 370 370 0 0 1 143 480" fill="none" stroke="currentColor"
+                stroke-width="27" stroke-linecap="butt" />
+          <path d="M 145 455 A 370 370 0 0 1 873 430" clip-path="url(#seal-loop-cut)"
+                fill="none" stroke="currentColor" stroke-width="27" stroke-linecap="butt" />
+          <path d="M 141 430 L 1096 430 A 65 65 0 0 1 1096 560 L 866 560" fill="none" stroke="currentColor"
+                stroke-width="27" stroke-linejoin="round" stroke-linecap="butt" />
+          <g fill="none" stroke="currentColor" stroke-width="26" stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M 316 762 L 708 762 A 196 140 0 0 0 316 762 Z" />
+          </g>
+          <g fill="currentColor">
+            <path d="M 382 486 C 348 548 300 584 243 592 C 300 620 360 586 382 486 Z" />
+            <path d="M 642 486 C 676 548 724 584 781 592 C 724 620 664 586 642 486 Z" />
+            <path transform="rotate(-8 243 663)" d="M 248 615 C 260 635 270 652 270 668 A 27 27 0 0 1 216 668 C 218 650 228 633 248 615 Z" />
+            <path transform="rotate(8 781 663)" d="M 776 615 C 764 635 754 652 754 668 A 27 27 0 0 0 808 668 C 806 650 796 633 776 615 Z" />
+          </g>
+        </svg>
+      </div>
+      <h1 class="scope-title">Where from</h1>
+      <div class="sub-rule">visitor map <span class="dot">·</span> one pin per country <span class="dot">·</span> no addresses kept</div>
+      <div class="readouts">
+        <div class="ro"><b id="ro-visits">&#8212;</b><span>visits</span><small id="ro-visits-s"></small></div>
+        <div class="ro"><b id="ro-countries">&#8212;</b><span>countries</span><small id="ro-countries-s"></small></div>
+        <div class="ro"><b id="ro-top">&#8212;</b><span>top</span><small id="ro-top-s"></small></div>
+      </div>
+      <span class="crt-label">CRT-1991 · DEFTHRETS</span>
+      <span class="crt-led"></span>
+    </section>
 
-          <div class="scope-grid">
-            <div>
-              <div class="scope"><svg id="map" role="img"
-                   aria-label="World map with a pin for each country visitors have come from"></svg></div>
-              <div class="scope-note" id="note">scanning&#8230;</div>
-            </div>
-            <div class="tally">
-              <div class="tally-head"><span>by country</span><span id="tally-total">&#8212;</span></div>
-              <div class="tally-list" id="tally"><div class="tally-empty">reading&#8230;</div></div>
-            </div>
-          </div>
+    <section class="scope-grid">
+      <div class="frame scope-frame">
+        <div class="panel-head">
+          <span>scope <span class="live">//</span> world</span>
+          <span id="coords">lat &#8212; &#183; lon &#8212;</span>
+        </div>
+        <div class="scope" id="scope">
+          <div class="scope-corner" aria-hidden="true"></div>
+          <div class="scope-mark" id="scope-mark" aria-hidden="true"></div>
+          <svg id="map" role="img"
+               aria-label="World map with a pin for each country visitors have come from"></svg>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+        <div class="scope-note">
+          <span id="note">scanning&#8230;</span>
+          <span class="legend"><i>&#9679;</i> one pin per country &#183; size follows the count</span>
         </div>
       </div>
+
+      <aside class="spec-window tally-window">
+        <div class="spec-header"><span>by country</span><span id="tally-total">&#8212;</span></div>
+        <div class="tally-list" id="tally"><div class="tally-empty">reading&#8230;</div></div>
+        <div class="tally-foot">counted once per address &#183; click a row to find its pin</div>
+      </aside>
     </section>
 
     <div class="statusbar">
       <div class="left">
         <span class="item online"><span class="dot"></span>online</span>
         <span class="item" id="stat-seen">countries: <b>&#8212;</b></span>
+        <span class="item" id="stat-visits">visits: <b>&#8212;</b></span>
       </div>
       <div class="right"><span class="item">esc &#183; back</span></div>
     </div>
   </main>
 
-  <script src="map-data.js"></script>
-  <script src="map.js"></script>
+  <script src="map-data.js?v=8b66d022"></script>
+  <script src="map.js?v=9f4fdab7"></script>
 </body>
 </html>
