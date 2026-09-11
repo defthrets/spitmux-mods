@@ -322,12 +322,13 @@
     for (var n = 0; n < all.length; n++) watchImage(all[n]);
   }
 
+  var STILL = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function icon(id, cls) {
-    // Ten animated sprites down the index is weight and noise both. Rows and
-    // the spec panel take a still first frame -- a fifth of the bytes -- and
-    // the animation is kept for the head of the open dossier, where there is
-    // only ever one of it and it reads as deliberate rather than as wallpaper.
-    var moving = cls === "head-icon";
+    // The index rows and the dossier head animate; the spec panel takes a
+    // still. Rows sit in the amber until they are hovered or chosen, and
+    // then show in colour. Somebody who asked for less motion gets stills
+    // everywhere -- a gif cannot be paused from a stylesheet.
+    var moving = !STILL && (cls === "head-icon" || cls === "row-icon");
     var a = art("icons/" + esc(id) + (moving ? ".gif" : ".still.png"));
     var b = art("icons/" + esc(id) + (moving ? ".still.png" : ".gif"));
     return '<img class="px ' + cls + '" src="' + a + '" loading="lazy" ' +
