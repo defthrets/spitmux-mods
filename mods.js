@@ -280,10 +280,10 @@ window.MODS = [
     tag: "spray paint on any surface in the city",
     cat: "WORLD",
     key: "F3",
-    lines: 7569,
-    files: 22,
+    lines: 8849,
+    files: 26,
     status: "ACTIVE",
-    repo: null,
+    repo: "https://github.com/defthrets/overspray",
     blurb:
       "Hold the trigger with a can out and whatever you are aiming at takes paint. Walls, shutters, kerbs, the road, the side of a skip, a ceiling — anything solid. The paint stays where you put it and is still there when you come back.",
     points: [
