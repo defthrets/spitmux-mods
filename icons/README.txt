@@ -9,15 +9,15 @@ take it away and it vanishes and the layout closes up.
 WHAT WENT WHERE
 ---------------
     archive.gif         the tower on fire - the header, not a mod
-    fumes.gif           a tank of orange liquid
-    bare-minimum.gif    a battery reading FULL
+    fumes.gif           a jerry can with the nozzle on
+    bare-minimum.gif    a burger and a bottle of water
     five0patrol.gif     a police light, turning
     hoodrich.gif        a bag of product
     weapon-tweaks.gif   a pistol
-    vehicle-tweaks.gif  switches and breakers
+    vehicle-tweaks.gif  a wheel
     bloodymess.gif      blood, pooling
-    overspray.gif       a tower with its guts spilled out
-    franklin-rp.gif     the man in the green bandana
+    overspray.gif       a can of paint
+    franklin-rp.gif     the man in the green bandana, closer
     streetgolf.gif      a wreck
 
 Some of those are judgement calls rather than obvious matches. Swap any
