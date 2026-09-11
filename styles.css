@@ -1179,9 +1179,19 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
   will-change: transform;
 }
 
+/* The seal and the terminal under it are one grid item, so they centre
+   together; the stage gives up height so the terminal stays on screen. */
+.crt-set {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(92vw, 560px);
+}
 .crt-stage {
   position: relative;
-  width: min(66vmin, 560px);
+  width: min(60vmin, 520px, calc((100vh - 330px) * 1.17));
   aspect-ratio: 1200 / 1024;
 }
 .crt-seal { position: absolute; inset: 0; color: var(--p-signal); }
@@ -1192,30 +1202,119 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
 .crt-seal.l1 { color: var(--p-core); mix-blend-mode: screen; opacity: 0; }
 .crt-seal.l2 { color: var(--p-dim);  mix-blend-mode: screen; opacity: 0; }
 
-.crt-sig {
-  position: absolute;
-  left: 0; right: 0;
-  bottom: -14%;
-  text-align: center;
-  font-family: "VT323", monospace;
-  font-size: clamp(13px, 2.4vw, 21px);
-  letter-spacing: 0.06em;
-  white-space: nowrap;
-  color: var(--p-mid);
+/* the terminal: the same bezel as the panels, the head row in the
+   header's tracked VT323, a drawn bar, and a nine-row log window that
+   shows the last rows and clips the rest -- a real terminal, not a list */
+.crt-term {
+  --rows: 9;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 16px 12px;
+  border: 1px solid #1f1408;
+  border-radius: 12px;
+  background: #0a0603;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--rgb-signal) / 0.10),
+    inset 0 0 48px rgba(0, 0, 0, 0.55);
+  text-align: left;
   text-shadow: none;
-  transition: opacity 0.2s;
-  animation: crt-sig 1.9s steps(1) infinite;
 }
-.crt-sig .n { color: var(--p-glow); }
-.crt-sig .w { color: var(--p-half); margin: 0 0.7em 0 0.7em; white-space: pre; }
-.crt-sig .b { color: var(--p-signal); letter-spacing: -0.06em; }
-.crt-sig .p {
+.crt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-family: "VT323", monospace;
+  font-size: 18px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.crt-name  { color: var(--p-glow); }
+.crt-stamp { color: var(--p-half); font-size: 15px; letter-spacing: 0.24em; }
+
+.crt-barrow { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.crt-track {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  border: 1px solid var(--p-line);
+  border-radius: 2px;
+  background: #060302;
+  overflow: hidden;
+}
+.crt-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: var(--p-signal);
+  box-shadow: 0 0 8px rgb(var(--rgb-signal) / 0.45);
+  transition: width 0.12s linear;
+}
+/* the top half of the fill, pushed sideways: the bar tears with the picture */
+.crt-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 50% 0;
+  background: inherit;
+  transform: translateX(7px);
+  opacity: 0;
+}
+.crt-term.tear .crt-fill        { transform: translateX(-3px); }
+.crt-term.tear .crt-fill::after { opacity: 0.9; }
+.crt-term.done .crt-fill {
+  background: var(--p-core);
+  box-shadow: 0 0 10px rgb(var(--rgb-core) / 0.5);
+}
+.crt-pct {
+  flex: none;
+  min-width: 3ch;
+  text-align: right;
+  font-family: "VT323", monospace;
+  font-size: 18px;
+  line-height: 1;
   color: var(--p-core);
-  margin-left: 0.7em;
   font-variant-numeric: tabular-nums;
 }
-@keyframes crt-sig {
-  0%, 100% { opacity: 0.85; }
+
+.crt-log {
+  height: calc(var(--rows) * 18px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;   /* newest at the bottom, the rest clipped off the top */
+  border-top: 1px solid var(--p-edge);
+  padding-top: 8px;
+  font-family: var(--font), "Courier New", monospace;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: pre;
+  color: var(--p-body);
+}
+.crt-tl { flex: none; overflow: hidden; }
+.crt-tl:last-child::after {
+  content: "\2590";
+  color: var(--p-signal);
+  animation: blink 1s steps(2) infinite;
+}
+.crt-log .crt-ps  { color: var(--p-signal); }
+.crt-log .crt-cmd { color: var(--p-pale); }
+.crt-log .dim     { color: var(--p-half); }
+.crt-log .info    { color: var(--p-body); }
+.crt-log .ok      { color: var(--p-glow); }
+.crt-log .hl      { color: var(--p-signal); }
+.crt-log .warn    { color: var(--p-pale); }
+.crt-log .core    { color: var(--p-core); }
+
+@media (max-width: 480px) {
+  .crt-stamp { display: none; }
+  .crt-term  { padding: 10px 12px 11px; }
+  .crt-log   { font-size: 11px; }
+}
+@media (max-height: 560px) {
+  .crt-term  { --rows: 5; }
+  .crt-stage { width: min(60vmin, calc((100vh - 230px) * 1.17)); }
+}
   41%      { opacity: 0.12; }
   45%      { opacity: 0.85; }
   72%      { opacity: 0.3; }
@@ -1273,7 +1372,7 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .crt-roll, .crt-sig { animation: none; }
+  .crt-roll, .crt-tl:last-child::after { animation: none; }
   }
 
 /* ─── Real captures ──────────────────────────────────────────────────────
@@ -1408,7 +1507,7 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
   opacity: 0.55;
   transition: transform 0.04s steps(1);
 }
-.crt-stage { z-index: 2; }
+.crt-set   { z-index: 2; }
 .crt-roll  { z-index: 4; }
 .crt-scan  { z-index: 5; }
 

@@ -587,7 +587,11 @@
   function start() {
     if (started) return;
     started = true;
-    boot(function () { select(first, true); });
+    // The cold open prints the boot itself now; typing it again into the
+    // panel would say the same thing twice. Without a cold open it is the
+    // panel's job as before.
+    if (window.crtIntro && window.crtIntro.logged) select(first, true);
+    else boot(function () { select(first, true); });
   }
   if (window.crtIntro && window.crtIntro.pending) {
     window.addEventListener("crt-intro-done", start, { once: true });
