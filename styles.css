@@ -420,37 +420,40 @@ html, body {
 /* ─── LEFT: the index ────────────────────────────────────────────────── */
 
 .index-window {
-  /* The same amber rotated toward red, so the index reads as a different
-     instrument from the dossier without leaving the family. */
-  --gh-green:   #fab597;   /* 11.5:1 on this panel */
-  --gh-glow:    #fccfb6;
-  --gh-dim:     #b35c3c;   /*  4.3:1 borders and the CAT/LOC meta line */
-  --gh-text:    #fab597;
-  --gh-text-dim:#d58d70;   /*  7.5:1 row descriptions */
-  --gh-bg:      #070402;
-  --gh-bg-2:    #0d0804;
-  --gh-shadow-soft: 0 0 3px rgb(var(--rgb-index) / 0.40);
+  /* Once its own palette -- the amber rotated toward red -- so the index read
+     as a different instrument. It read as a different site. The names are kept
+     so nothing below has to change, but they point at the page's own ladder
+     now: the header holds one hue, and the panels under it should too. */
+  --gh-green:   var(--p-glow);
+  --gh-glow:    var(--p-core);
+  --gh-dim:     var(--p-half);   /* text uses this; borders are set below */
+  --gh-text:    var(--p-pale);
+  --gh-text-dim:var(--p-body);
+  --gh-bg:      #080502;               /* the bezel's own ground */
+  --gh-bg-2:    var(--rail);
+  --gh-shadow-soft: none;
+  --rgb-index:  var(--rgb-signal);
 
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border: 1px solid var(--gh-dim);
   background: var(--gh-bg);
   color: var(--gh-text);
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border: 1px solid #1f1408;
+  border-radius: 12px;
   box-shadow:
-    inset 0 0 30px rgb(var(--rgb-index) / 0.04),
-    inset 0 0 80px rgba(0, 0, 0, 0.75);
+    inset 0 0 0 1px rgb(var(--rgb-signal) / 0.10),
+    inset 0 0 48px rgba(0, 0, 0, 0.55);
 }
 .index-window::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.7) 100%);
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.45) 100%);
   z-index: 5;
 }
 .index-window > * { position: relative; z-index: 7; }
@@ -459,54 +462,50 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  border-bottom: 1px solid var(--gh-dim);
-  background: #0d0804;
-  color: var(--gh-green);
+  padding: 13px 12px 11px;
+  border-bottom: 1px solid var(--p-edge);
+  background: transparent;
+  color: var(--p-mid);
   z-index: 8;
 }
 .banner-word {
-  font-family: "JetBrains Mono", "Courier New", monospace;
-  font-weight: 700;
-  font-size: 24px;
+  /* The same voice as MOD ARCHIVE under the wordmark, one step up. Was a
+     24px bold JetBrains with a glow: a second logo, on a panel that already
+     sits under the real one. */
+  font-family: "VT323", monospace;
+  font-weight: 400;
+  font-size: 22px;
   line-height: 1;
-  letter-spacing: 0.44em;
-  text-indent: 0.44em;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
   text-transform: uppercase;
-  color: var(--gh-green);
-  text-shadow: 0 0 12px rgb(var(--rgb-index) / 0.35);
+  color: var(--p-mid);
+  text-shadow: none;
 }
-@media (max-width: 1400px) { .banner-word { font-size: 21px; } }
 
 .index-header {
   padding: 5px 12px;
-  border-bottom: 1px solid var(--gh-dim);
-  background: var(--gh-bg-2);
+  border-bottom: 1px solid var(--p-edge);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-size: 17px;
-  letter-spacing: 0.06em;
-  color: var(--gh-text-dim);
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  color: var(--p-half);
   text-transform: uppercase;
   font-family: "VT323", monospace;
   line-height: 1.1;
 }
-.index-header .title { color: var(--gh-green); font-weight: 700; text-shadow: var(--gh-shadow-soft); }
+.index-header .title { color: var(--p-half); font-weight: 400; text-shadow: none; }
 .live-dot {
   display: inline-block;
   width: 6px; height: 6px;
   background: var(--gh-green);
   border-radius: 50%;
   margin-right: 6px;
-  box-shadow: 0 0 6px var(--gh-green);
-  animation: pulse 1.4s ease-in-out infinite;
   vertical-align: middle;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.3; transform: scale(0.7); }
 }
 
 /* filter row — behaves like the scan line on the parent site */
@@ -515,7 +514,7 @@ html, body {
   align-items: center;
   gap: 6px;
   padding: 2px 12px;
-  border-bottom: 1px dashed var(--gh-dim);
+  border-bottom: 1px dashed var(--p-edge);
   background: rgb(var(--rgb-glow) / 0.03);
   font-family: "VT323", monospace;
   font-size: 16px;
@@ -589,8 +588,8 @@ html, body {
 /* The stagger is decoration only, and it deliberately does NOT touch opacity.
    A frozen or never-started animation must not be able to hide a row, so the
    worst case here is a button sitting 8px to the left of where it belongs. */
-.mod-btn.in { animation: mod-in 0.4s ease backwards; }
-@keyframes mod-in { from { transform: translateX(-8px); } }
+/* No slide-in. Rows that arrive one at a time read as a loading effect,
+   and this is an index, not a login screen. */
 
 .mod-btn::before {
   content: "";
@@ -618,84 +617,35 @@ html, body {
 }
 .mod-btn > * { position: relative; z-index: 1; }
 
-.grain-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 3;
-  opacity: 0.18;
-  mix-blend-mode: screen;
-  background-image:
-    radial-gradient(rgb(var(--rgb-pale) / 0.4) 0.5px, transparent 0.6px),
-    radial-gradient(rgb(var(--rgb-glow) / 0.3) 0.5px, transparent 0.6px);
-  background-size: 3px 3px, 5px 5px;
-  background-position: 0 0, 1px 2px;
-  animation: grain-jitter 0.6s steps(6) infinite;
-}
-@keyframes grain-jitter {
-  0%   { background-position: 0 0, 1px 2px; }
-  20%  { background-position: 1px 0, 2px 3px; }
-  40%  { background-position: 0 1px, 0 1px; }
-  60%  { background-position: 2px 1px, 1px 0; }
-  80%  { background-position: 1px 2px, 0 2px; }
-  100% { background-position: 0 0, 1px 2px; }
-}
+/* grain-overlay: gone from the markup; see app.js. */
 
-.hover-sweep {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
-  opacity: 0;
-  background: linear-gradient(to bottom,
-    transparent 0%, transparent 40%,
-    rgb(var(--rgb-pale) / 0.18) 49%,
-    rgb(var(--rgb-pale) / 0.55) 50%,
-    rgb(var(--rgb-pale) / 0.18) 51%,
-    transparent 60%, transparent 100%);
-  background-size: 100% 220%;
-  background-position: 0 -120%;
-}
-@keyframes sweep-down {
-  from { background-position: 0 -120%; }
-  to   { background-position: 0 120%; }
-}
-.mod-btn:hover .hover-sweep { opacity: 1; animation: sweep-down 0.85s ease-out infinite; }
+/* hover-sweep: gone from the markup; see app.js. */
 
 .mod-btn:hover { border-color: var(--gh-dim); background: rgb(var(--rgb-glow) / 0.05); }
-.mod-btn:hover .name { animation: title-tear 0.22s steps(2) 3; color: var(--gh-glow); }
-@keyframes title-tear {
-  0%   { transform: translateX(0);    text-shadow: var(--gh-shadow-soft); }
-  25%  { transform: translateX(-2px); text-shadow: 2px 0 var(--p-glow), -2px 0 var(--p-dim); }
-  50%  { transform: translateX(2px);  text-shadow: -2px 0 var(--p-glow), 2px 0 var(--p-dim); }
-  75%  { transform: translateX(-1px); text-shadow: 1px 0 var(--p-pale), -1px 0 var(--p-dim); }
-  100% { transform: translateX(0);    text-shadow: var(--gh-shadow-soft); }
-}
+.mod-btn:hover .name { color: var(--p-core); }
 
 .mod-btn.active {
   border-color: var(--gh-green);
   border-bottom-style: solid;
-  background: rgb(var(--rgb-glow) / 0.09);
-  box-shadow: inset 0 0 20px rgb(var(--rgb-index) / 0.08);
+  background: rgb(var(--rgb-signal) / 0.07);
 }
-.mod-btn.active .name { color: var(--gh-glow); text-shadow: 0 0 6px rgb(var(--rgb-index-glow) / 0.5); }
+.mod-btn.active .name { color: var(--p-core); text-shadow: none; }
 .mod-btn.active .marker { opacity: 1; }
 
 .mod-btn .marker {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 2px;
-  background: var(--gh-green);
-  box-shadow: 0 0 8px var(--gh-green);
+  background: var(--p-signal);
   opacity: 0;
   z-index: 6;
   transition: opacity 0.15s ease;
 }
 
 .mod-btn .name {
-  color: var(--gh-green);
-  font-size: 20px;
-  text-shadow: var(--gh-shadow-soft);
+  color: var(--p-pale);
+  font-size: 18px;
+  text-shadow: none;
   line-height: 1;
   display: block;
   letter-spacing: 0.02em;
@@ -734,16 +684,16 @@ html, body {
   font-family: "VT323", monospace;
   z-index: 6;
 }
-.mod-btn .status-tag.ready { color: var(--gh-green); text-shadow: var(--gh-shadow-soft); }
+.mod-btn .status-tag.ready { color: var(--p-glow); text-shadow: none; }
 
 .index-footer {
-  border-top: 1px solid var(--gh-dim);
-  padding: 4px 12px;
-  font-size: 15px;
-  color: var(--gh-text-dim);
+  border-top: 1px solid var(--p-edge);
+  padding: 6px 12px;
+  font-size: 14px;
+  color: var(--p-half);
   display: flex;
   justify-content: space-between;
-  background: var(--gh-bg-2);
+  background: transparent;
   letter-spacing: 0.04em;
   font-family: "VT323", monospace;
   text-transform: uppercase;
@@ -768,13 +718,17 @@ html, body {
      this, still past AAA, and the whole ladder above --p-mid stays over 5:1.
      Anything lighter starts costing the dim tones their AA. */
   background: #140e08;
-  padding: 18px 26px 22px;
+  padding: 20px 28px 24px;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--orange-dim) transparent;
   position: relative;
-  border-radius: 8px;
+  border: 1px solid #1f1408;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--rgb-signal) / 0.10),
+    inset 0 0 48px rgba(0, 0, 0, 0.55);
 }
 .frame::-webkit-scrollbar { width: 8px; }
 .frame::-webkit-scrollbar-thumb { background: var(--orange-dim); }
@@ -837,23 +791,44 @@ html, body {
   text-shadow: none;
 }
 
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.chip {
+/* Was seven boxed chips in a row, all one weight -- "201 files" as loud as
+   the download. Three weights for three kinds of thing now: the facts are a
+   quiet run of text, the download is the one button, the source is a link. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  margin-top: 14px;
   font-family: "VT323", monospace;
   font-size: 15px;
-  line-height: 1;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--amber-mid);
-  border: 1px solid var(--amber-darker);
-  padding: 4px 8px 3px;
-  background: rgb(var(--rgb-signal) / 0.04);
-  white-space: nowrap;
 }
-.chip b { color: var(--orange-glow); font-weight: 400; }
-.chip.link { color: var(--cyan); border-color: var(--amber-dim); text-decoration: none; cursor: pointer; }
-.chip.link:hover { color: #000; background: var(--orange-glow); border-color: var(--orange-glow); }
-.chip.mute { color: var(--p-dim); border-style: dashed; }
+.chip {
+  color: var(--p-half);
+  white-space: nowrap;
+  line-height: 1;
+}
+.chip b { color: var(--p-body); font-weight: 400; }
+.chip + .chip:not(.dl):not(.link):not(.dl-count)::before {
+  content: "\00b7";
+  margin-right: 14px;
+  color: var(--p-line);
+}
+.chip.link {
+  color: var(--p-glow);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--p-line);
+  padding-bottom: 1px;
+  cursor: pointer;
+}
+.chip.link:hover { color: var(--p-core); border-bottom-color: var(--p-glow); }
+.chip.mute { color: var(--p-half); }
+
+/* The facts and the actions are two rows, so the button sizes to its label
+   and the count and the source link sit beside it rather than under it. */
+.chips.actions { margin-top: 10px; }
 
 .blurb {
   color: var(--amber-pale);
@@ -980,29 +955,33 @@ html, body {
 
 .spec-window {
   /* and rotated the other way, toward the yellow-hot end of the tube */
-  --pb-green: #ffc343;   /* 12.5:1 */
-  --pb-glow:  #fdecb1;   /* 16.9:1 readouts */
-  --pb-dim:   #825b21;   /*  3.3:1 rules */
-  --pb-text-dim: #d09b41;/*  8.0:1 row keys */
-  --pb-shadow-soft: 0 0 3px rgb(var(--rgb-spec) / 0.40);
+  /* Same story as the index: a private yellow, now aliases of the ladder. */
+  --pb-green: var(--p-glow);
+  --pb-glow:  var(--p-core);
+  --pb-dim:   var(--p-half);
+  --pb-text-dim: var(--p-body);
+  --pb-shadow-soft: none;
+  --rgb-spec: var(--rgb-signal);
 
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border: 1px solid var(--gray-dim);
-  background: #060401;
+  background: #080502;
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
-  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.8);
+  border: 1px solid #1f1408;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--rgb-signal) / 0.10),
+    inset 0 0 48px rgba(0, 0, 0, 0.55);
 }
 .spec-window::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.75) 100%);
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.45) 100%);
   z-index: 5;
 }
 .spec-window > * { position: relative; z-index: 7; }
@@ -1012,22 +991,22 @@ html, body {
    the rain is the backdrop, the demon turns because it is a mark; this just
    moved. Element kept in the markup so nothing has to be re-plumbed if it
    ever comes back. */
-.spec-roll { display: none; }
 
 .spec-header {
-  padding: 5px 12px;
-  border-bottom: 1px solid var(--gray-dim);
-  background: #0d0804;
+  padding: 13px 12px 11px;
+  border-bottom: 1px solid var(--p-edge);
+  background: transparent;
   font-family: "VT323", monospace;
-  font-size: 17px;
-  letter-spacing: 0.06em;
+  font-size: 15px;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--pb-text-dim);
+  color: var(--p-half);
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   line-height: 1.1;
 }
-.spec-header .title { color: var(--pb-green); text-shadow: var(--pb-shadow-soft); }
+.spec-header .title { color: var(--p-mid); text-shadow: none; }
 
 .spec-body {
   flex: 1;
@@ -1043,18 +1022,18 @@ html, body {
 .spec-body::-webkit-scrollbar-thumb { background: var(--orange-dim); }
 
 .id-card {
-  border: 1px solid var(--pb-dim);
+  border: 1px solid var(--p-line);
   padding: 8px 10px 10px;
   background: rgb(var(--rgb-signal) / 0.02);
   font-family: "VT323", monospace;
   line-height: 1.2;
 }
 .id-title {
-  font-size: 16px;
-  letter-spacing: 0.2em;
-  color: var(--pb-green);
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  color: var(--p-mid);
   text-transform: uppercase;
-  text-shadow: var(--pb-shadow-soft);
+  text-shadow: none;
 }
 .id-num {
   font-size: 14px;
@@ -1069,11 +1048,11 @@ html, body {
   justify-content: space-between;
   gap: 10px;
   font-size: 16px;
-  padding: 1px 0;
-  border-bottom: 1px dotted rgb(var(--rgb-glow) / 0.12);
+  padding: 3px 0;
+  border-bottom: 1px dotted rgb(var(--rgb-signal) / 0.12);
 }
 .id-row .k { color: var(--pb-text-dim); text-transform: uppercase; font-size: 15px; }
-.id-row .v { color: var(--pb-glow); text-transform: uppercase; text-shadow: var(--pb-shadow-soft); text-align: right; }
+.id-row .v { color: var(--p-pale); text-transform: uppercase; text-shadow: none; text-align: right; }
 .id-row .v.on   { color: var(--pb-green); }
 .id-row .v.mute { color: var(--pb-dim); text-shadow: none; }
 .id-barcode {
@@ -1098,7 +1077,7 @@ html, body {
   cursor: pointer;
   line-height: 1.2;
 }
-.size-row:hover .n, .size-row.on .n { color: var(--pb-glow); text-shadow: var(--pb-shadow-soft); }
+.size-row:hover .n, .size-row.on .n { color: var(--p-core); text-shadow: none; }
 .size-row .n {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1109,8 +1088,7 @@ html, body {
 .size-row .bar i {
   position: absolute;
   inset: 0 100% 0 0;                 /* overridden inline with the real width */
-  background: var(--pb-dim);
-  box-shadow: 0 0 6px rgb(var(--rgb-signal) / 0.3);
+  background: var(--p-line);
   /* width comes from the inline style and nothing animates it away */
 }
 .size-row.on .bar i, .size-row:hover .bar i { background: var(--pb-green); }
@@ -1131,34 +1109,32 @@ html, body {
 .statusbar {
   display: flex;
   justify-content: space-between;
-  border: 1px solid var(--gray-dim);
-  border-radius: 8px;
-  padding: 4px 12px;
-  background: linear-gradient(to top, rgba(22, 14, 7, 0.95), rgba(10, 6, 3, 0.85));
-  font-size: 0.85em;
-  color: var(--text-dim);
+  border: 1px solid #1f1408;
+  border-radius: 12px;
+  padding: 5px 14px;
+  background: #080502;
+  box-shadow: inset 0 0 0 1px rgb(var(--rgb-signal) / 0.10);
+  font-family: "VT323", monospace;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  color: var(--p-half);
   flex: 0 0 auto;
   margin-top: 12px;
 }
 .statusbar .left, .statusbar .right { display: flex; gap: 16px; flex-wrap: wrap; }
 .statusbar .item { transition: color 0.12s ease; white-space: nowrap; }
 .statusbar .item b { font-weight: normal; }
-.statusbar .item.online  { color: var(--green); }
-.statusbar .item.tor     { color: var(--cyan); }
-.statusbar .item.matrix  { color: var(--magenta); }
+.statusbar .item.online  { color: var(--p-body); }
+.statusbar .item.tor     { color: var(--p-half); }
+.statusbar .item.matrix  { color: var(--p-half); }
+.statusbar .item b       { color: var(--p-pale); }
 .statusbar .dot {
   display: inline-block;
-  width: 8px; height: 8px;
-  background: var(--magenta);
+  width: 7px; height: 7px;
+  background: var(--p-signal);
   border-radius: 50%;
   margin-right: 6px;
-  box-shadow: 0 0 6px var(--magenta);
   vertical-align: middle;
-  animation: status-pulse 1.6s ease-in-out infinite;
-}
-@keyframes status-pulse {
-  0%, 100% { box-shadow: 0 0 6px var(--magenta); opacity: 1; }
-  50%      { box-shadow: 0 0 14px var(--magenta); opacity: 0.7; }
 }
 
 /* konami */
@@ -1170,8 +1146,7 @@ body.unlocked {
 body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0.45); }
 
 @media (prefers-reduced-motion: reduce) {
-  .grain-overlay, .live-dot, .crt-led, .statusbar .dot,
-  .mod-btn.in, .tagline .cursor { animation: none !important; }
+  .crt-led, .tagline .cursor { animation: none !important; }
 }
 
 /* ─── cold open: bad signal, then the set switches off ───────────────────
@@ -1403,7 +1378,7 @@ body.unlocked .ascii { color: #ff2a2a; text-shadow: 0 0 14px rgba(255, 42, 42, 0
   font-size: 15px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--p-dim);
+  color: var(--p-half);
   text-shadow: none;
 }
 .hud-fig text {
@@ -1660,7 +1635,7 @@ img.px {
   line-height: 1.25;
   letter-spacing: 0.05em;
 }
-.op-row .k { color: var(--p-dim); text-transform: uppercase; }
+.op-row .k { color: var(--p-half); text-transform: uppercase; }
 .op-row .v {
   color: var(--p-body);
   text-align: right;
@@ -1697,7 +1672,7 @@ img.px {
   font-size: 15px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--p-dim);
+  color: var(--p-half);
   text-shadow: none;
 }
 
@@ -1707,25 +1682,26 @@ img.px {
 
 /* the release download chip, brighter than the source link beside it: one
    is where the code lives, the other is the thing you actually came for */
+/* The one button in the row. Filled, because it is the one thing anyone
+   came to this page for; everything around it steps back to make that true. */
 .chip.dl {
-  color: var(--p-core);
-  border-color: var(--p-mid);
-  background: rgb(var(--rgb-signal) / 0.10);
+  padding: 7px 14px 6px;
+  color: #120b05;
+  background: var(--p-signal);
+  border: 1px solid var(--p-glow);
+  border-radius: 3px;
   text-decoration: none;
   cursor: pointer;
+  letter-spacing: 0.12em;
+  transition: background 0.12s ease, transform 0.12s ease;
 }
-.chip.dl:hover { color: #000; background: var(--p-glow); border-color: var(--p-glow); }
-.chip.dl b { color: var(--p-glow); font-weight: 400; }
-.chip.dl:hover b, .chip.dl:hover .dl-n { color: #000; }
+.chip.dl:hover { background: var(--p-glow); transform: translateY(-1px); }
+.chip.dl b { color: #3a2006; font-weight: 400; }
 /* The counter sits beside the download rather than inside it. Inside, the
    number ran on after the file size and there was nothing to say which was
    which -- "406 kb 3" reads as a typo. */
-.chip.dl-count {
-  color: var(--p-half);
-  border-style: dashed;
-  cursor: default;
-}
-.chip.dl-count b { color: var(--p-body); font-weight: 400; }
+.chip.dl-count { color: var(--p-half); cursor: default; }
+.chip.dl-count b { color: var(--p-half); font-weight: 400; }
 
 /* the visitor count opens the map */
 a.item.visitors { text-decoration: none; cursor: pointer; }

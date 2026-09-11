@@ -238,8 +238,6 @@
       b.setAttribute("aria-selected", m.id === current ? "true" : "false");
       b.innerHTML =
         '<span class="marker"></span>' +
-        '<span class="grain-overlay"></span>' +
-        '<span class="hover-sweep"></span>' +
         '<span class="status-tag' + (m.repo ? " ready" : "") + '">' + esc(m.repo ? "public" : "local") + "</span>" +
         '<span class="idx">' + (i + 1 < 10 ? "0" : "") + (i + 1) + "</span>" +
         icon(m.id, "row-icon") +
@@ -251,8 +249,6 @@
       b.style.animationDelay = (i * 45) + "ms";
       b.addEventListener("click", function () { select(m.id); });
       listEl.appendChild(b);
-      // next frame so the animation actually plays on a re-render
-      requestAnimationFrame(function () { b.classList.add("in"); });
     });
 
     sweepIcons();
@@ -275,6 +271,8 @@
     h.push('<span class="chip">' + m.files + " <b>files</b></span>");
     if (m.key && m.key !== "—") h.push('<span class="chip">menu <b>' + esc(m.key) + "</b></span>");
     h.push('<span class="chip">c<b>#</b> · shvdn 3</span>');
+    h.push("</div>");   // chips: the facts
+    h.push('<div class="chips actions">');
     if (m.repo) {
       h.push('<a class="chip dl" hidden target="_blank" rel="noopener"></a>');
       h.push('<span class="chip dl-count" hidden></span>');
