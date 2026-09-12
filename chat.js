@@ -75,7 +75,13 @@ window.BUGCHAT = (function () {
 
   function handle() {
     var n = get("chat:name", "");
-    if (!n) { n = "anon-" + Math.random().toString(16).slice(2, 6); put("chat:name", n); }
+    // A browser that had one of the reserved names before they were reserved
+    // would be refused every line it tried to send, with no obvious way out.
+    // Give it a fresh one instead of a dead end.
+    if (!n || reserved(n)) {
+      n = "anon-" + Math.random().toString(16).slice(2, 6);
+      put("chat:name", n);
+    }
     return n.slice(0, MAX_NAME);
   }
 
