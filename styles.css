@@ -1823,6 +1823,73 @@ img.px {
   100%    { left: 140%; }
 }
 
+/* ─── the shoutbox ────────────────────────────────────────────────────
+   Under the spec panel, in the same bezel. Shut, it is a header and a
+   button and costs nothing; open, it holds GitHub's comment frame, which
+   is themed by giscus.css rather than by anything in here -- an iframe
+   inherits none of this. */
+.chat-window {
+  flex: 0 0 auto;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  background: #080502;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #1f1408;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--rgb-signal) / 0.10),
+    inset 0 0 48px rgba(0, 0, 0, 0.55);
+}
+.chat-window .spec-header { flex: 0 0 auto; }
+.chat-state { color: var(--p-dim); letter-spacing: 0.2em; }
+.chat-window.on .chat-state { color: var(--p-glow); }
+
+.chat-body { padding: 12px; }
+.chat-window.on .chat-body {
+  padding: 8px 10px 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-line) transparent;
+}
+
+.chat-open {
+  display: block;
+  width: 100%;
+  padding: 9px 10px 8px;
+  background: transparent;
+  border: 1px solid var(--p-line);
+  border-radius: 4px;
+  color: var(--p-body);
+  font-family: "VT323", monospace;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-shadow: none;
+  cursor: pointer;
+  transition: border-color 0.14s, color 0.14s, background 0.14s;
+}
+.chat-open:hover {
+  border-color: var(--p-signal);
+  color: var(--p-pale);
+  background: rgb(var(--rgb-signal) / 0.06);
+}
+.chat-open .caret { color: var(--p-signal); }
+
+.chat-note {
+  margin: 8px 2px 0;
+  font-family: "VT323", monospace;
+  font-size: 14px;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  color: var(--p-dim);
+  text-shadow: none;
+}
+.chat-window.on .chat-note { display: none; }
+.chat-body iframe { width: 100%; border: 0; color-scheme: dark; }
+
 /* ─── the strip: a mod's own pixel art, tiled ─────────────────────────
    Tiles hold the amber like every other picture until the pointer is on
    them; then the art shows as drawn. */

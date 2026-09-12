@@ -34,7 +34,7 @@
   <!-- Noto Sans JP is a very large family and this page uses 13 glyphs of it:
        the seal's ring and the operator card's strip. Subset to exactly those. -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=%E3%80%90%E3%80%91%E3%82%A4%E3%82%B9%E3%83%83%E3%83%87%E3%83%88%E3%83%9C%E3%83%A9%E3%83%AC%E3%83%BC%E5%AE%9F%E8%A1%8C&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=cb1b7b2b" />
+  <link rel="stylesheet" href="styles.css?v=789c5a14" />
 </head>
 <body>
   <!-- the cold open; intro.js fills this and then removes it -->
@@ -192,6 +192,22 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
           </div>
           <div class="spec-body" id="spec-body"></div>
         </div>
+
+        <!-- The shoutbox. Nothing loads until it is asked for: the panel is a
+             button until then, the way the video is a still until clicked.
+             app.js mounts giscus into #chat-body. -->
+        <div class="chat-window">
+          <div class="spec-header">
+            <span class="title" data-i18n="chat.title">SHOUTBOX</span>
+            <span class="chat-state" id="chat-state" data-i18n="chat.closed">closed</span>
+          </div>
+          <div class="chat-body" id="chat-body">
+            <button type="button" class="chat-open" id="chat-open">
+              <span class="caret">»</span> <span data-i18n="chat.open">open the shoutbox</span>
+            </button>
+            <p class="chat-note" data-i18n="chat.note">it runs on github discussions · sign in there to post</p>
+          </div>
+        </div>
       </aside>
     </div>
 
@@ -213,8 +229,8 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
   <script src="mods.js?v=c39d211a"></script>
   <script src="huds.js?v=75a231dd"></script>
   <script src="intro.js?v=0ca464f2"></script>
-  <script src="i18n/en.js?v=581eaf37"></script>
+  <script src="i18n/en.js?v=5c087fd4"></script>
   <script src="i18n.js?v=d44eda81"></script>
-  <script src="app.js?v=6f86c079"></script>
+  <script src="app.js?v=a858ff62"></script>
 </body>
 </html>

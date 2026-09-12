@@ -83,6 +83,13 @@
   "bubble.wip": "heads up: these mods are works in progress",
   "strip.product": "the product",
   "strip.menu": "on the menu",
+  "chat.title": "SHOUTBOX",
+  "chat.closed": "closed",
+  "chat.live": "live",
+  "chat.open": "open the shoutbox",
+  "chat.note": "it runs on github discussions · sign in there to post",
+  "chat.down": "the shoutbox is not answering just now",
+  "chat.github": "take it to github",
   "map.title": "Where from",
   "map.tab": "where from",
   "map.sub": "visitor map · one pin per country · no addresses kept",
@@ -149,56 +156,25 @@
     "Back, and put it away"
    ]
   },
-  "five0patrol": {
-   "tag": "the heat bar that fills before the first wanted star",
-   "blurb": "GTA V's police have two states — nothing at all, and a wanted level — and the step between them is instant. There is no version of being noticed. Five0 Patrol is the missing middle.",
+  "bare-minimum": {
+   "tag": "the needs the game left out, on a row of upright bars",
+   "blurb": "Needs the game never gave Franklin, kept on game-clock time rather than real time — a full game day is roughly forty-eight minutes of play, so eating is something you do while getting on with the game rather than an errand.",
    "points": [
     {
-     "h": "Heat, then stars",
-     "t": "Heat goes up when somebody sees you doing something petty and drains when nobody does. Stars are still the game's and still mean what they always did; this is what happens on the way there."
+     "h": "Tuned down on purpose",
+     "t": "Fifty-two game hours from a full stomach to an empty one, standing still. Slowed from twenty-eight, because under an hour from full to starving made eating the thing you were doing instead of the thing you did in passing."
     },
     {
-     "h": "The bar fills and somebody walks over",
-     "t": "An officer asks you about it, searches you, and either sends you on your way or does not. Admitting it, denying it and saying nothing all have a path to walking away, and all three have a path to a star. What decides it is what you are actually carrying and whether it matches what you told him."
+     "h": "The ini is the file you edit",
+     "t": "It is never overwritten by an update. The F7 menu does write to it — but only the single lines whose values you changed, and only once you stop pressing. Your comments, your ordering and anything else you have edited are left exactly as they are."
     },
     {
-     "h": "A star is what happens when that goes badly",
-     "t": "At one star the police carry stun guns rather than sidearms, and you can put your hands up and give yourself up rather than run."
-    },
-    {
-     "h": "And there are police out there to do it",
-     "t": "Foot patrols walk rounds on the pavements, some with a dog. Marked cars work the roads and the back alleys with a spotlight after dark."
-    },
-    {
-     "h": "It stands aside",
-     "t": "If LSPDFR is installed it steps back by default — that mod owns the wanted system, and two mods drawing over the same stars is very hard to diagnose from inside the game."
+     "h": "It knows about the others",
+     "t": "Drugs carried in Hoodrich's Posted Up show in this mod's pocket, and you can take one from there. They never take up a food slot. It does nothing at all if that mod is not installed."
     }
-   ]
-  },
-  "bloodymess": {
-   "tag": "blood that stays on the world, and comes home on your shoes",
-   "blurb": "More blood comes out of people, the blood stays on the world, and you track it out of the puddles. One .dll, one .ini, one data file — no asset replacement, no RPF edits, no gameconfig.",
-   "points": [
-    {
-     "h": "Shooting people is messier",
-     "t": "Every hit stamps extra wound decals, fires the game's own blood particles at entry and exit, and throws a cone of splatter out the far side that lands on whatever is actually behind them. Shotguns throw more of it than pistols. Kill somebody at arm's length and it comes back onto you."
-    },
-    {
-     "h": "Bodies bleed out",
-     "t": "A pool spreads from under anybody who goes down, growing over about half a minute — wet on tarmac, soaked-in on grass. Somebody wounded and still walking leaves a trail spaced by distance covered, so standing still leaves nothing and nobody bleeds forever."
-    },
-    {
-     "h": "And you walk it around",
-     "t": "Step in wet blood and it comes with you: a fading trail of footprints, left and right, pointing the way you are walking. It works for NPCs fleeing a scene, and for tyres driven through a pool."
-    },
-    {
-     "h": "One ledger, one hard cap",
-     "t": "The game has a fixed decal pool and script decals compete with its own bullet holes for it. Going over does not crash and does not log — decals just stop appearing. So everything this draws goes through a budget with a cap, a rate limit and a range limit, and it evicts its own oldest rather than letting the engine choose. That budget is deliberately not scaled by the gore level: turning the gore up cannot turn the safety off."
-    },
-    {
-     "h": "Every part of it switches off on its own",
-     "t": "Splatter, pooling, trails and footprints are four separate settings, from the ini or the F10 menu. Bleeding runs on a window that expires and is refreshed by being hurt, so nobody bleeds because they were scratched once. Every engine setting the mod touches is handed back on shutdown and on a script reload."
-    }
+   ],
+   "shots": [
+    "the needs down the left of the minimap — health, sleep, food, water, energy"
    ]
   },
   "fumes": {
@@ -232,46 +208,51 @@
    ],
    "video": "Filling up"
   },
-  "bare-minimum": {
-   "tag": "the needs the game left out, on a row of upright bars",
-   "blurb": "Needs the game never gave Franklin, kept on game-clock time rather than real time — a full game day is roughly forty-eight minutes of play, so eating is something you do while getting on with the game rather than an errand.",
+  "overspray": {
+   "tag": "spray paint on any surface in the city",
+   "blurb": "Hold the trigger with a can out and whatever you are aiming at takes paint. Walls, shutters, kerbs, the road, the side of a skip, a ceiling — anything solid. The paint stays where you put it and is still there when you come back.",
    "points": [
     {
-     "h": "Tuned down on purpose",
-     "t": "Fifty-two game hours from a full stomach to an empty one, standing still. Slowed from twenty-eight, because under an hour from full to starving made eating the thing you were doing instead of the thing you did in passing."
+     "h": "Thirteen colours and three caps",
+     "t": "Chrome and gold among them, and thin, stock and fat caps for the can — a fat cap lays a wide soft band, a thin one draws a line."
     },
     {
-     "h": "The ini is the file you edit",
-     "t": "It is never overwritten by an update. The F7 menu does write to it — but only the single lines whose values you changed, and only once you stop pressing. Your comments, your ordering and anything else you have edited are left exactly as they are."
+     "h": "It persists",
+     "t": "A piece you put on a wall in Strawberry is on that wall the next time you drive past it."
     },
     {
-     "h": "It knows about the others",
-     "t": "Drugs carried in Hoodrich's Posted Up show in this mod's pocket, and you can take one from there. They never take up a food slot. It does nothing at all if that mod is not installed."
+     "h": "One DLL, both editions",
+     "t": "Legacy and Enhanced from the same build. Needs ScriptHookVDotNet 3.9.0 or newer — an older one refuses to load it, and what that looks like is nothing at all."
     }
    ],
    "shots": [
-    "the needs down the left of the minimap — health, sleep, food, water, energy"
-   ]
+    "a tag going up, one pass of the can at a time"
+   ],
+   "video": "Spraying a wall"
   },
-  "weapon-tweaks": {
-   "tag": "fifty-eight things the game does to a gun and never lets you change",
-   "blurb": "How fast it fires, how much it kicks, what comes out of it, how he holds it, what is bolted to it, and whether there is a red dot on whatever you are pointing at. All of it on a panel that applies a change the instant you make it.",
+  "five0patrol": {
+   "tag": "the heat bar that fills before the first wanted star",
+   "blurb": "GTA V's police have two states — nothing at all, and a wanted level — and the step between them is instant. There is no version of being noticed. Five0 Patrol is the missing middle.",
    "points": [
     {
-     "h": "A script cannot change a weapon's cadence",
-     "t": "Rate of fire lives in weapons.meta, an asset file. Every mod that claims to change it from a script is doing something else and generally not saying what. So this does the something else, and says what."
+     "h": "Heat, then stars",
+     "t": "Heat goes up when somebody sees you doing something petty and drains when nobody does. Stars are still the game's and still mean what they always did; this is what happens on the way there."
     },
     {
-     "h": "Nothing is injected",
-     "t": "A semi-automatic fires on the rising edge of the attack control. The obvious trick — disable the control and hand it back through SET_CONTROL_VALUE_NEXT_FRAME — is a fight: the injection is for the next frame, the disable is for this one, and it works on one machine and stutters on another. Instead you really are holding the trigger down, and the mod takes the control away on the frames between shots."
+     "h": "The bar fills and somebody walks over",
+     "t": "An officer asks you about it, searches you, and either sends you on your way or does not. Admitting it, denying it and saying nothing all have a path to walking away, and all three have a path to a star. What decides it is what you are actually carrying and whether it matches what you told him."
     },
     {
-     "h": "What that gives you",
-     "t": "Every pistol, revolver and marksman rifle becomes fully automatic at whatever rate you set. Any weapon can be slowed down — a carbine held to three rounds a second is a burst discipline the game will not otherwise give you. It cannot make an automatic faster than its own cycle."
+     "h": "A star is what happens when that goes badly",
+     "t": "At one star the police carry stun guns rather than sidearms, and you can put your hands up and give yourself up rather than run."
     },
     {
-     "h": "Fifty-eight settings, one panel",
-     "t": "Recoil and how far it climbs, spread, what comes out of the muzzle, the grip he holds it with, what is bolted to the rail, and whether there is a red dot on whatever you are pointing at. F7 opens it and a change applies the instant you make it — no reload, no restart."
+     "h": "And there are police out there to do it",
+     "t": "Foot patrols walk rounds on the pavements, some with a dog. Marked cars work the roads and the back alleys with a spotlight after dark."
+    },
+    {
+     "h": "It stands aside",
+     "t": "If LSPDFR is installed it steps back by default — that mod owns the wanted system, and two mods drawing over the same stars is very hard to diagnose from inside the game."
     }
    ]
   },
@@ -303,27 +284,31 @@
     "Hazards, on a pad"
    ]
   },
-  "overspray": {
-   "tag": "spray paint on any surface in the city",
-   "blurb": "Hold the trigger with a can out and whatever you are aiming at takes paint. Walls, shutters, kerbs, the road, the side of a skip, a ceiling — anything solid. The paint stays where you put it and is still there when you come back.",
+  "bloodymess": {
+   "tag": "blood that stays on the world, and comes home on your shoes",
+   "blurb": "More blood comes out of people, the blood stays on the world, and you track it out of the puddles. One .dll, one .ini, one data file — no asset replacement, no RPF edits, no gameconfig.",
    "points": [
     {
-     "h": "Thirteen colours and three caps",
-     "t": "Chrome and gold among them, and thin, stock and fat caps for the can — a fat cap lays a wide soft band, a thin one draws a line."
+     "h": "Shooting people is messier",
+     "t": "Every hit stamps extra wound decals, fires the game's own blood particles at entry and exit, and throws a cone of splatter out the far side that lands on whatever is actually behind them. Shotguns throw more of it than pistols. Kill somebody at arm's length and it comes back onto you."
     },
     {
-     "h": "It persists",
-     "t": "A piece you put on a wall in Strawberry is on that wall the next time you drive past it."
+     "h": "Bodies bleed out",
+     "t": "A pool spreads from under anybody who goes down, growing over about half a minute — wet on tarmac, soaked-in on grass. Somebody wounded and still walking leaves a trail spaced by distance covered, so standing still leaves nothing and nobody bleeds forever."
     },
     {
-     "h": "One DLL, both editions",
-     "t": "Legacy and Enhanced from the same build. Needs ScriptHookVDotNet 3.9.0 or newer — an older one refuses to load it, and what that looks like is nothing at all."
+     "h": "And you walk it around",
+     "t": "Step in wet blood and it comes with you: a fading trail of footprints, left and right, pointing the way you are walking. It works for NPCs fleeing a scene, and for tyres driven through a pool."
+    },
+    {
+     "h": "One ledger, one hard cap",
+     "t": "The game has a fixed decal pool and script decals compete with its own bullet holes for it. Going over does not crash and does not log — decals just stop appearing. So everything this draws goes through a budget with a cap, a rate limit and a range limit, and it evicts its own oldest rather than letting the engine choose. That budget is deliberately not scaled by the gore level: turning the gore up cannot turn the safety off."
+    },
+    {
+     "h": "Every part of it switches off on its own",
+     "t": "Splatter, pooling, trails and footprints are four separate settings, from the ini or the F10 menu. Bleeding runs on a window that expires and is refreshed by being hurt, so nobody bleeds because they were scratched once. Every engine setting the mod touches is handed back on shutdown and on a script reload."
     }
-   ],
-   "shots": [
-    "a tag going up, one pass of the can at a time"
-   ],
-   "video": "Spraying a wall"
+   ]
   },
   "franklin-rp": {
    "tag": "an emote panel with a man stood next to it doing the emote",
@@ -344,6 +329,28 @@
     {
      "h": "Stop is on the numpad",
      "t": "Because every F-key on this install already belongs to another mod."
+    }
+   ]
+  },
+  "weapon-tweaks": {
+   "tag": "fifty-eight things the game does to a gun and never lets you change",
+   "blurb": "How fast it fires, how much it kicks, what comes out of it, how he holds it, what is bolted to it, and whether there is a red dot on whatever you are pointing at. All of it on a panel that applies a change the instant you make it.",
+   "points": [
+    {
+     "h": "A script cannot change a weapon's cadence",
+     "t": "Rate of fire lives in weapons.meta, an asset file. Every mod that claims to change it from a script is doing something else and generally not saying what. So this does the something else, and says what."
+    },
+    {
+     "h": "Nothing is injected",
+     "t": "A semi-automatic fires on the rising edge of the attack control. The obvious trick — disable the control and hand it back through SET_CONTROL_VALUE_NEXT_FRAME — is a fight: the injection is for the next frame, the disable is for this one, and it works on one machine and stutters on another. Instead you really are holding the trigger down, and the mod takes the control away on the frames between shots."
+    },
+    {
+     "h": "What that gives you",
+     "t": "Every pistol, revolver and marksman rifle becomes fully automatic at whatever rate you set. Any weapon can be slowed down — a carbine held to three rounds a second is a burst discipline the game will not otherwise give you. It cannot make an automatic faster than its own cycle."
+    },
+    {
+     "h": "Fifty-eight settings, one panel",
+     "t": "Recoil and how far it climbs, spread, what comes out of the muzzle, the grip he holds it with, what is bolted to the rail, and whether there is a red dot on whatever you are pointing at. F7 opens it and a change applies the instant you make it — no reload, no restart."
     }
    ]
   },

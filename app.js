@@ -1042,6 +1042,80 @@
     });
   }
 
+  /* The shoutbox.
+
+     giscus puts GitHub's comment UI in an iframe against a discussion in
+     this repo, so there is no database here, no key in this page, and
+     moderation is wherever the discussion is. It is a fair weight to load,
+     though -- so nothing loads until somebody asks, exactly like the video.
+     Having asked once, this browser is taken to mean it every time.
+
+     data-term pins every visitor to one thread rather than one per page:
+     it is a shoutbox, not comments on an article. */
+  (function shoutbox() {
+    var box = document.getElementById("chat-body");
+    var open = document.getElementById("chat-open");
+    var wrap = box && box.parentNode;
+    if (!box || !open) return;
+
+    var GISCUS = {
+      "data-repo": "defthrets/spitmux-mods",
+      "data-repo-id": "R_kgDOUUZiPA",
+      "data-category": "General",
+      "data-category-id": "DIC_kwDOUUZiPM4DFcvz",
+      "data-mapping": "specific",
+      "data-term": "shoutbox",
+      "data-strict": "1",
+      "data-reactions-enabled": "0",
+      "data-emit-metadata": "0",
+      "data-input-position": "top",
+      "data-theme": "https://spitmux.me/giscus.css",
+      "data-loading": "lazy",
+      "crossorigin": "anonymous"
+    };
+    // giscus ships its own translations; ours are a subset of theirs
+    var LANGS = { en: "en", ko: "ko", pt: "pt", zh: "zh-CN", ja: "ja",
+                  es: "es", de: "de", fr: "fr", hi: "en" };
+
+    var mounted = false;
+
+    function mount() {
+      box.innerHTML = "";
+      var s = document.createElement("script");
+      s.src = "https://giscus.app/client.js";
+      s.async = true;
+      for (var k in GISCUS) if (GISCUS.hasOwnProperty(k)) s.setAttribute(k, GISCUS[k]);
+      s.setAttribute("data-lang", LANGS[window.I18N ? window.I18N.current() : "en"] || "en");
+      box.appendChild(s);
+      wrap.classList.add("on");
+      var state = document.getElementById("chat-state");
+      if (state) { state.textContent = T("chat.live"); state.removeAttribute("data-i18n"); }
+      mounted = true;
+      try { localStorage.setItem("chat", "on"); } catch (e) {}
+    }
+
+    open.addEventListener("click", mount);
+    try { if (localStorage.getItem("chat") === "on") mount(); } catch (e) {}
+
+    /* The frame can fail for reasons this page cannot see -- the app not
+       installed on the repo, the discussion locked, giscus itself down --
+       and an empty box says none of that. It reports its trouble by
+       postMessage, so the panel says it plainly and offers the thread on
+       GitHub, which works either way. */
+    window.addEventListener("message", function (e) {
+      if (e.origin !== "https://giscus.app") return;
+      var d = e.data && e.data.giscus;
+      if (!d || !d.error) return;
+      box.innerHTML =
+        '<p class="chat-note" style="display:block">' + esc(T("chat.down")) + "</p>" +
+        '<a class="chat-open" href="https://github.com/defthrets/spitmux-mods/discussions" ' +
+        'target="_blank" rel="noopener"><span class="caret">»</span> ' + esc(T("chat.github")) + "</a>";
+    });
+
+    // the frame cannot be re-labelled from out here; it is built again
+    window.addEventListener("i18n", function () { if (mounted) mount(); });
+  })();
+
   window.addEventListener("konami", function () {
     document.body.classList.toggle("unlocked");
     flash("flash", window.crtFlash);

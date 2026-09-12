@@ -113,6 +113,14 @@ UI = {
     "strip.product": "the product",
     "strip.menu": "on the menu",
 
+    "chat.title": "SHOUTBOX",
+    "chat.closed": "closed",
+    "chat.live": "live",
+    "chat.open": "open the shoutbox",
+    "chat.note": "it runs on github discussions · sign in there to post",
+    "chat.down": "the shoutbox is not answering just now",
+    "chat.github": "take it to github",
+
     "map.title": "Where from",
     "map.tab": "where from",
     "map.sub": "visitor map · one pin per country · no addresses kept",
