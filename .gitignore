@@ -5,3 +5,4 @@ dist/
 seal/icons/
 __pycache__/
 *.pyc
+release-mods.log
