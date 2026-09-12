@@ -1029,8 +1029,8 @@
      though -- so nothing loads until somebody asks, exactly like the video.
      Having asked once, this browser is taken to mean it every time.
 
-     data-term pins every visitor to one thread rather than one per page:
-     it is a shoutbox, not comments on an article. */
+     Everyone lands in the same thread rather than one per page: it is a
+     chat, not comments on an article. */
   (function shoutbox() {
     var box = document.getElementById("chat-body");
     var open = document.getElementById("chat-open");
@@ -1042,9 +1042,10 @@
       "data-repo-id": "R_kgDOUUZiPA",
       "data-category": "General",
       "data-category-id": "DIC_kwDOUUZiPM4DFcvz",
-      "data-mapping": "specific",
-      "data-term": "shoutbox",
-      "data-strict": "1",
+      // pinned to one discussion by number: no title search to go wrong,
+      // and renaming the thread on GitHub cannot unhook the panel
+      "data-mapping": "number",
+      "data-term": "1",
       "data-reactions-enabled": "0",
       "data-emit-metadata": "0",
       "data-input-position": "top",
