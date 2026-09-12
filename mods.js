@@ -191,8 +191,8 @@ window.MODS = [
     tag: "the heat bar that fills before the first wanted star",
     cat: "POLICE",
     key: "F10",
-    lines: 33171,
-    files: 61,
+    lines: 32991,
+    files: 60,
     status: "PUBLIC",
     repo: null,
     blurb:

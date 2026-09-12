@@ -46,15 +46,37 @@ SKIP = {".git", "build", "tools", "release", "bin", "obj", ".claude", "packages"
 
 
 def count(repo):
+    """What git is tracking, not what happens to be lying about.
+
+    Walking the directory counted a half-written file somebody had not
+    committed yet, so this machine and the cloud disagreed about the same mod
+    every night and each kept correcting the other. Asking git means both see
+    the same thing, and an experiment in the working tree does not change what
+    the site claims."""
+    listed = subprocess.run(["git", "ls-files", "*.cs"], cwd=repo,
+                            capture_output=True, text=True)
+    if listed.returncode != 0:                      # not a checkout; walk it
+        names = []
+        for base, dirs, fs in os.walk(repo):
+            dirs[:] = [d for d in dirs if d not in SKIP]
+            names += [os.path.relpath(os.path.join(base, f), repo) for f in fs
+                      if f.endswith(".cs")]
+    else:
+        names = listed.stdout.split("\n")
+
     files = lines = 0
-    for base, dirs, names in os.walk(repo):
-        dirs[:] = [d for d in dirs if d not in SKIP]
-        for n in names:
-            if not n.endswith(".cs"):
-                continue
-            files += 1
-            with io.open(os.path.join(base, n), encoding="utf-8", errors="replace") as fh:
-                lines += sum(1 for _ in fh)
+    for rel in names:
+        rel = rel.strip()
+        if not rel:
+            continue
+        if set(rel.replace("\\", "/").split("/")) & SKIP:
+            continue
+        path = os.path.join(repo, rel)
+        if not os.path.isfile(path):
+            continue
+        files += 1
+        with io.open(path, encoding="utf-8", errors="replace") as fh:
+            lines += sum(1 for _ in fh)
     return files, lines
 
 
@@ -140,11 +162,52 @@ def main():
                                         ", ".join(m.split()[0] for m in moved))
     run(["git", "add", "mods.js", "index.html"])
     run(["git", "commit", "-m", msg + "\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>"])
-    # the branch moves under this: a cloud routine and a person both push here
-    subprocess.run(["git", "pull", "--rebase", "-q", "origin", "main"], cwd=HERE)
+    # The branch moves under this: a routine in the cloud and a person at a
+    # desk both push here. Rebasing onto whatever arrived is right; leaving a
+    # half-finished rebase behind when it does not is not, and it wedges every
+    # later run until somebody unpicks it by hand.
+    if not rebase_onto_origin():
+        raise SystemExit("  the pull conflicted on something other than the "
+                         "stamps; nothing pushed, nothing left half done")
     run(["git", "push", "-q", "origin", "main"])
     print("  pushed: %s" % msg.splitlines()[0])
     return 0
+
+
+def rebase_onto_origin():
+    """Rebase, and know what to do about the one conflict that is expected.
+
+    index.html and map.html carry a hash of every asset, so two machines
+    committing on the same day collide there. That conflict has exactly one
+    correct resolution -- run stamp.py again -- and no judgement in it. Any
+    other conflict is a real disagreement: abort, touch nothing, say so."""
+    pull = subprocess.run(["git", "pull", "--rebase", "-q", "origin", "main"],
+                          cwd=HERE, capture_output=True, text=True)
+    if pull.returncode == 0:
+        return True
+
+    stuck = subprocess.run(["git", "diff", "--name-only", "--diff-filter=U"],
+                           cwd=HERE, capture_output=True, text=True).stdout.split()
+    if not stuck or set(stuck) - {"index.html", "map.html"}:
+        subprocess.run(["git", "rebase", "--abort"], cwd=HERE)
+        print("  conflicted on: %s" % (", ".join(stuck) or "something unstated"))
+        return False
+
+    print("  stamps collided (%s); regenerating them" % ", ".join(stuck))
+    for f in stuck:
+        # --theirs is the commit being replayed, which is ours: keep its markup
+        # and let stamp.py settle the hashes
+        subprocess.run(["git", "checkout", "--theirs", "--", f], cwd=HERE)
+    run([sys.executable, os.path.join(HERE, "stamp.py")])
+    run(["git", "add"] + stuck)
+    env = dict(os.environ, GIT_EDITOR="true")
+    done = subprocess.run(["git", "rebase", "--continue"], cwd=HERE,
+                          capture_output=True, text=True, env=env)
+    if done.returncode != 0:
+        subprocess.run(["git", "rebase", "--abort"], cwd=HERE)
+        print("  could not finish the rebase: %s" % done.stderr.strip()[:200])
+        return False
+    return True
 
 
 if __name__ == "__main__":
