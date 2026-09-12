@@ -35,8 +35,8 @@ window.MODS = [
     tag: "drug-dealing and gang life, run off a phone that replaces the game's own",
     cat: "LIFE",
     key: "PHONE",
-    lines: 148878,
-    files: 206,
+    lines: 149019,
+    files: 207,
     status: "ACTIVE",
     repo: "https://github.com/defthrets/hoodrich",
     blurb:
