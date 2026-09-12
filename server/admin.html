@@ -77,8 +77,14 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
 .row.hidden-line .text { text-decoration:line-through; }
 .t { color:var(--dim); font-size:11px; white-space:nowrap; }
 .who { color:var(--glow); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.ip { color:var(--mid); font-size:11px; white-space:nowrap; cursor:pointer; }
+.ip { color:var(--mid); font-size:11px; white-space:nowrap; cursor:pointer; display:flex; align-items:center; gap:5px; }
 .ip:hover { color:var(--core); }
+.ip .flag {
+  width:15px; height:11px; flex:none; object-fit:cover;
+  border:1px solid var(--edge); border-radius:1px;
+}
+/* the page's own claim, when it disagrees with the proxy: worth seeing */
+.lie { color:#ff7a6b; font-size:10px; }
 .text { color:var(--pale); word-break:break-word; }
 .acts { display:flex; gap:4px; opacity:0; }
 .row:hover .acts { opacity:1; }
@@ -91,6 +97,31 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
 .ban-why { display:block; color:var(--dim); font-size:11px; }
 .empty { padding:16px 12px; color:var(--dim); font-family:"VT323",monospace; font-size:16px; }
 .say { padding:6px 12px; color:var(--glow); font-family:"VT323",monospace; font-size:15px; min-height:26px; }
+
+/* On a phone the two columns become one, the row becomes two lines, and the
+   actions stop hiding behind a hover that a finger cannot do. */
+@media (max-width: 820px) {
+  body { height:auto; min-height:100vh; overflow:auto; }
+  header { flex-wrap:wrap; gap:8px 14px; }
+  h1 { font-size:19px; }
+  .stats { width:100%; margin:0; gap:12px; font-size:14px; }
+  main { grid-template-columns:minmax(0,1fr); }
+  aside { border-left:0; border-top:1px solid var(--edge); }
+  .rows { max-height:none; }
+  .row {
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"who acts" "meta meta" "text text";
+    gap:2px 10px; padding:8px 12px;
+  }
+  .row .who { grid-area:who; font-size:14px; }
+  .row .acts { grid-area:acts; opacity:1; }
+  .row .t { grid-area:meta; }
+  .row .ip { grid-area:meta; justify-self:end; }
+  .row .text { grid-area:text; margin-top:2px; }
+  .bar { flex-wrap:wrap; }
+  .bar input[type=text] { min-width:60%; }
+  button, input, select { padding:7px 10px; font-size:13px; }
+}
 </style>
 </head>
 <body>
@@ -156,6 +187,19 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
     });
   }
 
+  function flag(cc) {
+    return /^[A-Za-z]{2}$/.test(cc || "")
+      ? '<img class="flag" alt="" src="https://flagcdn.com/' + cc.toLowerCase() + '.svg">' : "";
+  }
+
+  // what the tooltip on an address says
+  function where(l) {
+    var bits = ["click to filter by this address"];
+    if (l.geo) bits.push("cloudflare says " + l.geo);
+    if (l.cc && l.cc !== l.geo) bits.push("the page said " + l.cc);
+    return bits.join(" · ");
+  }
+
   function when(ts) {
     var d = new Date(ts), now = new Date();
     var t = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })
@@ -182,14 +226,17 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
       if (mode === "live" && l.hidden) return false;
       if (mode === "hidden" && !l.hidden) return false;
       if (!q) return true;
-      return (l.text + " " + l.name + " " + l.ip + " " + (l.cc||"")).toLowerCase().indexOf(q) > -1;
+      return (l.text + " " + l.name + " " + l.ip + " " + (l.cc||"") + " " + (l.geo||"")).toLowerCase().indexOf(q) > -1;
     });
     if (!rows.length) { $("rows").innerHTML = '<div class="empty">nothing matches</div>'; return; }
     $("rows").innerHTML = rows.map(function (l) {
       return '<div class="row' + (l.hidden ? " hidden-line" : "") + '">' +
         '<span class="t">' + esc(when(l.ts)) + "</span>" +
-        '<span class="who">' + esc(l.name) + (l.cc ? ' <span class="t">' + esc(l.cc) + "</span>" : "") + "</span>" +
-        '<span class="ip" data-ip="' + esc(l.ip) + '" title="click to filter by this address">' + esc(l.ip) + "</span>" +
+        '<span class="who">' + esc(l.name) + "</span>" +
+        '<span class="ip" data-ip="' + esc(l.ip) + '" title="' + esc(where(l)) + '">' +
+          flag(l.geo || l.cc) + esc(l.ip) +
+          (l.cc && l.geo && l.cc !== l.geo ? ' <span class="lie">said ' + esc(l.cc) + "</span>" : "") +
+        "</span>" +
         '<span class="text">' + esc(l.text) + "</span>" +
         '<span class="acts">' +
           (l.hidden ? "" : '<button data-hide="' + l.id + '">hide</button>') +

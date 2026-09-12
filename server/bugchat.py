@@ -71,7 +71,8 @@ CREATE TABLE IF NOT EXISTS msg (
   name    TEXT    NOT NULL,
   text    TEXT    NOT NULL,
   ip      TEXT    NOT NULL,
-  cc      TEXT    NOT NULL DEFAULT '',
+  cc      TEXT    NOT NULL DEFAULT '',   -- what the page said, and can lie
+  geo     TEXT    NOT NULL DEFAULT '',   -- what Cloudflare said, and cannot
   hidden  INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS msg_ts ON msg (ts);
@@ -102,6 +103,10 @@ def setup():
     c = db()
     with c:
         c.executescript(SCHEMA)
+        # a room that predates the geo column keeps its lines
+        have = [r["name"] for r in c.execute("PRAGMA table_info(msg)")]
+        if "geo" not in have:
+            c.execute("ALTER TABLE msg ADD COLUMN geo TEXT NOT NULL DEFAULT ''")
     c.close()
 
 
@@ -146,6 +151,17 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         sys.stderr.write("%s  %s  %s\n" % (
             time.strftime("%Y-%m-%d %H:%M:%S"), self.client_ip(), fmt % args))
+
+    def client_country(self):
+        """Where Cloudflare says the request came from.
+
+        The page sends a country too, but the page is a stranger's browser and
+        can say whatever it likes. This one is added by the proxy the request
+        actually came through, so it is the one worth moderating on. Empty when
+        somebody reaches the service directly on the LAN, which is fine -- the
+        page's own guess is kept as well and stands in."""
+        cc = (self.headers.get("CF-IPCountry", "") or "").strip().upper()
+        return cc if re.match(r"^[A-Z]{2}$", cc) else ""
 
     def client_ip(self):
         """The address the reverse proxy saw, not the proxy's own."""
@@ -240,12 +256,14 @@ class Handler(BaseHTTPRequestHandler):
             c = db()
             if since:
                 rows = c.execute(
-                    "SELECT id, ts, name, text, cc FROM msg WHERE hidden=0 AND id>? "
-                    "ORDER BY id LIMIT 200", (since,)).fetchall()
+                    "SELECT id, ts, name, text, "
+                    "CASE WHEN geo <> '' THEN geo ELSE cc END AS cc "
+                    "FROM msg WHERE hidden=0 AND id>? ORDER BY id LIMIT 200", (since,)).fetchall()
             else:
                 rows = c.execute(
-                    "SELECT id, ts, name, text, cc FROM msg WHERE hidden=0 "
-                    "ORDER BY id DESC LIMIT ?", (ROOM_LINES,)).fetchall()
+                    "SELECT id, ts, name, text, "
+                    "CASE WHEN geo <> '' THEN geo ELSE cc END AS cc "
+                    "FROM msg WHERE hidden=0 ORDER BY id DESC LIMIT ?", (ROOM_LINES,)).fetchall()
                 rows = list(reversed(rows))
             c.close()
             return self.reply(200, {"lines": [dict(r) for r in rows]})
@@ -300,15 +318,16 @@ class Handler(BaseHTTPRequestHandler):
                 c.close()
                 return self.reply(429, {"error": slow})
 
+            geo = self.client_country()
             ts = int(time.time() * 1000)
             with c:
                 cur = c.execute(
-                    "INSERT INTO msg (ts, name, text, ip, cc) VALUES (?,?,?,?,?)",
-                    (ts, name, text, ip, cc))
+                    "INSERT INTO msg (ts, name, text, ip, cc, geo) VALUES (?,?,?,?,?,?)",
+                    (ts, name, text, ip, cc, geo))
             rid = cur.lastrowid
             c.close()
             return self.reply(200, {"line": {"id": rid, "ts": ts, "name": name,
-                                             "text": text, "cc": cc}})
+                                             "text": text, "cc": geo or cc}})
 
         if path.startswith("/api/admin/"):
             if not self.admin_ok():

@@ -125,6 +125,7 @@ UI = {
     "chat.name": "your handle",
     "chat.placeholder": "say something",
     "chat.send": "send",
+    "chat.emoji": "pictures",
 
     "map.title": "Where from",
     "map.tab": "where from",

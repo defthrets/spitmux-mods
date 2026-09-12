@@ -1835,7 +1835,44 @@ img.px {
 
 .chat-said { margin: 0; color: var(--p-glow); font-family: "VT323", monospace; font-size: 15px; text-shadow: none; }
 .chat-said:empty { display: none; }
-.chat-form { display: grid; grid-template-columns: 78px minmax(0, 1fr) 30px; gap: 6px; }
+.chat-form { display: grid; grid-template-columns: 74px minmax(0, 1fr) 28px 28px; gap: 5px; }
+
+/* the site's own art, small enough to sit in a sentence */
+.chat-line .emo {
+  width: 18px; height: 18px;
+  vertical-align: -4px;
+  margin: 0 1px;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+.chat-tray {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid var(--p-edge);
+  border-radius: 4px;
+  background: #0a0603;
+}
+.chat-tray[hidden] { display: none; }
+.chat-tray button {
+  padding: 3px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  line-height: 0;
+}
+.chat-tray button:hover { border-color: var(--p-signal); background: rgb(var(--rgb-signal) / 0.08); }
+.chat-tray img {
+  width: 26px; height: 26px;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  filter: saturate(0.35) brightness(0.9) sepia(0.3);
+}
+.chat-tray button:hover img { filter: none; }
+.chat-emo { color: var(--p-glow) !important; font-size: 15px; }
 .chat-form input, .chat-form button {
   background: #0a0603;
   border: 1px solid var(--p-line);

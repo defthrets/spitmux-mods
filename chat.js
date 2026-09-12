@@ -23,6 +23,18 @@ window.BUGCHAT = (function () {
 
   var base = "", host = null, cb = null, lines = [], last = 0, timer = null, stopped = false;
 
+  /* The site's own pixel art, small enough to sit in a sentence. A fixed list,
+     not a path anyone can type: the code is a key here, never part of a URL,
+     so the worst a stranger can put in a message is a colon. */
+  var EMO = {
+    bag: "hoodrich", burger: "bare-minimum", can: "fumes", paint: "overspray",
+    cop: "five0patrol", wheel: "vehicle-tweaks", blood: "bloodymess",
+    bandana: "franklin-rp", gun: "weapon-tweaks", golf: "streetgolf",
+    demon: "demon", spook: "bubble"
+  };
+  var EMO_RE = new RegExp(":(" + Object.keys(EMO).join("|") + "):", "g");
+  var ART = (document.querySelector('meta[name="art-v"]') || {}).content || "";
+
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -63,9 +75,20 @@ window.BUGCHAT = (function () {
           x.cc.toLowerCase() + '.svg">' : "";
       return '<div class="chat-line"><span class="t">' + esc(clock(x.ts)) + "</span>" +
              '<span class="who">' + flag + esc(x.name) + "</span>" +
-             '<span class="say">' + esc(x.text) + "</span></div>";
+             '<span class="say">' + emoji(esc(x.text)) + "</span></div>";
     }).join("");
     if (stuck) log.scrollTop = log.scrollHeight;
+  }
+
+  // run over ESCAPED text, so the only markup here is the markup put here
+  function emoji(safe) {
+    return safe.replace(EMO_RE, function (whole, code) {
+      return '<img class="emo" alt="' + whole + '" title="' + whole + '" src="' +
+             base_icon(EMO[code]) + '">';
+    });
+  }
+  function base_icon(name) {
+    return "icons/" + name + ".gif" + (ART ? "?v=" + ART : "");
   }
 
   function note(msg) {
@@ -135,6 +158,24 @@ window.BUGCHAT = (function () {
       input.value = "";
       say(v);
     });
+
+    // the tray: click a picture, get its code where the cursor was
+    var tray = host.querySelector(".chat-tray");
+    host.querySelector(".chat-emo").addEventListener("click", function () {
+      tray.hidden = !tray.hidden;
+    });
+    tray.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-emo]");
+      if (!b) return;
+      var code = ":" + b.dataset.emo + ":";
+      var at = input.selectionStart == null ? input.value.length : input.selectionStart;
+      var before = input.value.slice(0, at), after = input.value.slice(at);
+      if (before && !/\s$/.test(before)) code = " " + code;
+      input.value = (before + code + after).slice(0, MAX_TEXT);
+      input.focus();
+      var pos = Math.min((before + code).length, MAX_TEXT);
+      input.setSelectionRange(pos, pos);
+    });
   }
 
   function mount(el, onState) {
@@ -154,8 +195,14 @@ window.BUGCHAT = (function () {
       'aria-label="' + esc(T("chat.name")) + '">' +
       '<input class="chat-say" type="text" maxlength="' + MAX_TEXT + '" autocomplete="off" ' +
       'placeholder="' + esc(T("chat.placeholder")) + '" aria-label="' + esc(T("chat.placeholder")) + '">' +
+      '<button type="button" class="chat-emo" aria-label="' + esc(T("chat.emoji")) + '">&#9786;</button>' +
       '<button type="submit" aria-label="' + esc(T("chat.send")) + '">&#8629;</button>' +
-      "</form>";
+      "</form>" +
+      '<div class="chat-tray" hidden>' +
+      Object.keys(EMO).map(function (code) {
+        return '<button type="button" data-emo="' + code + '" title=":' + code + ':">' +
+               '<img alt=":' + code + ':" src="' + base_icon(EMO[code]) + '"></button>';
+      }).join("") + "</div>";
     wire();
     state("chat.connecting", false);
     poll(true);
