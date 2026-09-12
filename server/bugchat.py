@@ -18,6 +18,12 @@ What it does
     POST /api/admin/unban       {ip|name}
     POST /api/admin/hide        {id} -- takes one line off the wall
     GET  /api/admin/export      the lot, as JSON
+    GET  /admin                 the warden: a page to do all of that from
+
+The warden is served from here rather than from the site, so it is the same
+origin as the API it drives and CORS never enters into it. It is public in the
+sense that anyone may load the HTML; it is inert without the token, and a
+handful of wrong guesses puts that address in the corner for a while.
 
 Everything under /api/admin wants the token in `X-Admin-Token`, which comes
 from BUGCHAT_TOKEN in the environment. Without that variable the admin half
@@ -30,6 +36,7 @@ cannot ban what you did not write down. It is never served to the public room
 did. Only the admin endpoints, behind the token, can see who said what.
 """
 
+import io
 import json
 import os
 import re
@@ -77,6 +84,11 @@ CREATE TABLE IF NOT EXISTS ban (
 
 _lock = threading.Lock()
 _last_said = {}           # ip -> [last time, [times this minute]]
+_wrong = {}               # ip -> [failed guesses, when the lockout lifts]
+
+WARDEN = os.path.join(HERE, "admin.html")
+GUESSES = 6               # wrong tokens before that address waits
+LOCKOUT_S = 300
 
 
 def db():
@@ -171,7 +183,26 @@ class Handler(BaseHTTPRequestHandler):
             return {}
 
     def admin_ok(self):
-        return bool(TOKEN) and self.headers.get("X-Admin-Token", "") == TOKEN
+        """The token, and patience. Six wrong guesses and that address waits
+        five minutes -- enough to make grinding at it pointless, not enough to
+        matter to somebody who fat-fingered it."""
+        if not TOKEN:
+            return False
+        ip = self.client_ip()
+        now = time.time()
+        with _lock:
+            bad, until = _wrong.get(ip, (0, 0.0))
+            if now < until:
+                return False
+        if self.headers.get("X-Admin-Token", "") == TOKEN:
+            with _lock:
+                _wrong.pop(ip, None)
+            return True
+        with _lock:
+            bad += 1
+            _wrong[ip] = (bad, now + LOCKOUT_S if bad >= GUESSES else 0.0)
+        self.log_message("admin: wrong token (%d)", bad)
+        return False
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -183,6 +214,20 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path, _, query = self.path.partition("?")
         q = dict(p.split("=", 1) for p in query.split("&") if "=" in p)
+
+        if path in ("/admin", "/admin/"):
+            try:
+                body = io.open(WARDEN, "rb").read()
+            except Exception:
+                return self.reply(404, {"error": "no warden here"})
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Robots-Tag", "noindex")
+            self.end_headers()
+            self.wfile.write(body)
+            return
 
         if path == "/api/health":
             c = db()
@@ -215,6 +260,14 @@ class Handler(BaseHTTPRequestHandler):
                     "SELECT * FROM msg ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
                 c.close()
                 return self.reply(200, {"lines": [dict(r) for r in rows]})
+            if path == "/api/admin/stats":
+                row = c.execute(
+                    "SELECT COUNT(*) lines, SUM(hidden) hidden, COUNT(DISTINCT ip) ips "
+                    "FROM msg").fetchone()
+                bans = c.execute("SELECT COUNT(*) n FROM ban").fetchone()["n"]
+                c.close()
+                return self.reply(200, {"lines": row["lines"], "hidden": row["hidden"] or 0,
+                                        "addresses": row["ips"], "bans": bans})
             if path == "/api/admin/bans":
                 rows = c.execute("SELECT * FROM ban ORDER BY ts DESC").fetchall()
                 c.close()

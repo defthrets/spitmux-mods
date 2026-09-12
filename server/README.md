@@ -41,7 +41,24 @@ reason), 429 if it is being hammered, 400 if there is nothing in it.
 
 Only these three are public, and none of them return an address.
 
-## Moderating it
+## The warden
+
+A page for doing all of that with a mouse: `https://chat.spitmux.me/admin`, or
+`http://192.168.1.253:8712/admin` from the house. The chat service serves it
+itself, so it is the same origin as the API it drives and CORS never comes
+into it, and there is nothing installed anywhere to fall out of step.
+
+It shows every line with its address, filters on any of it, hides a line, bars
+an address or a whole /24 or a handle, lifts a ban, and exports the lot as
+JSON. It polls every five seconds. The token is asked for once and kept in
+that browser; six wrong guesses and the address that made them waits five
+minutes.
+
+On Windows, `warden.cmd` opens it as a window with no browser furniture --
+there is a shortcut on the desktop pointing at it. It prefers the homelab
+directly when it can see it, so it keeps working with the tunnel down.
+
+## Moderating it from a terminal
 
 Everything below wants `X-Admin-Token`, which is `BUGCHAT_TOKEN` in the unit
 file. It is not in this repository and must not be: the repository is public.

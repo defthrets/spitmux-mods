@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>bug chat · warden</title>
+<meta name="robots" content="noindex" />
+<meta name="color-scheme" content="dark" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=VT323&display=swap" rel="stylesheet" />
+<style>
+/* The warden. Served by the chat service itself, so it is same-origin and
+   never troubles CORS -- and so it is reachable from the desk, the sofa or
+   the phone without anything installed anywhere. The token is the only lock;
+   everything below is inert without it. */
+:root {
+  --core:#fdf0c2; --pale:#ffd283; --glow:#ffb24d; --signal:#ff9418; --body:#e7933b;
+  --mid:#bf7224; --half:#b56c28; --dim:#8f511b; --line:#603614; --edge:#3d220c;
+  --rgb-signal:255 148 24;
+  --bg:#0a0603; --panel:#0d0805; --lift:#140e08;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--body);
+  font-family:"JetBrains Mono", ui-monospace, monospace; font-size:13px;
+  height:100vh; display:flex; flex-direction:column; overflow:hidden;
+}
+header {
+  flex:0 0 auto; display:flex; align-items:center; gap:14px;
+  padding:8px 14px; border-bottom:1px solid var(--edge); background:var(--panel);
+}
+h1 {
+  margin:0; font-family:"VT323",monospace; font-size:22px; font-weight:400;
+  letter-spacing:.3em; text-transform:uppercase; color:var(--pale);
+}
+.dot { width:8px; height:8px; border-radius:50%; background:var(--line); }
+.dot.on { background:var(--signal); box-shadow:0 0 8px rgb(var(--rgb-signal)/.6); }
+.stats { margin-left:auto; display:flex; gap:18px; font-family:"VT323",monospace; font-size:16px; color:var(--half); }
+.stats b { color:var(--core); font-weight:400; }
+button, input, select {
+  background:var(--lift); border:1px solid var(--line); border-radius:3px;
+  color:var(--pale); font-family:inherit; font-size:12px; padding:5px 8px;
+}
+button { cursor:pointer; color:var(--signal); }
+button:hover { border-color:var(--signal); }
+button.bad { color:#ff7a6b; }
+button.bad:hover { border-color:#ff7a6b; }
+input::placeholder { color:var(--dim); }
+
+#gate { margin:auto; text-align:center; padding:30px; }
+#gate p { color:var(--half); font-family:"VT323",monospace; font-size:17px; }
+#gate input { width:340px; text-align:center; letter-spacing:.1em; }
+
+main { flex:1; display:grid; grid-template-columns:minmax(0,1fr) 300px; min-height:0; }
+main[hidden] { display:none; }
+section { display:flex; flex-direction:column; min-height:0; min-width:0; }
+aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; min-height:0; }
+.bar {
+  flex:0 0 auto; display:flex; gap:8px; align-items:center;
+  padding:8px 12px; border-bottom:1px solid var(--edge); background:var(--panel);
+}
+.bar input[type=text] { flex:1; }
+.head {
+  padding:8px 12px; border-bottom:1px solid var(--edge); background:var(--panel);
+  font-family:"VT323",monospace; font-size:15px; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--half);
+}
+.rows { flex:1; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+.row {
+  display:grid; grid-template-columns:62px 120px 128px minmax(0,1fr) auto;
+  gap:10px; align-items:baseline; padding:5px 12px;
+  border-bottom:1px solid rgb(var(--rgb-signal)/.06);
+}
+.row:hover { background:rgb(var(--rgb-signal)/.05); }
+.row.hidden-line { opacity:.4; }
+.row.hidden-line .text { text-decoration:line-through; }
+.t { color:var(--dim); font-size:11px; white-space:nowrap; }
+.who { color:var(--glow); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ip { color:var(--mid); font-size:11px; white-space:nowrap; cursor:pointer; }
+.ip:hover { color:var(--core); }
+.text { color:var(--pale); word-break:break-word; }
+.acts { display:flex; gap:4px; opacity:0; }
+.row:hover .acts { opacity:1; }
+.acts button { padding:2px 6px; font-size:11px; }
+.ban-row {
+  display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px;
+  align-items:baseline; padding:6px 12px; border-bottom:1px solid rgb(var(--rgb-signal)/.06);
+}
+.ban-what { color:var(--pale); word-break:break-all; }
+.ban-why { display:block; color:var(--dim); font-size:11px; }
+.empty { padding:16px 12px; color:var(--dim); font-family:"VT323",monospace; font-size:16px; }
+.say { padding:6px 12px; color:var(--glow); font-family:"VT323",monospace; font-size:15px; min-height:26px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="dot" id="dot"></span>
+  <h1>warden</h1>
+  <div class="stats" id="stats"></div>
+</header>
+
+<div id="gate">
+  <p>the admin token, please</p>
+  <p><input id="token" type="password" autocomplete="off" spellcheck="false"
+            placeholder="BUGCHAT_TOKEN"> <button id="unlock">unlock</button></p>
+  <p id="gate-say" style="color:#ff7a6b"></p>
+</div>
+
+<main id="app" hidden>
+  <section>
+    <div class="bar">
+      <input id="q" type="text" placeholder="filter by anything — a word, a name, an address">
+      <select id="show">
+        <option value="all">everything</option>
+        <option value="live">on the wall</option>
+        <option value="hidden">taken down</option>
+      </select>
+      <button id="refresh">refresh</button>
+      <button id="export">export</button>
+      <button id="lock" class="bad">lock</button>
+    </div>
+    <div class="rows" id="rows"><div class="empty">reading…</div></div>
+    <div class="say" id="say"></div>
+  </section>
+
+  <aside>
+    <div class="head">barred</div>
+    <div class="rows" id="bans"><div class="empty">nobody</div></div>
+    <div class="bar">
+      <input id="ban-what" type="text" placeholder="an address, a 1.2.3. prefix, or a name">
+      <button id="ban-add">bar</button>
+    </div>
+  </aside>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var token = "", lines = [], bans = [], timer = null;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function say(m, bad) { var el = $("say"); el.textContent = m || ""; el.style.color = bad ? "#ff7a6b" : "var(--glow)"; }
+
+  function ask(path, body) {
+    var o = { headers: { "X-Admin-Token": token }, cache: "no-store" };
+    if (body) { o.method = "POST"; o.headers["Content-Type"] = "application/json"; o.body = JSON.stringify(body); }
+    return fetch(path, o).then(function (r) {
+      if (r.status === 403) { lock("that token is not it"); throw new Error("403"); }
+      return r.json();
+    });
+  }
+
+  function when(ts) {
+    var d = new Date(ts), now = new Date();
+    var t = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })
+             .replace(/\bAM\b/i,"am").replace(/\bPM\b/i,"pm");
+    return d.toDateString() === now.toDateString() ? t
+         : d.toLocaleDateString([], { day: "numeric", month: "short" }) + " " + t;
+  }
+
+  function drawStats() {
+    var live = lines.filter(function (l) { return !l.hidden; });
+    var ips = {}, today = 0, midnight = new Date(); midnight.setHours(0,0,0,0);
+    lines.forEach(function (l) { ips[l.ip] = 1; if (l.ts >= +midnight) today++; });
+    $("stats").innerHTML =
+      "<span>lines <b>" + live.length + "</b></span>" +
+      "<span>today <b>" + today + "</b></span>" +
+      "<span>addresses <b>" + Object.keys(ips).length + "</b></span>" +
+      "<span>barred <b>" + bans.length + "</b></span>";
+  }
+
+  function drawRows() {
+    var q = $("q").value.trim().toLowerCase();
+    var mode = $("show").value;
+    var rows = lines.filter(function (l) {
+      if (mode === "live" && l.hidden) return false;
+      if (mode === "hidden" && !l.hidden) return false;
+      if (!q) return true;
+      return (l.text + " " + l.name + " " + l.ip + " " + (l.cc||"")).toLowerCase().indexOf(q) > -1;
+    });
+    if (!rows.length) { $("rows").innerHTML = '<div class="empty">nothing matches</div>'; return; }
+    $("rows").innerHTML = rows.map(function (l) {
+      return '<div class="row' + (l.hidden ? " hidden-line" : "") + '">' +
+        '<span class="t">' + esc(when(l.ts)) + "</span>" +
+        '<span class="who">' + esc(l.name) + (l.cc ? ' <span class="t">' + esc(l.cc) + "</span>" : "") + "</span>" +
+        '<span class="ip" data-ip="' + esc(l.ip) + '" title="click to filter by this address">' + esc(l.ip) + "</span>" +
+        '<span class="text">' + esc(l.text) + "</span>" +
+        '<span class="acts">' +
+          (l.hidden ? "" : '<button data-hide="' + l.id + '">hide</button>') +
+          '<button class="bad" data-ban="' + esc(l.ip) + '">ban ip</button>' +
+          '<button class="bad" data-ban24="' + esc(l.ip) + '">/24</button>' +
+          '<button class="bad" data-banname="' + esc(l.name) + '">name</button>' +
+        "</span></div>";
+    }).join("");
+  }
+
+  function drawBans() {
+    if (!bans.length) { $("bans").innerHTML = '<div class="empty">nobody</div>'; return; }
+    $("bans").innerHTML = bans.map(function (b) {
+      return '<div class="ban-row"><span><span class="ban-what">' + esc(b.what) + "</span>" +
+        (b.reason ? '<span class="ban-why">' + esc(b.reason) + "</span>" : "") + "</span>" +
+        '<button data-unban="' + esc(b.what) + '">lift</button></div>';
+    }).join("");
+  }
+
+  function load() {
+    return Promise.all([
+      ask("api/admin/log?limit=1000"),
+      ask("api/admin/bans")
+    ]).then(function (r) {
+      lines = (r[0].lines || []).slice().sort(function (a, b) { return b.ts - a.ts; });
+      bans = r[1].bans || [];
+      $("dot").classList.add("on");
+      drawStats(); drawRows(); drawBans();
+    }).catch(function () { $("dot").classList.remove("on"); });
+  }
+
+  function unlock() {
+    token = $("token").value.trim();
+    if (!token) return;
+    ask("api/admin/bans").then(function () {
+      try { localStorage.setItem("warden", token); } catch (e) {}
+      $("gate").hidden = true; $("app").hidden = false;
+      load();
+      timer = setInterval(load, 5000);
+    }).catch(function () {});
+  }
+
+  function lock(why) {
+    clearInterval(timer);
+    token = "";
+    try { localStorage.removeItem("warden"); } catch (e) {}
+    $("app").hidden = true; $("gate").hidden = false;
+    $("gate-say").textContent = why || "";
+  }
+
+  $("unlock").addEventListener("click", unlock);
+  $("token").addEventListener("keydown", function (e) { if (e.key === "Enter") unlock(); });
+  $("lock").addEventListener("click", function () { lock(""); });
+  $("refresh").addEventListener("click", load);
+  $("q").addEventListener("input", drawRows);
+  $("show").addEventListener("change", drawRows);
+
+  $("export").addEventListener("click", function () {
+    ask("api/admin/export").then(function (d) {
+      var blob = new Blob([JSON.stringify(d.lines, null, 1)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "bugchat-" + new Date().toISOString().slice(0, 10) + ".json";
+      a.click();
+      say("exported " + (d.lines || []).length + " lines");
+    });
+  });
+
+  $("rows").addEventListener("click", function (e) {
+    var b = e.target.closest("button"), ip = e.target.closest(".ip");
+    if (ip) { $("q").value = ip.dataset.ip; drawRows(); return; }
+    if (!b) return;
+    if (b.dataset.hide) {
+      ask("api/admin/hide", { id: +b.dataset.hide }).then(function () { say("taken down"); load(); });
+    } else if (b.dataset.ban) {
+      ban({ ip: b.dataset.ban, purge: 1 });
+    } else if (b.dataset.ban24) {
+      var p = b.dataset.ban24.split(".").slice(0, 3).join(".") + ".";
+      ban({ ip: p, purge: 1 });
+    } else if (b.dataset.banname) {
+      ban({ name: b.dataset.banname, purge: 1 });
+    }
+  });
+
+  function ban(what) {
+    var reason = prompt("why? (optional)", "") ;
+    if (reason === null) return;
+    what.reason = reason;
+    ask("api/admin/ban", what).then(function (d) { say("barred " + d.banned); load(); });
+  }
+
+  $("ban-add").addEventListener("click", function () {
+    var v = $("ban-what").value.trim();
+    if (!v) return;
+    $("ban-what").value = "";
+    ban(/^[0-9a-f:.]+$/i.test(v) ? { ip: v } : { name: v });
+  });
+
+  $("bans").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-unban]");
+    if (!b) return;
+    var what = b.dataset.unban;
+    ask("api/admin/unban", what.indexOf("ip:") === 0 ? { ip: what.slice(3) } : { name: what.slice(5) })
+      .then(function () { say("lifted " + what); load(); });
+  });
+
+  try {
+    var saved = localStorage.getItem("warden");
+    if (saved) { $("token").value = saved; unlock(); }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
