@@ -6,3 +6,4 @@ seal/icons/
 __pycache__/
 *.pyc
 release-mods.log
+server/chat.db*

@@ -1833,6 +1833,8 @@ img.px {
 }
 .chat-line .say { grid-column: 1 / -1; color: var(--p-pale); word-break: break-word; }
 
+.chat-said { margin: 0; color: var(--p-glow); font-family: "VT323", monospace; font-size: 15px; text-shadow: none; }
+.chat-said:empty { display: none; }
 .chat-form { display: grid; grid-template-columns: 78px minmax(0, 1fr) 30px; gap: 6px; }
 .chat-form input, .chat-form button {
   background: #0a0603;
