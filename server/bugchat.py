@@ -277,6 +277,18 @@ class Handler(BaseHTTPRequestHandler):
         path, _, query = self.path.partition("?")
         q = dict(p.split("=", 1) for p in query.split("&") if "=" in p)
 
+        if path in ("", "/"):
+            # Somebody has typed the host into a phone. From the house that
+            # means they want the warden; from outside there is nothing here
+            # to point at.
+            if self.from_outside():
+                return self.reply(404, {"error": "no such thing"})
+            self.send_response(302)
+            self.send_header("Location", "/admin")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
         if path in ("/admin", "/admin/"):
             if self.from_outside():
                 return self.reply(404, {"error": "no such thing"})
