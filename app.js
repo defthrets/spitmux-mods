@@ -800,33 +800,13 @@
     var idx = MODS.indexOf(m);
     specId.textContent = "ID-" + String(idx + 1).padStart(2, "0") + "/" + MODS.length;
 
-    var rows = [
-      [T("spec.mod"), m.name],
-      [T("spec.class"), m.cat],
-      [T("spec.status"), m.repo ? T("spec.public") : T("spec.localbuild"), "status"],
-      [T("spec.language"), "C#"],
-      [T("spec.runtime"), "SHVDN 3"],
-      [T("spec.editions"), "LEGACY + ENH"],
-      [T("spec.assets"), T("spec.none")],
-      [T("spec.menu"), m.key || "—"],
-      [T("spec.source"), num(m.lines) + " LOC"],
-      [T("spec.files"), m.files]
-    ];
-
-    // One block, not two. The build rows and the size chart were separate
-    // panels saying the same kind of thing about the same mod, with the
-    // operator card now taking the top of the column.
+    /* The chart, and nothing else. There used to be a BUILD // ARCHIVE card
+       above it -- ten rows naming the language, the runtime, the editions,
+       the menu key, the size -- and every one of them was already in the
+       dossier's own line of chips two hundred pixels to the left. What the
+       column keeps is the one thing said nowhere else: how this mod measures
+       against the rest of them. */
     var h = [];
-    h.push('<div class="id-card">');
-    h.push('<div class="spec-header" style="border:0;background:none;padding:0 2px;">' +
-           '<span class="title">' + icon(m.id, "spec-icon") + esc(T("spec.archive")) + '</span>' +
-           '<span>' + esc(m.id.toUpperCase()) + '</span></div>');
-    rows.forEach(function (r) {
-      var cls = r[2] === "status" ? (m.repo ? " on" : " mute") : "";
-      h.push('<div class="id-row"><span class="k">' + esc(r[0]) + '</span><span class="v' + cls + '">' + esc(r[1]) + "</span></div>");
-    });
-    h.push('<div class="id-barcode">┃┃│┃│ │┃│┃│ │┃┃│ ┃│┃ │┃│┃</div>');
-
     h.push('<div class="size-head"><span>' + esc(T("spec.size")) + '</span><span>' + esc(T("chip.loc")) + '</span></div>');
     h.push('<div class="size-list">');
     MODS.slice().sort(function (a, b) { return b.lines - a.lines; }).forEach(function (x) {
@@ -838,7 +818,6 @@
              '<span class="v">' + k + "</span></div>");
     });
     h.push("</div>");
-    h.push("</div>");   // id-card
 
     h.push('<div class="spec-note">' + esc(T("spec.note", {
       lines: num(TOTAL_LINES), mods: MODS.length, files: num(TOTAL_FILES) })) + "</div>");

@@ -953,6 +953,19 @@ html, body {
 
 /* ─── RIGHT: spec panel ──────────────────────────────────────────────── */
 
+/* Three panels down one column: the operator card, the bug chat, the size
+   chart. Together they are taller than the column on most screens, so the
+   column scrolls rather than any one of them being squeezed to nothing --
+   the index to the left has always done the same. */
+.col.right {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-line) transparent;
+}
+.col.right > .spec-window { flex: 0 0 auto; }
+.size-window { margin-top: 12px; }
+.size-window .spec-body { padding-top: 12px; }
+
 .spec-window {
   /* and rotated the other way, toward the yellow-hot end of the tube */
   /* Same story as the index: a private yellow, now aliases of the ladder. */
@@ -1828,6 +1841,9 @@ img.px {
    button and costs nothing; open, it holds GitHub's comment frame, which
    is themed by giscus.css rather than by anything in here -- an iframe
    inherits none of this. */
+/* The column, top to bottom: the operator card, then this, then the size
+   chart. The chat takes whatever height the other two leave, because it is
+   the only one that grows. */
 .chat-window {
   flex: 0 0 auto;
   margin-top: 12px;
@@ -1849,7 +1865,8 @@ img.px {
 .chat-body { padding: 12px; }
 .chat-window.on .chat-body {
   padding: 8px 10px 10px;
-  max-height: 340px;
+  min-height: 180px;
+  max-height: 420px;      /* a frame that grows with the thread, but not past this */
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--p-line) transparent;
