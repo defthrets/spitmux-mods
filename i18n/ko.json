@@ -96,6 +96,8 @@
   "chat.placeholder": "한마디 하기",
   "chat.send": "보내기",
   "chat.emoji": "그림",
+  "chat.reply": "여기에 답하기",
+  "chat.unreply": "취소",
   "chat.reserved": "“{name}”은 이미 임자가 있습니다 — 다른 이름을 고르세요",
   "map.title": "어디서 왔나",
   "map.tab": "어디서 왔나",

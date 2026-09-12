@@ -96,6 +96,8 @@
   "chat.placeholder": "diz alguma coisa",
   "chat.send": "enviar",
   "chat.emoji": "figurinhas",
+  "chat.reply": "responder a isto",
+  "chat.unreply": "deixa pra lá",
   "chat.reserved": "“{name}” já tem dono — escolhe outro nome",
   "map.title": "De onde",
   "map.tab": "de onde",

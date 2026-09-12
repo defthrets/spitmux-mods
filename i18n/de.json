@@ -96,6 +96,8 @@
   "chat.placeholder": "sag was",
   "chat.send": "senden",
   "chat.emoji": "bildchen",
+  "chat.reply": "darauf antworten",
+  "chat.unreply": "doch nicht",
   "chat.reserved": "„{name}“ ist vergeben — nimm einen anderen namen",
   "map.title": "Woher",
   "map.tab": "woher",

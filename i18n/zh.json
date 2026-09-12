@@ -96,6 +96,8 @@
   "chat.placeholder": "说点什么",
   "chat.send": "发送",
   "chat.emoji": "表情",
+  "chat.reply": "回复这条",
+  "chat.unreply": "算了",
   "chat.reserved": "“{name}” 已被占用 — 换个名字",
   "map.title": "来自哪里",
   "map.tab": "来自哪里",

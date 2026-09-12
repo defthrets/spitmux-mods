@@ -9,7 +9,7 @@ framework, no package to install, nothing to keep up to date but this.
 What it does
 
     GET  /api/room?since=<id>   the lines after that id, oldest first
-    POST /api/say               {name, text} -> the line, or why not
+    POST /api/say               {name, text, key, reply} -> the line, or why not
     GET  /api/health            a word about the room
 
     GET  /api/admin/log?limit=  every line, addresses included
@@ -77,6 +77,10 @@ LOOKALIKE = {"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "6": "g",
 MAX_TEXT = 200
 MAX_NAME = 16
 ROOM_LINES = 60           # how much of the wall a new arrival is handed
+ROOM = ("SELECT m.id, m.ts, m.name, m.text, m.reply, "
+        "CASE WHEN m.geo <> '' THEN m.geo ELSE m.cc END AS cc, "
+        "r.name AS re_name, substr(r.text, 1, 70) AS re_text "
+        "FROM msg m LEFT JOIN msg r ON r.id = m.reply ")
 COOLDOWN_S = 3.0          # per address
 BURST_PER_MIN = 12        # per address
 
@@ -89,9 +93,20 @@ CREATE TABLE IF NOT EXISTS msg (
   ip      TEXT    NOT NULL,
   cc      TEXT    NOT NULL DEFAULT '',   -- what the page said, and can lie
   geo     TEXT    NOT NULL DEFAULT '',   -- what Cloudflare said, and cannot
-  hidden  INTEGER NOT NULL DEFAULT 0
+  hidden  INTEGER NOT NULL DEFAULT 0,
+  reply   INTEGER NOT NULL DEFAULT 0    -- the line this one answers, or 0
 );
 CREATE INDEX IF NOT EXISTS msg_ts ON msg (ts);
+-- A name belongs to whoever said it first, and keeps belonging to them. The
+-- browser makes a secret once and sends it with every line; the name is held
+-- against that secret. Nothing here identifies a person -- it is a random
+-- string that says "the same one as last time".
+CREATE TABLE IF NOT EXISTS owner (
+  name    TEXT PRIMARY KEY,     -- lowercased
+  key     TEXT NOT NULL,
+  ts      INTEGER NOT NULL,
+  seen    INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS ban (
   what    TEXT PRIMARY KEY,     -- 'ip:1.2.3.4', 'ip:1.2.3.' or 'name:someone'
   reason  TEXT NOT NULL DEFAULT '',
@@ -123,6 +138,8 @@ def setup():
         have = [r["name"] for r in c.execute("PRAGMA table_info(msg)")]
         if "geo" not in have:
             c.execute("ALTER TABLE msg ADD COLUMN geo TEXT NOT NULL DEFAULT ''")
+        if "reply" not in have:
+            c.execute("ALTER TABLE msg ADD COLUMN reply INTEGER NOT NULL DEFAULT 0")
     c.close()
 
 
@@ -316,14 +333,12 @@ class Handler(BaseHTTPRequestHandler):
             c = db()
             if since:
                 rows = c.execute(
-                    "SELECT id, ts, name, text, "
-                    "CASE WHEN geo <> '' THEN geo ELSE cc END AS cc "
-                    "FROM msg WHERE hidden=0 AND id>? ORDER BY id LIMIT 200", (since,)).fetchall()
+                    "%sWHERE m.hidden=0 AND m.id>? ORDER BY m.id LIMIT 200" % ROOM,
+                    (since,)).fetchall()
             else:
                 rows = c.execute(
-                    "SELECT id, ts, name, text, "
-                    "CASE WHEN geo <> '' THEN geo ELSE cc END AS cc "
-                    "FROM msg WHERE hidden=0 ORDER BY id DESC LIMIT ?", (ROOM_LINES,)).fetchall()
+                    "%sWHERE m.hidden=0 ORDER BY m.id DESC LIMIT ?" % ROOM,
+                    (ROOM_LINES,)).fetchall()
                 rows = list(reversed(rows))
             c.close()
             return self.reply(200, {"lines": [dict(r) for r in rows]})
@@ -371,7 +386,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(400, {"error": "say something"})
 
             # the house's own names, unless the house is the one asking
-            if not self.admin_ok():
+            house = self.admin_ok()
+            if not house:
                 mine = taken(name)
                 if mine:
                     return self.reply(403, {"error": '"%s" is spoken for -- pick another name' % mine})
@@ -386,16 +402,43 @@ class Handler(BaseHTTPRequestHandler):
                 c.close()
                 return self.reply(429, {"error": slow})
 
-            geo = self.client_country()
+            # a name belongs to whoever had it first
+            key = clean(d.get("key"), 64)
             ts = int(time.time() * 1000)
+            if not house:
+                held = c.execute("SELECT key FROM owner WHERE name=?", (name.lower(),)).fetchone()
+                if held and key != held["key"]:
+                    c.close()
+                    return self.reply(409, {"error": '"%s" belongs to somebody else' % name})
+                if not held and key:
+                    with c:
+                        c.execute("INSERT OR IGNORE INTO owner (name, key, ts, seen) "
+                                  "VALUES (?,?,?,?)", (name.lower(), key, ts, ts))
+                elif held:
+                    with c:
+                        c.execute("UPDATE owner SET seen=? WHERE name=?", (ts, name.lower()))
+
+            # the line this one answers, if it is still on the wall
+            reply = int(d.get("reply") or 0)
+            if reply and not c.execute(
+                    "SELECT 1 FROM msg WHERE id=? AND hidden=0", (reply,)).fetchone():
+                reply = 0
+
+            geo = self.client_country()
             with c:
                 cur = c.execute(
-                    "INSERT INTO msg (ts, name, text, ip, cc, geo) VALUES (?,?,?,?,?,?)",
-                    (ts, name, text, ip, cc, geo))
+                    "INSERT INTO msg (ts, name, text, ip, cc, geo, reply) VALUES (?,?,?,?,?,?,?)",
+                    (ts, name, text, ip, cc, geo, reply))
             rid = cur.lastrowid
+            out = {"id": rid, "ts": ts, "name": name, "text": text,
+                   "cc": geo or cc, "reply": reply}
+            if reply:
+                r = c.execute("SELECT name, text FROM msg WHERE id=?", (reply,)).fetchone()
+                if r:
+                    out["re_name"] = r["name"]
+                    out["re_text"] = r["text"][:70]
             c.close()
-            return self.reply(200, {"line": {"id": rid, "ts": ts, "name": name,
-                                             "text": text, "cc": geo or cc}})
+            return self.reply(200, {"line": out})
 
         if path.startswith("/api/admin/"):
             if self.from_outside():

@@ -96,6 +96,8 @@
   "chat.placeholder": "dis quelque chose",
   "chat.send": "envoyer",
   "chat.emoji": "images",
+  "chat.reply": "répondre à ça",
+  "chat.unreply": "laisse tomber",
   "chat.reserved": "« {name} » est pris — choisis un autre nom",
   "map.title": "Provenance",
   "map.tab": "provenance",

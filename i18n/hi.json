@@ -96,6 +96,8 @@
   "chat.placeholder": "कुछ कहो",
   "chat.send": "भेजो",
   "chat.emoji": "तस्वीरें",
+  "chat.reply": "इसका जवाब दो",
+  "chat.unreply": "रहने दो",
   "chat.reserved": "“{name}” पहले से किसी का है — दूसरा नाम चुनो",
   "map.title": "कहाँ से",
   "map.tab": "कहाँ से",
