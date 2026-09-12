@@ -40,7 +40,43 @@
      no "coming soon": the slot simply stays hidden, the same way a missing
      icon or screenshot does. */
   var RELEASES = {};
-  var VISITOR_CC = null;      // learned by the visitor counter below, if it is
+
+  /* Which country the reader is in -- the only thing about them this site
+     ever holds, and it is two letters. Kept as a promise rather than a
+     variable: a download clicked in the first second of a visit was landing
+     before the lookup answered, and the line came out with no country on it.
+     Whoever wants it waits for it.
+
+     Two services, because one of them is blocked often enough to matter, and
+     the answer is remembered so a second visit knows it at once. Neither
+     address is read, kept, or sent anywhere. */
+  var VISITOR_CC = null;
+  var CC_READY = (function () {
+    try {
+      var seen = localStorage.getItem("cc");
+      if (seen && /^[A-Z]{2}$/.test(seen)) { VISITOR_CC = seen; return Promise.resolve(seen); }
+    } catch (e) { /* private mode */ }
+
+    function ask(url, pick) {
+      return fetch(url)
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          var cc = d && pick(d);
+          return (cc && /^[A-Z]{2}$/.test(cc)) ? cc : null;
+        })
+        .catch(function () { return null; });
+    }
+
+    return ask("https://api.country.is/", function (d) { return d.country; })
+      .then(function (cc) {
+        return cc || ask("https://get.geojs.io/v1/ip/country.json", function (d) { return d.country; });
+      })
+      .then(function (cc) {
+        VISITOR_CC = cc;
+        if (cc) { try { localStorage.setItem("cc", cc); } catch (e) {} }
+        return cc;
+      });
+  })();
 
   /* Dates in the reader's own clock, and in their own language: the browser
      knows both, and "10 Sep, 15:32" is worth more than "2 days ago" on its
@@ -50,9 +86,13 @@
 
   function clockOf(d) {
     try {
-      return d.toLocaleTimeString(tag(), { hour: "2-digit", minute: "2-digit", hour12: false });
+      // Twelve-hour, and lowercase where the language uses am/pm at all --
+      // the page is lowercase and a shouted PM sits badly in it.
+      return d.toLocaleTimeString(tag(), { hour: "numeric", minute: "2-digit", hour12: true })
+              .replace(/\bAM\b/, "am").replace(/\bPM\b/, "pm");
     } catch (e) {
-      return z2(d.getHours()) + ":" + z2(d.getMinutes());
+      var h = d.getHours();
+      return ((h % 12) || 12) + ":" + z2(d.getMinutes()) + (h < 12 ? " am" : " pm");
     }
   }
   function z2(n) { return (n < 10 ? "0" : "") + n; }
@@ -202,17 +242,55 @@
     var s = slugKey(slug), day = dayKey(now);
     var hh = z2(now.getUTCHours());
     var m6 = String(Math.floor(now.getUTCMinutes() / 10));
-    var opts = { keepalive: true };
-    fetch(COUNTER + "dl/" + s + "-" + day, opts).catch(function () {});
-    fetch(COUNTER + "dlh/" + s + "-" + day + hh, opts).catch(function () {});
-    fetch(COUNTER + "dlm/" + s + "-" + day + hh + m6, opts).catch(function () {});
-    if (VISITOR_CC) {
-      fetch(COUNTER + "dlat/" + s + "-" + day + "-" + VISITOR_CC, opts).catch(function () {});
-    }
+
+    // spaced, not fired as one burst: four writes landing in the same
+    // millisecond is the shape of a thing being hammered, and a free service
+    // is within its rights to answer only the first
+    var keys = ["dl/" + s + "-" + day,
+                "dlh/" + s + "-" + day + hh,
+                "dlm/" + s + "-" + day + hh + m6];
+    keys.forEach(function (k, i) {
+      setTimeout(function () {
+        fetch(COUNTER + k, { keepalive: true }).catch(function () {});
+      }, i * 180);
+    });
+
     // and show it at once, without waiting on the counter
     GRABS[s] = { day: day, hh: hh, m6: m6, cc: VISITOR_CC };
-    try { sessionStorage.setItem("grab:" + s, JSON.stringify(GRABS[s])); } catch (e) {}
+    remember(s);
     paintGrab(s);
+
+    // the country lands whenever it lands; the line fills in then
+    CC_READY.then(function (cc) {
+      if (!cc) return;
+      setTimeout(function () {
+        fetch(COUNTER + "dlat/" + s + "-" + day + "-" + cc, { keepalive: true }).catch(function () {});
+      }, 540);
+      if (GRABS[s] && !GRABS[s].cc) {
+        GRABS[s].cc = cc;
+        remember(s);
+        paintGrab(s);
+      }
+    });
+  }
+
+  /* Your own downloads are kept in this browser, not just this tab: the
+     counter's readback lags a good while behind its writes, so without this
+     the line forgets what you did the moment you close the tab and does not
+     hear about it again for hours. */
+  function remember(s) {
+    try { localStorage.setItem("grab:" + s, JSON.stringify(GRABS[s])); } catch (e) {}
+  }
+
+  function stampOf(g) {           // sortable: 20260912 09 3
+    return g && g.day ? g.day + (g.hh || "00") + (g.m6 || "0") : "";
+  }
+
+  function mine(s) {
+    try {
+      var raw = localStorage.getItem("grab:" + s) || sessionStorage.getItem("grab:" + s);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
   }
 
   /* The bubble. The file opens in a new tab, so the page is still here when
@@ -285,10 +363,11 @@
   function wireLastGrab(m, slug) {
     var s = slugKey(slug);
     if (GRABS[s]) { paintGrab(s); return; }
-    try {
-      var c = sessionStorage.getItem("grab:" + s);
-      if (c !== null) { GRABS[s] = JSON.parse(c); paintGrab(s); return; }
-    } catch (e) { /* private mode */ }
+
+    // what this browser did, shown at once; the counter is asked anyway, in
+    // case somebody else has been more recent
+    var own = mine(s);
+    if (own) { GRABS[s] = own; paintGrab(s); }
 
     // Walk back a day at a time until one answers. Two weeks is far enough:
     // past that the line is not news, and the slot just says when it went up.
@@ -296,6 +375,8 @@
     for (var i = 0; i < 14; i++) days.push(dayKey(new Date(Date.now() - i * 864e5)));
 
     function done(g) {
+      var have = mine(s);
+      if (have && stampOf(have) >= stampOf(g)) return;   // yours is the later one
       GRABS[s] = g;
       try { sessionStorage.setItem("grab:" + s, JSON.stringify(g)); } catch (e) {}
       if (current === m.id) paintGrab(s);
@@ -920,23 +1001,14 @@
       })
       .catch(function () { /* stays hidden */ });
 
-    /* And which country, so the map has something to pin.
-
-       api.country.is is asked because it answers with CORS and returns two
-       fields, an address and a country code. The address is read and dropped
-       on the floor -- what gets stored anywhere is a single +1 against "GB",
-       and no part of this site ever learns, keeps or publishes who anybody is.
+    /* And which country, so the map has something to pin. The lookup is the
+       one above; what gets stored anywhere is a single +1 against "GB", and
+       no part of this site ever learns, keeps or publishes who anybody is.
        That is also why it is a country and not a city: a pin on a town is a
        pin on a person, near enough. */
-    fetch("https://api.country.is/")
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) {
-        var cc = d && d.country;
-        if (!cc || !/^[A-Z]{2}$/.test(cc)) return;
-        VISITOR_CC = cc;
-        return fetch("https://counterapi.com/api/spitmux/geo/" + cc);
-      })
-      .catch(function () { /* the count still stands, just unplaced */ });
+    CC_READY.then(function (cc) {
+      if (cc) fetch("https://counterapi.com/api/spitmux/geo/" + cc).catch(function () {});
+    });
   })();
 
   // ── language ──────────────────────────────────────────────────────────
