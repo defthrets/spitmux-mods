@@ -43,10 +43,14 @@ Only these three are public, and none of them return an address.
 
 ## The warden
 
-A page for doing all of that with a mouse: `https://chat.spitmux.me/admin`, or
-`http://192.168.1.253:8712/admin` from the house. The chat service serves it
-itself, so it is the same origin as the API it drives and CORS never comes
-into it, and there is nothing installed anywhere to fall out of step.
+A page for doing all of that with a mouse: `http://192.168.1.253:8712/admin`,
+**on the house network only**. The service tells anything arriving through the
+tunnel that there is nothing there -- not a login, not a 403, nothing to say
+the admin half exists at all. The room is public; the keys to it are not.
+
+The chat service serves the page itself, so it is the same origin as the API
+it drives and CORS never comes into it, and there is nothing installed
+anywhere to fall out of step.
 
 It shows every line with its address, filters on any of it, hides a line, bars
 an address or a whole /24 or a handle, lifts a ban, and exports the lot as
@@ -55,8 +59,13 @@ that browser; six wrong guesses and the address that made them waits five
 minutes.
 
 On Windows, `warden.cmd` opens it as a window with no browser furniture --
-there is a shortcut on the desktop pointing at it. It prefers the homelab
-directly when it can see it, so it keeps working with the tunnel down.
+there is a shortcut on the desktop pointing at it. Off the house network it
+says so rather than opening a window onto a 404.
+
+To moderate from away, put the phone or laptop on the house network first --
+a VPN home, or Tailscale, or anything that makes the LAN reachable. Opening
+the admin half to the internet again is one line in `from_outside()`, and is
+not recommended.
 
 ## Moderating it from a terminal
 

@@ -6,16 +6,27 @@ rem  there is nothing to install and nothing to keep in step -- this only opens
 rem  it in a browser window with no browser furniture, which is all a desktop
 rem  app is once you take the chrome off.
 rem
-rem  It prefers the homelab directly when this machine can see it: no round trip
-rem  through Cloudflare, and it still works if the tunnel is down. Otherwise it
-rem  goes the way everyone else does.
+rem  The warden answers on the house network only -- the service tells anything
+rem  arriving through the tunnel that there is nothing there. So this looks for
+rem  the homelab, and says so plainly if it cannot see it, rather than opening a
+rem  window onto a 404.
 
 setlocal
 set "LAN=http://192.168.1.253:8712"
-set "FAR=https://chat.spitmux.me"
-set "URL=%FAR%/admin"
+set "URL=%LAN%/admin"
 
-curl -s -m 2 -o nul "%LAN%/api/health" && set "URL=%LAN%/admin"
+curl -s -m 3 -o nul "%LAN%/api/health"
+if errorlevel 1 (
+  echo.
+  echo   The homelab is not answering on this network.
+  echo.
+  echo   The warden is deliberately not on the internet: it only listens at
+  echo   %LAN% . Get on the house wifi, or bring up whatever
+  echo   VPN you use, and run this again.
+  echo.
+  pause
+  exit /b 1
+)
 
 set "APP="
 if exist "%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe" set "APP=%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe"

@@ -20,10 +20,11 @@ What it does
     GET  /api/admin/export      the lot, as JSON
     GET  /admin                 the warden: a page to do all of that from
 
-The warden is served from here rather than from the site, so it is the same
-origin as the API it drives and CORS never enters into it. It is public in the
-sense that anyone may load the HTML; it is inert without the token, and a
-handful of wrong guesses puts that address in the corner for a while.
+The warden and everything under /api/admin answer on the house network only.
+A request that arrives through the tunnel -- which is every request from the
+internet -- is told there is nothing there, because as far as the internet is
+concerned there is not. The room is public; the keys to it are not, and an
+admin page nobody outside can load is one nobody outside can grind at.
 
 Everything under /api/admin wants the token in `X-Admin-Token`, which comes
 from BUGCHAT_TOKEN in the environment. Without that variable the admin half
@@ -198,6 +199,16 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             return {}
 
+    def from_outside(self):
+        """Did this come in through the tunnel?
+
+        cloudflared sets these on everything it forwards, and nothing on the
+        house network sets them, so their presence is a reliable "this came
+        from the internet". Anything that did is not shown the admin half at
+        all -- not a login, not a 403, nothing to tell it is there."""
+        h = self.headers
+        return bool(h.get("CF-Connecting-IP") or h.get("CF-Ray") or h.get("CF-IPCountry"))
+
     def admin_ok(self):
         """The token, and patience. Six wrong guesses and that address waits
         five minutes -- enough to make grinding at it pointless, not enough to
@@ -232,6 +243,8 @@ class Handler(BaseHTTPRequestHandler):
         q = dict(p.split("=", 1) for p in query.split("&") if "=" in p)
 
         if path in ("/admin", "/admin/"):
+            if self.from_outside():
+                return self.reply(404, {"error": "no such thing"})
             try:
                 body = io.open(WARDEN, "rb").read()
             except Exception:
@@ -269,6 +282,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(200, {"lines": [dict(r) for r in rows]})
 
         if path.startswith("/api/admin/"):
+            if self.from_outside():
+                return self.reply(404, {"error": "no such thing"})
             if not self.admin_ok():
                 return self.reply(403, {"error": "no"})
             c = db()
@@ -330,6 +345,8 @@ class Handler(BaseHTTPRequestHandler):
                                              "text": text, "cc": geo or cc}})
 
         if path.startswith("/api/admin/"):
+            if self.from_outside():
+                return self.reply(404, {"error": "no such thing"})
             if not self.admin_ok():
                 return self.reply(403, {"error": "no"})
             d = self.body()
