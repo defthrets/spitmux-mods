@@ -31,8 +31,16 @@ PATTERN = re.compile(
 
 
 def digest(path):
+    """The hash of the CONTENT, not of the line endings.
+
+    Two machines stamp this site -- a Linux routine at three in the morning
+    and a Windows one at half past -- and git hands them the same file with
+    different line endings. Hashing the bytes as they sit on disk made the
+    two disagree about every script every night, so each rewrote what the
+    other had written and they collided in the middle. Normalising first
+    means the same file is the same hash wherever it is read."""
     with open(path, "rb") as fh:
-        return hashlib.sha1(fh.read()).hexdigest()[:8]
+        return hashlib.sha1(fh.read().replace(b"\r\n", b"\n")).hexdigest()[:8]
 
 
 # Icons and screenshots are addressed by name on purpose (drop a file in and
@@ -53,9 +61,9 @@ def art_version():
             dirs.sort()
             for name in sorted(files):
                 f = os.path.join(base, name)
-                h.update(os.path.relpath(f, HERE).encode("utf-8"))
+                h.update(os.path.relpath(f, HERE).replace(os.sep, "/").encode("utf-8"))
                 with open(f, "rb") as fh:
-                    h.update(fh.read())
+                    h.update(fh.read())   # art is binary; no line endings to argue over
     return h.hexdigest()[:8]
 
 
