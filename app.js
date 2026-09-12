@@ -142,6 +142,7 @@
 
     var slug = m.repo.replace(/^https?:\/\/github\.com\//, "").replace(/\/+$/, "");
     var key = "rel:" + slug;
+    var FRESH = 10 * 60 * 1000;      // how long a release answer is worth keeping
 
     function paint(rel) {
       if (!rel || !rel.url) return;
@@ -171,14 +172,24 @@
       wireLastGrab(m, slug);
     }
 
-    if (RELEASES[slug]) { paint(RELEASES[slug]); return; }
+    /* A release cut ten minutes ago should show. The answer is kept, but not
+       for the life of the tab: somebody who leaves this open all day was
+       being told about a version that had since been replaced. Ten minutes
+       is short enough to be current and long enough that clicking down the
+       index does not spend the hour's sixty anonymous API calls. */
+    if (RELEASES[slug] && Date.now() - RELEASES[slug].at < FRESH) {
+      paint(RELEASES[slug].rel);
+      return;
+    }
     try {
-      var cached = sessionStorage.getItem(key);
-      if (cached !== null) {
-        RELEASES[slug] = JSON.parse(cached);
-        paint(RELEASES[slug]);
+      var cached = JSON.parse(sessionStorage.getItem(key) || "null");
+      if (cached && Date.now() - cached.at < FRESH) {
+        RELEASES[slug] = cached;
+        paint(cached.rel);
         return;
       }
+      // stale, but better than an empty slot while the network answers
+      if (cached) paint(cached.rel);
     } catch (e) { /* private mode; just ask the network */ }
 
     /* The whole list rather than /releases/latest, which costs the same one
@@ -207,8 +218,9 @@
         var rel = asset ? { tag: newest.tag_name, url: asset.browser_download_url,
                             size: asset.size, downloads: total,
                             at: newest.published_at || null } : {};
-        RELEASES[slug] = rel;
-        try { sessionStorage.setItem(key, JSON.stringify(rel)); } catch (e) {}
+        var box = { at: Date.now(), rel: rel };
+        RELEASES[slug] = box;
+        try { sessionStorage.setItem(key, JSON.stringify(box)); } catch (e) {}
         // Guard against a slow reply landing after the reader has moved
         // on: paint only if this is still the mod on screen.
         if (current === m.id) paint(rel);
