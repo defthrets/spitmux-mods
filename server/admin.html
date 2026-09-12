@@ -150,6 +150,8 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
       </select>
       <button id="refresh">refresh</button>
       <button id="export">export</button>
+      <button id="del-hidden" class="bad">delete hidden</button>
+      <button id="wipe" class="bad">wipe</button>
       <button id="lock" class="bad">lock</button>
     </div>
     <div class="rows" id="rows"><div class="empty">reading…</div></div>
@@ -239,7 +241,9 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
         "</span>" +
         '<span class="text">' + esc(l.text) + "</span>" +
         '<span class="acts">' +
-          (l.hidden ? "" : '<button data-hide="' + l.id + '">hide</button>') +
+          (l.hidden ? '<button data-show="' + l.id + '">restore</button>'
+                    : '<button data-hide="' + l.id + '">hide</button>') +
+          '<button class="bad" data-del="' + l.id + '">delete</button>' +
           '<button class="bad" data-ban="' + esc(l.ip) + '">ban ip</button>' +
           '<button class="bad" data-ban24="' + esc(l.ip) + '">/24</button>' +
           '<button class="bad" data-banname="' + esc(l.name) + '">name</button>' +
@@ -305,12 +309,39 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
     });
   });
 
+  /* Anything that takes more than one line with it says how many, and the
+     server writes the lot to a file on the homelab before it goes -- undoing
+     a wipe should cost a copy and paste, not an apology. */
+  function bulk(what, prompt_) {
+    var n = lines.filter(function (l) { return what === "all" || l.hidden; }).length;
+    if (!n) { say("nothing to delete"); return; }
+    if (!confirm(prompt_.replace("{n}", n))) return;
+    ask("api/admin/delete", { what: what }).then(function (d) {
+      say("deleted " + d.deleted + (d.kept ? " · copy kept at " + d.kept : ""));
+      load();
+    });
+  }
+  $("del-hidden").addEventListener("click", function () {
+    bulk("hidden", "delete the {n} line(s) already taken down? there is no undo.");
+  });
+  $("wipe").addEventListener("click", function () {
+    bulk("all", "delete ALL {n} line(s) in the room? there is no undo.");
+  });
+
   $("rows").addEventListener("click", function (e) {
     var b = e.target.closest("button"), ip = e.target.closest(".ip");
     if (ip) { $("q").value = ip.dataset.ip; drawRows(); return; }
     if (!b) return;
     if (b.dataset.hide) {
       ask("api/admin/hide", { id: +b.dataset.hide }).then(function () { say("taken down"); load(); });
+    } else if (b.dataset.show) {
+      ask("api/admin/hide", { id: +b.dataset.show, hidden: 0 }).then(function () { say("back on the wall"); load(); });
+    } else if (b.dataset.del) {
+      // one line, one confirmation. There is no undo on this one.
+      if (!confirm("delete this line for good?")) return;
+      ask("api/admin/delete", { id: +b.dataset.del }).then(function (d) {
+        say(d.deleted ? "deleted" : "already gone"); load();
+      });
     } else if (b.dataset.ban) {
       ban({ ip: b.dataset.ban, purge: 1 });
     } else if (b.dataset.ban24) {

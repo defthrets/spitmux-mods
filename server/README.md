@@ -52,8 +52,13 @@ The chat service serves the page itself, so it is the same origin as the API
 it drives and CORS never comes into it, and there is nothing installed
 anywhere to fall out of step.
 
-It shows every line with its address, filters on any of it, hides a line, bars
-an address or a whole /24 or a handle, lifts a ban, and exports the lot as
+It shows every line with its address and the country Cloudflare stamped on it,
+filters on any of that, and per line: **hide** (off the public wall, still
+here, reversible with **restore**), **delete** (gone for good), and three ways
+to bar whoever said it. **delete hidden** clears out everything already taken
+down; **wipe** empties the room. Both write the lot to
+`/var/lib/bugchat/backups/` first and refuse to delete if they cannot -- undoing
+a wipe should cost a copy and paste, not an apology. There is also an export to
 JSON. It polls every five seconds. The token is asked for once and kept in
 that browser; six wrong guesses and the address that made them waits five
 minutes.
@@ -83,6 +88,13 @@ curl -s -H "X-Admin-Token: $T" "$H/api/admin/log?limit=50" | python3 -m json.too
 curl -s -X POST "$H/api/admin/ban" -H "X-Admin-Token: $T" \
      -H 'Content-Type: application/json' \
      -d '{"ip":"203.0.113.44","reason":"spam","purge":1}'
+
+# one line, for good
+curl -s -X POST "$H/api/admin/delete" -H "X-Admin-Token: $T"      -H 'Content-Type: application/json' -d '{"id":41}'
+
+# everything already hidden, or the whole room -- a copy is kept either way
+curl -s -X POST "$H/api/admin/delete" -H "X-Admin-Token: $T"      -H 'Content-Type: application/json' -d '{"what":"hidden"}'
+curl -s -X POST "$H/api/admin/delete" -H "X-Admin-Token: $T"      -H 'Content-Type: application/json' -d '{"what":"all"}'
 
 # a whole /24, if they are hopping addresses -- note the trailing dot
 curl -s -X POST "$H/api/admin/ban" -H "X-Admin-Token: $T" \

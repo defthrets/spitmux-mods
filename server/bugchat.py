@@ -16,7 +16,8 @@ What it does
     GET  /api/admin/bans        who is barred
     POST /api/admin/ban         {ip|name, reason} -- ip may be a /24 prefix
     POST /api/admin/unban       {ip|name}
-    POST /api/admin/hide        {id} -- takes one line off the wall
+    POST /api/admin/hide        {id, hidden} -- off the wall, or back on it
+    POST /api/admin/delete      {id} or {what:"hidden"|"all"} -- gone for good
     GET  /api/admin/export      the lot, as JSON
     GET  /admin                 the warden: a page to do all of that from
 
@@ -51,6 +52,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.environ.get("BUGCHAT_DB", os.path.join(HERE, "chat.db"))
 PORT = int(os.environ.get("BUGCHAT_PORT", "8712"))
 TOKEN = os.environ.get("BUGCHAT_TOKEN", "")
+# Beside the database, because that is the one place the unit is allowed to
+# write: ProtectHome=true means a home directory is not.
+BACKUPS = os.environ.get(
+    "BUGCHAT_BACKUPS", os.path.join(os.path.dirname(os.path.abspath(
+        DB_PATH)), "backups"))
 
 # Who may ask. The room is for spitmux.me; anything else gets a flat no rather
 # than a wildcard, so the room cannot be embedded in somebody else's page.
@@ -382,10 +388,44 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, {"unbanned": what})
 
             if path == "/api/admin/hide":
+                # hidden defaults to 1, so an old caller keeps working; pass 0
+                # to put a line back on the wall
+                on = 0 if str(d.get("hidden", 1)) in ("0", "false", "False") else 1
                 with c:
-                    c.execute("UPDATE msg SET hidden=1 WHERE id=?", (int(d.get("id") or 0),))
+                    c.execute("UPDATE msg SET hidden=? WHERE id=?", (on, int(d.get("id") or 0)))
                 c.close()
-                return self.reply(200, {"hidden": d.get("id")})
+                return self.reply(200, {"id": d.get("id"), "hidden": on})
+
+            if path == "/api/admin/delete":
+                """Gone for good -- so anything that takes more than one line
+                with it writes the lot to a file first. Undoing a wipe should
+                cost a copy and paste, not an apology."""
+                what = d.get("what")
+                if what in ("all", "hidden"):
+                    where = "" if what == "all" else " WHERE hidden=1"
+                    rows = [dict(r) for r in c.execute("SELECT * FROM msg" + where)]
+                    kept = None
+                    if rows:
+                        try:
+                            os.makedirs(BACKUPS, exist_ok=True)
+                            kept = os.path.join(BACKUPS, "%s-%s.json" % (
+                                what, time.strftime("%Y%m%d-%H%M%S")))
+                            io.open(kept, "w", encoding="utf-8").write(
+                                json.dumps(rows, ensure_ascii=False, indent=1))
+                        except Exception as e:
+                            c.close()
+                            return self.reply(500, {"error": "could not keep a copy: %s" % e})
+                    with c:
+                        c.execute("DELETE FROM msg" + where)
+                    c.close()
+                    return self.reply(200, {"deleted": len(rows), "kept": kept})
+
+                rid = int(d.get("id") or 0)
+                with c:
+                    cur = c.execute("DELETE FROM msg WHERE id=?", (rid,))
+                n = cur.rowcount
+                c.close()
+                return self.reply(200, {"deleted": n, "id": rid})
 
             c.close()
 
