@@ -35,7 +35,7 @@ window.MODS = [
     tag: "drug-dealing and gang life, run off a phone that replaces the game's own",
     cat: "LIFE",
     key: "PHONE",
-    lines: 149019,
+    lines: 149350,
     files: 207,
     status: "ACTIVE",
     repo: "https://github.com/defthrets/hoodrich",
@@ -93,7 +93,7 @@ window.MODS = [
     tag: "the needs the game left out, on a row of upright bars",
     cat: "LIFE",
     key: "F7",
-    lines: 37339,
+    lines: 37340,
     files: 82,
     status: "ACTIVE",
     repo: "https://github.com/defthrets/bare-minimum",
@@ -194,7 +194,7 @@ window.MODS = [
     lines: 33171,
     files: 61,
     status: "PUBLIC",
-    repo: "https://github.com/defthrets/five0patrol",
+    repo: null,
     blurb:
       "GTA V's police have two states — nothing at all, and a wanted level — and the step between them is instant. There is no version of being noticed. Five0 Patrol is the missing middle.",
     points: [
@@ -226,7 +226,7 @@ window.MODS = [
     tag: "manual ignition, and indicators you steer on",
     cat: "VEHICLE",
     key: "F10",
-    lines: 17135,
+    lines: 17233,
     files: 41,
     status: "ACTIVE",
     repo: "https://github.com/defthrets/vehicle-tweaks",
@@ -264,10 +264,10 @@ window.MODS = [
     tag: "blood that stays on the world, and comes home on your shoes",
     cat: "WORLD",
     key: "F10",
-    lines: 10043,
-    files: 29,
+    lines: 9863,
+    files: 28,
     status: "PUBLIC",
-    repo: "https://github.com/defthrets/bloodymess",
+    repo: null,
     blurb:
       "More blood comes out of people, the blood stays on the world, and you track it out of the puddles. One .dll, one .ini, one data file — no asset replacement, no RPF edits, no gameconfig.",
     points: [
@@ -302,7 +302,7 @@ window.MODS = [
     lines: 6814,
     files: 22,
     status: "ACTIVE",
-    repo: "https://github.com/defthrets/franklin-rp",
+    repo: null,
     blurb:
       "Animations, searchable, with favourites — and a stand-in ped beside the panel playing whatever row the cursor is on.",
     points: [
@@ -333,7 +333,7 @@ window.MODS = [
     lines: 9556,
     files: 20,
     status: "ACTIVE",
-    repo: "https://github.com/defthrets/weapon-tweaks",
+    repo: null,
     blurb:
       "How fast it fires, how much it kicks, what comes out of it, how he holds it, what is bolted to it, and whether there is a red dot on whatever you are pointing at. All of it on a panel that applies a change the instant you make it.",
     points: [
