@@ -95,6 +95,8 @@ window.BUGCHAT = (function () {
         if (!d) throw new Error("bad reply");
         state("chat.live", true);
         add(d.lines);
+        // an empty room should say it is empty, not sit on "joining" for ever
+        if (!lines.length) paint();
       })
       .catch(function () { state("chat.offline", false); })
       .then(function () { if (!stopped) timer = setTimeout(poll, POLL_MS); });
