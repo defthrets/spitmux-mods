@@ -42,8 +42,37 @@
   var RELEASES = {};
   var VISITOR_CC = null;      // learned by the visitor counter below, if it is
 
-  function since(iso) {       // a release date, as distance: "8 days ago"
-    var n = Math.round((Date.now() - new Date(iso).getTime()) / 864e5);
+  /* Dates in the reader's own clock, and in their own language: the browser
+     knows both, and "10 Sep, 15:32" is worth more than "2 days ago" on its
+     own. The distance stays in front of it -- that is the part you read at a
+     glance -- and the exact instant goes in the title. */
+  function tag() { return document.documentElement.lang || "en"; }
+
+  function clockOf(d) {
+    try {
+      return d.toLocaleTimeString(tag(), { hour: "2-digit", minute: "2-digit", hour12: false });
+    } catch (e) {
+      return z2(d.getHours()) + ":" + z2(d.getMinutes());
+    }
+  }
+  function z2(n) { return (n < 10 ? "0" : "") + n; }
+
+  function dateOf(d) {
+    var opts = { day: "numeric", month: "short" };
+    if (d.getFullYear() !== new Date().getFullYear()) opts.year = "numeric";
+    try { return d.toLocaleDateString(tag(), opts); }
+    catch (e) { return d.toDateString(); }
+  }
+
+  // whole days between that instant and now, by the reader's calendar, so a
+  // stamp just after midnight does not read as yesterday
+  function dayGap(d) {
+    var a = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var b = new Date();
+    return Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate()) - a) / 864e5);
+  }
+
+  function gapWords(n) {
     if (n <= 0) return T("time.today");
     if (n === 1) return T("time.yesterday");
     if (n < 14) return T("time.days", { n: n });
@@ -52,6 +81,18 @@
     var y = Math.round(n / 365);
     return y === 1 ? T("time.year") : T("time.years", { n: y });
   }
+
+  // "2 days ago · 10 Sep, 15:32" -- within the week the date is dropped, it
+  // says nothing the words have not already said
+  function when(d, withTime) {
+    var n = dayGap(d);
+    var words = gapWords(n);
+    var exact = (n < 7 ? "" : dateOf(d) + (withTime ? ", " : ""));
+    if (withTime) exact += clockOf(d);
+    return exact ? words + " \u00b7 " + exact : words;
+  }
+
+  function since(iso) { return when(new Date(iso), true); }
 
   function wireDownload(m) {
     if (!m.repo) return;
@@ -150,15 +191,26 @@
   function dayKey(d) { return d.toISOString().slice(0, 10).replace(/-/g, ""); }
   function slugKey(slug) { return slug.replace(/[^a-z0-9]+/gi, "-").toLowerCase(); }
 
+  /* A counter key is a name and a number, so the time has to live in the
+     name: one key for the day, one for the hour inside it, one for the ten
+     minutes inside that. Reading back is then a coarse-to-fine search --
+     fourteen days, then twenty-four hours, then six buckets -- rather than
+     the two thousand reads a minute-resolution key would need. Everything is
+     UTC in the key and the reader's own clock on the screen. */
   function grab(slug) {
-    var s = slugKey(slug), day = dayKey(new Date());
+    var now = new Date();
+    var s = slugKey(slug), day = dayKey(now);
+    var hh = z2(now.getUTCHours());
+    var m6 = String(Math.floor(now.getUTCMinutes() / 10));
     var opts = { keepalive: true };
     fetch(COUNTER + "dl/" + s + "-" + day, opts).catch(function () {});
+    fetch(COUNTER + "dlh/" + s + "-" + day + hh, opts).catch(function () {});
+    fetch(COUNTER + "dlm/" + s + "-" + day + hh + m6, opts).catch(function () {});
     if (VISITOR_CC) {
       fetch(COUNTER + "dlat/" + s + "-" + day + "-" + VISITOR_CC, opts).catch(function () {});
     }
     // and show it at once, without waiting on the counter
-    GRABS[s] = { day: day, cc: VISITOR_CC };
+    GRABS[s] = { day: day, hh: hh, m6: m6, cc: VISITOR_CC };
     try { sessionStorage.setItem("grab:" + s, JSON.stringify(GRABS[s])); } catch (e) {}
     paintGrab(s);
   }
@@ -207,12 +259,12 @@
       .catch(function () { return []; });
   }
 
-  function daysAgo(day) {     // "20260911" -> today / yesterday / 3 days ago
-    var d = Date.UTC(+day.slice(0, 4), +day.slice(4, 6) - 1, +day.slice(6, 8));
-    var n = Math.round((Date.now() - d) / 864e5);
-    if (n <= 0) return T("time.today");
-    if (n === 1) return T("time.yesterday");
-    return T("time.days", { n: n });
+  // the instant a grab record stands for. Midday when only the day is known,
+  // so which side of midnight the reader is on cannot flip the wording.
+  function grabAt(g) {
+    var hh = (g.hh == null) ? 12 : +g.hh;
+    var mm = (g.m6 == null) ? 0 : +g.m6 * 10;
+    return new Date(Date.UTC(+g.day.slice(0, 4), +g.day.slice(4, 6) - 1, +g.day.slice(6, 8), hh, mm));
   }
 
   function paintGrab(s) {
@@ -220,11 +272,13 @@
     var meta = outEl.querySelector(".dl-meta");
     var el = meta && meta.querySelector(".last");
     if (!el || !g || !g.day) return;
-    el.innerHTML = T("meta.grabbed", { when: "<b>" + esc(daysAgo(g.day)) + "</b>" }) +
+    var at = grabAt(g);
+    el.innerHTML = T("meta.grabbed", { when: "<b>" + esc(when(at, g.hh != null)) + "</b>" }) +
       (g.cc ? " " + esc(T("meta.from")) + ' <img class="flag" alt="" width="18" height="12" ' +
               'src="https://flagcdn.com/' + esc(g.cc.toLowerCase()) + '.svg"> ' + esc(g.cc) : "");
     var f = el.querySelector(".flag");
     if (f) f.addEventListener("error", function () { f.parentNode && f.parentNode.removeChild(f); });
+    el.title = at.toUTCString() + (g.m6 != null ? " (to the nearest ten minutes)" : "");
     meta.hidden = false;
   }
 
@@ -246,16 +300,46 @@
       try { sessionStorage.setItem("grab:" + s, JSON.stringify(g)); } catch (e) {}
       if (current === m.id) paintGrab(s);
     }
+    // the last of a run of keys that answered -- Promise.all keeps the order,
+    // so the last non-zero is the latest
+    function latest(keys, make) {
+      return Promise.all(keys.map(function (k) {
+        return readCount(make(k)).then(function (n) { return [k, n || 0]; });
+      })).then(function (rows) {
+        var hit = null;
+        rows.forEach(function (r) { if (r[1] > 0) hit = r[0]; });
+        return hit;
+      });
+    }
+
     function whereFrom(day) {
-      visitedFrom().then(function (ccs) {
+      var hours = [], i;
+      for (i = 0; i < 24; i++) hours.push(z2(i));
+
+      var out = { day: day, cc: null, hh: null, m6: null };
+
+      // the hour, then the ten minutes inside it. A record from before these
+      // keys existed answers nothing and the line simply keeps the day.
+      var clock = latest(hours, function (h) { return "dlh/" + s + "-" + day + h; })
+        .then(function (h) {
+          if (!h) return;
+          out.hh = h;
+          var six = ["0", "1", "2", "3", "4", "5"];
+          return latest(six, function (m) { return "dlm/" + s + "-" + day + h + m; })
+            .then(function (m) { if (m) out.m6 = m; });
+        });
+
+      var where = visitedFrom().then(function (ccs) {
         return Promise.all(ccs.map(function (cc) {
           return readCount("dlat/" + s + "-" + day + "-" + cc)
             .then(function (n) { return [cc, n || 0]; });
         }));
       }).then(function (pairs) {
         pairs.sort(function (a, b) { return b[1] - a[1]; });
-        done({ day: day, cc: (pairs.length && pairs[0][1] > 0) ? pairs[0][0] : null });
+        if (pairs.length && pairs[0][1] > 0) out.cc = pairs[0][0];
       });
+
+      Promise.all([clock, where]).then(function () { done(out); });
     }
     (function step(i) {
       if (current !== m.id && !GRABS[s]) { /* reader moved on; finish quietly */ }
