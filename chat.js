@@ -44,6 +44,25 @@ window.BUGCHAT = (function () {
   function get(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }
   function put(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 
+  /* The same list the server keeps, so the answer comes back before a whole
+     message has been typed rather than after. The server is the one that
+     decides; this is only manners. */
+  var RESERVED = ["spitmux", "defthrets", "ratboy", "admin", "moderator",
+                  "owner", "operator", "warden", "official", "staff", "system"];
+  var LOOKALIKE = { "0":"o","1":"i","3":"e","4":"a","5":"s","6":"g","7":"t",
+                    "8":"b","9":"g","$":"s","@":"a","!":"i","|":"i","+":"t" };
+  function taken(name) {
+    var flat = "";
+    String(name).toLowerCase().split("").forEach(function (ch) {
+      ch = LOOKALIKE[ch] || ch;
+      if (ch >= "a" && ch <= "z") flat += ch;
+    });
+    for (var i = 0; i < RESERVED.length; i++) {
+      if (flat.indexOf(RESERVED[i]) > -1) return RESERVED[i];
+    }
+    return null;
+  }
+
   function handle() {
     var n = get("chat:name", "");
     if (!n) { n = "anon-" + Math.random().toString(16).slice(2, 6); put("chat:name", n); }
@@ -148,6 +167,13 @@ window.BUGCHAT = (function () {
     name.value = handle();
     name.addEventListener("change", function () {
       var v = name.value.trim().slice(0, MAX_NAME) || "anon";
+      var mine = taken(v);
+      if (mine) {
+        note(T("chat.reserved", { name: mine }));
+        name.value = handle();
+        return;
+      }
+      note("");
       name.value = v;
       put("chat:name", v);
     });

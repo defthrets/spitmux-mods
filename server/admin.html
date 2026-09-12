@@ -155,6 +155,13 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
       <button id="lock" class="bad">lock</button>
     </div>
     <div class="rows" id="rows"><div class="empty">reading…</div></div>
+    <form class="bar" id="post">
+      <input id="as" type="text" value="spitmux" size="12" spellcheck="false"
+             aria-label="the name to say it under">
+      <input id="line" type="text" maxlength="200" placeholder="say something in the room"
+             aria-label="say something in the room">
+      <button type="submit">say it</button>
+    </form>
     <div class="say" id="say"></div>
   </section>
 
@@ -326,6 +333,19 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
   });
   $("wipe").addEventListener("click", function () {
     bulk("all", "delete ALL {n} line(s) in the room? there is no undo.");
+  });
+
+  /* The house speaking in its own room. The reserved names are refused to
+     everyone else, and the token is what makes this the exception. */
+  $("post").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var text = $("line").value.trim();
+    if (!text) return;
+    ask("api/say", { name: $("as").value.trim() || "spitmux", text: text })
+      .then(function (d) {
+        if (d.line) { $("line").value = ""; say("said it"); load(); }
+        else say(d.error || "it would not go", true);
+      });
   });
 
   $("rows").addEventListener("click", function (e) {

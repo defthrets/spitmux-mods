@@ -96,6 +96,7 @@
   "chat.placeholder": "なにか言う",
   "chat.send": "送信",
   "chat.emoji": "スタンプ",
+  "chat.reserved": "「{name}」は使えません — 別の名前を",
   "map.title": "どこから",
   "map.tab": "どこから",
   "map.sub": "訪問者マップ · 国ごとにピン一本 · アドレスは保存しない",

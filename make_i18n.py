@@ -126,6 +126,7 @@ UI = {
     "chat.placeholder": "say something",
     "chat.send": "send",
     "chat.emoji": "pictures",
+    "chat.reserved": "“{name}” is spoken for — pick another name",
 
     "map.title": "Where from",
     "map.tab": "where from",

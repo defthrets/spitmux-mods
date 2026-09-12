@@ -65,6 +65,15 @@ ORIGINS = set(filter(None, os.environ.get(
     "https://spitmux.me,https://www.spitmux.me,http://localhost:8788,http://127.0.0.1:8788"
 ).split(",")))
 
+# Names nobody else gets to wear. The check is on what a name LOOKS like once
+# the tricks are taken off it, not on the letters as typed -- sp1tmux, 5PITMUX,
+# spit-mux, xXspitmuxXx and defthr3ts are all the same attempt at the same lie.
+RESERVED = ["spitmux", "defthrets", "ratboy", "admin", "moderator", "owner",
+            "operator", "warden", "official", "staff", "system"]
+LOOKALIKE = {"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "6": "g",
+             "7": "t", "8": "b", "9": "g", "$": "s", "@": "a", "!": "i",
+             "|": "i", "+": "t"}
+
 MAX_TEXT = 200
 MAX_NAME = 16
 ROOM_LINES = 60           # how much of the wall a new arrival is handed
@@ -121,6 +130,26 @@ def clean(s, n):
     """One line of it, no control characters, trimmed to length."""
     s = re.sub(r"[\x00-\x1f\x7f]", " ", str(s or "")).strip()
     return re.sub(r"\s{2,}", " ", s)[:n]
+
+
+def flatten(name):
+    """A name with its disguises removed: case, spacing, punctuation and the
+    digits that stand in for letters."""
+    out = []
+    for ch in name.lower():
+        ch = LOOKALIKE.get(ch, ch)
+        if ch.isalpha():
+            out.append(ch)
+    return "".join(out)
+
+
+def taken(name):
+    """The reserved name it is pretending to be, or None."""
+    flat = flatten(name)
+    for r in RESERVED:
+        if r in flat:
+            return r
+    return None
 
 
 def banned(c, ip, name):
@@ -328,6 +357,12 @@ class Handler(BaseHTTPRequestHandler):
                 cc = ""
             if not text:
                 return self.reply(400, {"error": "say something"})
+
+            # the house's own names, unless the house is the one asking
+            if not self.admin_ok():
+                mine = taken(name)
+                if mine:
+                    return self.reply(403, {"error": '"%s" is spoken for -- pick another name' % mine})
 
             c = db()
             why = banned(c, ip, name)

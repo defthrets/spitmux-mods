@@ -96,6 +96,7 @@
   "chat.placeholder": "한마디 하기",
   "chat.send": "보내기",
   "chat.emoji": "그림",
+  "chat.reserved": "“{name}”은 이미 임자가 있습니다 — 다른 이름을 고르세요",
   "map.title": "어디서 왔나",
   "map.tab": "어디서 왔나",
   "map.sub": "방문자 지도 · 국가당 핀 하나 · 주소는 남기지 않음",
