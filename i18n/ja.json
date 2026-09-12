@@ -76,8 +76,6 @@
   "spec.menu": "メニュー",
   "spec.source": "ソース",
   "spec.files": "ファイル",
-  "spec.size": "アーカイブ全体の規模",
-  "spec.note": "{mods} 個の mod、{files} ファイルにわたる C# {lines} 行。src から集計、build・tools・release は除外。",
   "lang.label": "言語",
   "bubble.start": "まもなくダウンロードが始まります…",
   "bubble.wip": "注意：これらの mod はまだ開発中です",

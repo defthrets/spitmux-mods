@@ -76,8 +76,6 @@
   "spec.menu": "MENÚ",
   "spec.source": "CÓDIGO",
   "spec.files": "ARCHIVOS",
-  "spec.size": "tamaño en todo el archivo",
-  "spec.note": "{lines} líneas de C# en {mods} mods y {files} archivos. Contadas desde src, sin contar build, tools ni release.",
   "lang.label": "idioma",
   "bubble.start": "la descarga empieza en un momento…",
   "bubble.wip": "ojo: estos mods siguen en desarrollo",

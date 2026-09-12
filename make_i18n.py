@@ -103,8 +103,6 @@ UI = {
     "spec.menu": "MENU",
     "spec.source": "SOURCE",
     "spec.files": "FILES",
-    "spec.size": "size across the archive",
-    "spec.note": "{lines} lines of C# across {mods} mods and {files} files. Counted from src, excluding build, tools and release.",
 
     "lang.label": "language",
 

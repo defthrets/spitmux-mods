@@ -76,8 +76,6 @@
   "spec.menu": "MENÜ",
   "spec.source": "QUELLE",
   "spec.files": "DATEIEN",
-  "spec.size": "umfang des ganzen archivs",
-  "spec.note": "{lines} zeilen C# in {mods} mods und {files} dateien. Gezählt aus src, ohne build, tools und release.",
   "lang.label": "sprache",
   "bubble.start": "der download startet gleich…",
   "bubble.wip": "achtung: diese mods sind noch in arbeit",

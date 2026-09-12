@@ -76,8 +76,6 @@
   "spec.menu": "菜单",
   "spec.source": "源码",
   "spec.files": "文件",
-  "spec.size": "整个档案库的体量",
-  "spec.note": "{mods} 个 mod、{files} 个文件，共 {lines} 行 C#。从 src 统计，不含 build、tools 和 release。",
   "lang.label": "语言",
   "bubble.start": "下载马上开始…",
   "bubble.wip": "提醒：这些 mod 仍在开发中",

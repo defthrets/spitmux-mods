@@ -76,8 +76,6 @@
   "spec.menu": "मेन्यू",
   "spec.source": "सोर्स",
   "spec.files": "फ़ाइलें",
-  "spec.size": "पूरे आर्काइव का साइज़",
-  "spec.note": "{mods} मॉड और {files} फ़ाइलों में C# की {lines} लाइनें। src से गिनी गईं, build, tools और release छोड़कर।",
   "lang.label": "भाषा",
   "bubble.start": "डाउनलोड बस शुरू होने वाला है…",
   "bubble.wip": "ध्यान रहे: ये मॉड अभी बन रहे हैं, पूरे नहीं हुए",

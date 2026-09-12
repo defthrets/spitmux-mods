@@ -5,7 +5,6 @@
   var MODS = window.MODS || [];
   var listEl   = document.getElementById("index-list");
   var outEl    = document.getElementById("out");
-  var specEl   = document.getElementById("spec-body");
   var specId   = document.getElementById("spec-id");
   var filterEl = document.getElementById("filter");
 
@@ -545,7 +544,6 @@
 
   var TOTAL_LINES = MODS.reduce(function (a, m) { return a + m.lines; }, 0);
   var TOTAL_FILES = MODS.reduce(function (a, m) { return a + m.files; }, 0);
-  var MAX_LINES   = MODS.reduce(function (a, m) { return Math.max(a, m.lines); }, 1);
 
   // ── clock ─────────────────────────────────────────────────────────────
   (function tick() {
@@ -796,37 +794,13 @@
   }
 
   // ── the spec panel ────────────────────────────────────────────────────
+  /* The right column used to carry a card of build facts and a chart of how
+     every mod measured against every other. The facts were already in the
+     dossier's chips; the chart was a second answer to a question nobody had
+     asked twice. What is left of this is the counter in the panel header. */
   function renderSpec(m) {
     var idx = MODS.indexOf(m);
     specId.textContent = "ID-" + String(idx + 1).padStart(2, "0") + "/" + MODS.length;
-
-    /* The chart, and nothing else. There used to be a BUILD // ARCHIVE card
-       above it -- ten rows naming the language, the runtime, the editions,
-       the menu key, the size -- and every one of them was already in the
-       dossier's own line of chips two hundred pixels to the left. What the
-       column keeps is the one thing said nowhere else: how this mod measures
-       against the rest of them. */
-    var h = [];
-    h.push('<div class="size-head"><span>' + esc(T("spec.size")) + '</span><span>' + esc(T("chip.loc")) + '</span></div>');
-    h.push('<div class="size-list">');
-    MODS.slice().sort(function (a, b) { return b.lines - a.lines; }).forEach(function (x) {
-      var pct = Math.max(4, Math.round(Math.pow(x.lines / MAX_LINES, 0.55) * 100));
-      var k = x.lines >= 1000 ? Math.round(x.lines / 1000) + "k" : x.lines;
-      h.push('<div class="size-row' + (x.id === m.id ? " on" : "") + '" data-id="' + esc(x.id) + '">' +
-             '<span class="n">' + esc(x.name) + "</span>" +
-             '<span class="bar"><i style="inset:0 ' + (100 - pct) + '% 0 0"></i></span>' +
-             '<span class="v">' + k + "</span></div>");
-    });
-    h.push("</div>");
-
-    h.push('<div class="spec-note">' + esc(T("spec.note", {
-      lines: num(TOTAL_LINES), mods: MODS.length, files: num(TOTAL_FILES) })) + "</div>");
-
-    specEl.innerHTML = h.join("");
-
-    specEl.querySelectorAll(".size-row").forEach(function (row) {
-      row.addEventListener("click", function () { select(row.dataset.id); });
-    });
   }
 
   // ── selection ─────────────────────────────────────────────────────────

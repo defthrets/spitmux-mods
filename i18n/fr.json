@@ -76,8 +76,6 @@
   "spec.menu": "MENU",
   "spec.source": "SOURCE",
   "spec.files": "FICHIERS",
-  "spec.size": "taille de toute l'archive",
-  "spec.note": "{lines} lignes de C# réparties sur {mods} mods et {files} fichiers. Comptées depuis src, hors build, tools et release.",
   "lang.label": "langue",
   "bubble.start": "le téléchargement démarre dans un instant…",
   "bubble.wip": "attention : ces mods sont encore en chantier",

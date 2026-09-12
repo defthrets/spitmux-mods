@@ -76,8 +76,6 @@
   "spec.menu": "메뉴",
   "spec.source": "소스",
   "spec.files": "파일",
-  "spec.size": "아카이브 전체 규모",
-  "spec.note": "모드 {mods}개, 파일 {files}개에 걸친 C# {lines}줄. src 기준으로 센 값이며 build, tools, release는 제외.",
   "lang.label": "언어",
   "bubble.start": "다운로드가 곧 시작됩니다…",
   "bubble.wip": "참고: 이 모드들은 아직 만드는 중입니다",
