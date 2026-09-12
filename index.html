@@ -34,7 +34,7 @@
   <!-- Noto Sans JP is a very large family and this page uses 13 glyphs of it:
        the seal's ring and the operator card's strip. Subset to exactly those. -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=%E3%80%90%E3%80%91%E3%82%A4%E3%82%B9%E3%83%83%E3%83%87%E3%83%88%E3%83%9C%E3%83%A9%E3%83%AC%E3%83%BC%E5%AE%9F%E8%A1%8C&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=56632270" />
+  <link rel="stylesheet" href="styles.css?v=32e1955c" />
 </head>
 <body>
   <!-- the cold open; intro.js fills this and then removes it -->
@@ -192,10 +192,10 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
           </div>
         </div>
 
-        <!-- The bug chat sits above the size chart and takes the slack in the
-             column. Nothing loads until it is asked for: the panel is a button
-             until then, the way the video is a still until clicked. app.js
-             mounts giscus into #chat-body. -->
+        <!-- The bug chat: an anonymous room over a public MQTT broker, so
+             there is no account to make and nothing to sign in to. chat.js is
+             the room; app.js mounts it into #chat-body the first time somebody
+             asks, the way the video is a still until clicked. -->
         <div class="chat-window">
           <div class="spec-header">
             <span class="title" data-i18n="chat.title">BUG CHAT</span>
@@ -205,7 +205,7 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
             <button type="button" class="chat-open" id="chat-open">
               <span class="caret">»</span> <span data-i18n="chat.open">open the bug chat</span>
             </button>
-            <p class="chat-note" data-i18n="chat.note">it runs on github discussions · sign in there to post</p>
+            <p class="chat-note" data-i18n="chat.note">no sign-in, no names kept · it is a public room, so treat it as one</p>
           </div>
         </div>
       </aside>
@@ -229,8 +229,9 @@ x88:  `)8b.   `888I  888. ''888E`   8888      X888  888X '888&gt;    8888  888R 
   <script src="mods.js?v=c39d211a"></script>
   <script src="huds.js?v=75a231dd"></script>
   <script src="intro.js?v=0ca464f2"></script>
-  <script src="i18n/en.js?v=07de393d"></script>
+  <script src="i18n/en.js?v=b8c7850f"></script>
   <script src="i18n.js?v=d44eda81"></script>
-  <script src="app.js?v=69249fc3"></script>
+  <script src="chat.js?v=d86bd722"></script>
+  <script src="app.js?v=bfc2c16d"></script>
 </body>
 </html>

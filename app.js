@@ -72,6 +72,7 @@
       })
       .then(function (cc) {
         VISITOR_CC = cc;
+        window.VISITOR_CC = cc;          // the bug chat stamps a line with it
         if (cc) { try { localStorage.setItem("cc", cc); } catch (e) {} }
         return cc;
       });
@@ -995,55 +996,29 @@
     });
   }
 
-  /* The shoutbox.
-
-     giscus puts GitHub's comment UI in an iframe against a discussion in
-     this repo, so there is no database here, no key in this page, and
-     moderation is wherever the discussion is. It is a fair weight to load,
-     though -- so nothing loads until somebody asks, exactly like the video.
-     Having asked once, this browser is taken to mean it every time.
-
-     Everyone lands in the same thread rather than one per page: it is a
-     chat, not comments on an article. */
-  (function shoutbox() {
+  /* The bug chat. The room itself is chat.js; this is the panel around it --
+     shut until somebody asks, because the room pulls a hundred kilobytes of
+     MQTT client down with it and most readers came for the mods. Having asked
+     once, this browser is taken to mean it every time. */
+  (function bugchat() {
     var box = document.getElementById("chat-body");
     var open = document.getElementById("chat-open");
     var wrap = box && box.parentNode;
-    if (!box || !open) return;
-
-    var GISCUS = {
-      "data-repo": "defthrets/spitmux-mods",
-      "data-repo-id": "R_kgDOUUZiPA",
-      "data-category": "General",
-      "data-category-id": "DIC_kwDOUUZiPM4DFcvz",
-      // pinned to one discussion by number: no title search to go wrong,
-      // and renaming the thread on GitHub cannot unhook the panel
-      "data-mapping": "number",
-      "data-term": "1",
-      "data-reactions-enabled": "0",
-      "data-emit-metadata": "0",
-      "data-input-position": "top",
-      "data-theme": "https://spitmux.me/giscus.css",
-      "data-loading": "lazy",
-      "crossorigin": "anonymous"
-    };
-    // giscus ships its own translations; ours are a subset of theirs
-    var LANGS = { en: "en", ko: "ko", pt: "pt", zh: "zh-CN", ja: "ja",
-                  es: "es", de: "de", fr: "fr", hi: "en" };
+    var state = document.getElementById("chat-state");
+    if (!box || !open || !window.BUGCHAT) return;
 
     var mounted = false;
 
+    function say(text, live) {
+      if (!state) return;
+      state.removeAttribute("data-i18n");
+      state.textContent = text;
+      wrap.classList.toggle("live", !!live);
+    }
+
     function mount() {
-      box.innerHTML = "";
-      var s = document.createElement("script");
-      s.src = "https://giscus.app/client.js";
-      s.async = true;
-      for (var k in GISCUS) if (GISCUS.hasOwnProperty(k)) s.setAttribute(k, GISCUS[k]);
-      s.setAttribute("data-lang", LANGS[window.I18N ? window.I18N.current() : "en"] || "en");
-      box.appendChild(s);
       wrap.classList.add("on");
-      var state = document.getElementById("chat-state");
-      if (state) { state.textContent = T("chat.live"); state.removeAttribute("data-i18n"); }
+      window.BUGCHAT.mount(box, say);
       mounted = true;
       try { localStorage.setItem("chat", "on"); } catch (e) {}
     }
@@ -1051,23 +1026,8 @@
     open.addEventListener("click", mount);
     try { if (localStorage.getItem("chat") === "on") mount(); } catch (e) {}
 
-    /* The frame can fail for reasons this page cannot see -- the app not
-       installed on the repo, the discussion locked, giscus itself down --
-       and an empty box says none of that. It reports its trouble by
-       postMessage, so the panel says it plainly and offers the thread on
-       GitHub, which works either way. */
-    window.addEventListener("message", function (e) {
-      if (e.origin !== "https://giscus.app") return;
-      var d = e.data && e.data.giscus;
-      if (!d || !d.error) return;
-      box.innerHTML =
-        '<p class="chat-note" style="display:block">' + esc(T("chat.down")) + "</p>" +
-        '<a class="chat-open" href="https://github.com/defthrets/spitmux-mods/discussions" ' +
-        'target="_blank" rel="noopener"><span class="caret">»</span> ' + esc(T("chat.github")) + "</a>";
-    });
-
-    // the frame cannot be re-labelled from out here; it is built again
-    window.addEventListener("i18n", function () { if (mounted) mount(); });
+    // the lines are drawn by chat.js; a language change redraws them
+    window.addEventListener("i18n", function () { if (mounted) window.BUGCHAT.relabel(); });
   })();
 
   window.addEventListener("konami", function () {
