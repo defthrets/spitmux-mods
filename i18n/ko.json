@@ -100,6 +100,8 @@
   "chat.bot": "봇",
   "chat.reply": "여기에 답하기",
   "chat.unreply": "취소",
+  "chat.left": "{n}단어 남음",
+  "chat.over": "{n}단어 초과",
   "chat.reserved": "“{name}”은 이미 임자가 있습니다 — 다른 이름을 고르세요",
   "map.title": "어디서 왔나",
   "map.tab": "어디서 왔나",

@@ -100,6 +100,8 @@
   "chat.bot": "机器人",
   "chat.reply": "回复这条",
   "chat.unreply": "算了",
+  "chat.left": "还可输入 {n} 个词",
+  "chat.over": "超出 {n} 个词",
   "chat.reserved": "“{name}” 已被占用 — 换个名字",
   "map.title": "来自哪里",
   "map.tab": "来自哪里",

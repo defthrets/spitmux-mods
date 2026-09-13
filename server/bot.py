@@ -166,7 +166,12 @@ DRY_RUN = envb("BOT_DRY_RUN", "0")        # decide and ask, but never post
 SEND_RULES = envb("BOT_SEND_RULES", "1")
 
 # ── the room's own limits, which are not ours to change ──────────────────
-MAX_TEXT = 200            # bugchat truncates past this, silently
+# How long the BOT's own answers may be. This used to be the chat's limit as
+# well -- the same 200 characters -- and the comment here said so. The room now
+# takes a thousand words, and the two numbers must not be one number again: a
+# visitor writing a long bug report is the point, a bot replying at that length
+# in a sidebar is not. This is the bot's manners, not the room's ceiling.
+MAX_TEXT = envi("BOT_MAX_TEXT", 200)
 MAX_LINES = envi("BOT_MAX_LINES", 2)      # at most this many lines per answer
 MIN_TEXT = 12             # shorter than this is not a question worth paying for
 CONTEXT_LINES = envi("BOT_CONTEXT_LINES", 6)
@@ -811,6 +816,8 @@ class Bot(object):
         })
         return "\n\n".join(parts)
 
+    CONTEXT_CHARS = 300     # of a neighbouring line; it is background, not the ask
+
     def context(self, line):
         """The handful of lines before this one, and whatever it answers.
 
@@ -844,8 +851,15 @@ class Bot(object):
                 role = "the person you are talking to, earlier"
             else:
                 role = "somebody else in the room"
+            # Trimmed hard. A neighbouring line is there to make the question
+            # make sense; now that the room takes a thousand words, six of them
+            # unabridged would be most of the prompt and most of the bill,
+            # spent on messages nobody asked the bot about.
+            said = defuse(r["text"])
+            if len(said) > self.CONTEXT_CHARS:
+                said = said[:self.CONTEXT_CHARS].rsplit(" ", 1)[0] + " [...]"
             out.append("%s\nWho: %s\nSaid: %s\n%s"
-                       % (FENCE_OPEN, role, defuse(r["text"]), FENCE_SHUT))
+                       % (FENCE_OPEN, role, said, FENCE_SHUT))
         return "\n\n".join(out)
 
     def leaks(self, text, ctx):

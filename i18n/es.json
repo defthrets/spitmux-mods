@@ -100,6 +100,8 @@
   "chat.bot": "bot",
   "chat.reply": "responder a esto",
   "chat.unreply": "déjalo",
+  "chat.left": "quedan {n} palabras",
+  "chat.over": "{n} palabras de más",
   "chat.reserved": "“{name}” ya tiene dueño — elige otro nombre",
   "map.title": "De dónde",
   "map.tab": "de dónde",

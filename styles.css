@@ -1881,6 +1881,12 @@ img.px {
   line-height: 1.5;
   letter-spacing: 0;
   word-break: break-word;
+  /* A thousand words is allowed, and one of them should not push the rest of
+     the room off the panel. Past roughly fifteen lines it scrolls in place --
+     the whole message is still there, and still selectable and copyable, it
+     just stops being the only thing on screen. */
+  max-height: 15.5em;
+  overflow-y: auto;
 }
 .chat-line .say .reply {
   float: right;
@@ -1936,7 +1942,15 @@ img.px {
 .chat-said:empty { display: none; }
 .chat-said.bad { color: #ff7a6b; }
 
-.chat-form { display: grid; grid-template-columns: 74px minmax(0, 1fr) 28px 28px; gap: 5px; }
+/* Bottom-aligned, because the box in the middle of it changes height now: a
+   stretched row made the name field and both buttons as tall as whatever was
+   being typed, and a 132-pixel send arrow is not a send arrow. */
+.chat-form {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) 28px 28px;
+  gap: 5px;
+  align-items: end;
+}
 
 /* the site's own art, small enough to sit in a sentence */
 .chat-line .emo {
@@ -1974,7 +1988,7 @@ img.px {
 }
 .chat-tray button:hover img { filter: none; }
 .chat-emo { color: var(--p-glow) !important; font-size: 15px; }
-.chat-form input, .chat-form button {
+.chat-form input, .chat-form textarea, .chat-form button {
   background: #0a0603;
   border: 1px solid var(--p-line);
   border-radius: 3px;
@@ -1986,9 +2000,23 @@ img.px {
   text-shadow: none;
   min-width: 0;
 }
-.chat-form input:focus, .chat-form button:hover { outline: none; border-color: var(--p-signal); }
+.chat-form input:focus, .chat-form textarea:focus, .chat-form button:hover {
+  outline: none;
+  border-color: var(--p-signal);
+}
 .chat-form .chat-name { color: var(--p-glow); }
-.chat-form input::placeholder { color: var(--p-dim); }
+.chat-form input::placeholder, .chat-form textarea::placeholder { color: var(--p-dim); }
+
+/* The box grows with what is being written and then scrolls, so a long bug
+   report is writable without the panel eating the page. Sized in the script,
+   which is the only thing that knows how much has been typed; the rules here
+   are the ones a textarea needs and an input never did. */
+.chat-form .chat-say {
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.35;
+  max-height: 132px;
+}
 .chat-form button { color: var(--p-signal); cursor: pointer; padding: 5px 0; }
 
 /* ─── the strip: a mod's own pixel art, tiled ─────────────────────────

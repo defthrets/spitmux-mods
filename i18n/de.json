@@ -100,6 +100,8 @@
   "chat.bot": "bot",
   "chat.reply": "darauf antworten",
   "chat.unreply": "doch nicht",
+  "chat.left": "noch {n} Wörter",
+  "chat.over": "{n} Wörter zu viel",
   "chat.reserved": "„{name}“ ist vergeben — nimm einen anderen namen",
   "map.title": "Woher",
   "map.tab": "woher",

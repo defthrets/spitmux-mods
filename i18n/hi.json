@@ -100,6 +100,8 @@
   "chat.bot": "बॉट",
   "chat.reply": "इसका जवाब दो",
   "chat.unreply": "रहने दो",
+  "chat.left": "{n} शब्द बाकी",
+  "chat.over": "{n} शब्द ज़्यादा",
   "chat.reserved": "“{name}” पहले से किसी का है — दूसरा नाम चुनो",
   "map.title": "कहाँ से",
   "map.tab": "कहाँ से",

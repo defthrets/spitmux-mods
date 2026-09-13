@@ -100,6 +100,8 @@
   "chat.bot": "ボット",
   "chat.reply": "これに返信",
   "chat.unreply": "やめる",
+  "chat.left": "残り{n}語",
+  "chat.over": "{n}語オーバー",
   "chat.reserved": "「{name}」は使えません — 別の名前を",
   "map.title": "どこから",
   "map.tab": "どこから",

@@ -83,7 +83,17 @@ LOOKALIKE = {"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "6": "g",
              "7": "t", "8": "b", "9": "g", "$": "s", "@": "a", "!": "i",
              "|": "i", "+": "t"}
 
-MAX_TEXT = 200
+# A thousand words, because a bug report is not a one-liner: a log excerpt, a
+# list of other mods installed and what was happening at the time is the
+# difference between "it crashed" and something anyone can act on.
+#
+# Two limits, not one. Words are what was asked for and what a person counts
+# in; characters are what stops one 40,000-letter "word" from being a thousand
+# of them. The character figure is deliberately loose -- a real thousand words
+# of English is about 6,000 -- so it only ever catches the pathological case
+# and never a genuine long message.
+MAX_WORDS = 1000
+MAX_TEXT = 10000
 MAX_NAME = 16
 ROOM_LINES = 60           # how much of the wall a new arrival is handed
 # The bot's per-person cap needs something a visitor cannot simply retype. A
@@ -179,6 +189,16 @@ def clean(s, n):
     database and cannot come back out through a reply quote."""
     s = re.sub(u"[\x00-\x1f\x7f\u0085\u2028\u2029]", " ", str(s or "")).strip()
     return re.sub(r"\s{2,}", " ", s)[:n]
+
+
+def words(s, n):
+    """The first n words of it, with the rest dropped.
+
+    Splitting on whitespace and rejoining is deliberate: it means the count is
+    of things a person would call words, and it normalises the spacing on the
+    way through, which clean() would have done anyway."""
+    parts = str(s or "").split()
+    return " ".join(parts[:n])
 
 
 def flatten(name):
@@ -310,7 +330,11 @@ class Handler(BaseHTTPRequestHandler):
 
     def body(self):
         n = int(self.headers.get("Content-Length") or 0)
-        if n <= 0 or n > 8192:
+        # Room for the longest message somebody is allowed to send, in the
+        # worst encoding they might send it in: a thousand words of Hindi or
+        # Japanese is three bytes a character, and the old 8KB ceiling would
+        # have refused it as malformed rather than said why.
+        if n <= 0 or n > 64 * 1024:
             return {}
         try:
             return json.loads(self.rfile.read(n).decode("utf-8"))
@@ -444,7 +468,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/say":
             d = self.body()
             name = clean(d.get("name"), MAX_NAME) or "anon"
-            text = clean(d.get("text"), MAX_TEXT)
+            text = words(clean(d.get("text"), MAX_TEXT), MAX_WORDS)
             cc = clean(d.get("cc"), 2).upper()
             if not re.match(r"^[A-Z]{2}$", cc or ""):
                 cc = ""

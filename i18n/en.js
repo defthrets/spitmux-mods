@@ -100,6 +100,8 @@ window.I18N_EN = {
  "chat.bot": "bot",
  "chat.reply": "answer this",
  "chat.unreply": "never mind",
+ "chat.left": "{n} words left",
+ "chat.over": "{n} words over the limit",
  "chat.reserved": "“{name}” is spoken for — pick another name",
  "map.title": "Where from",
  "map.tab": "where from",

@@ -24,7 +24,13 @@ window.BUGCHAT = (function () {
   "use strict";
 
   var POLL_MS = 2500;
-  var MAX_TEXT = 200;
+  // The room takes a thousand words. The character figure is the same loose
+  // backstop the server applies against one absurdly long "word"; the word
+  // count is the limit anybody will actually meet. Both are enforced here as
+  // well as there, so the box stops you at the limit rather than the server
+  // quietly shortening what you wrote after you have sent it.
+  var MAX_TEXT = 10000;
+  var MAX_WORDS = 1000;
   var MAX_NAME = 16;
   var KEEP = 120;                 // lines held in the panel
   var GROUP_MS = 4 * 60 * 1000;   // one person's lines, close together, join up
@@ -210,8 +216,19 @@ window.BUGCHAT = (function () {
       .then(function () { if (!stopped) timer = setTimeout(poll, POLL_MS); });
   }
 
+  // The same folding the server does, done here first, so what is counted and
+  // what is sent are what the server will actually keep.
+  function trim(s) {
+    return String(s || "").replace(/\s+/g, " ").trim();
+  }
+
+  function clip(s) {
+    var w = trim(s).split(" ").filter(Boolean);
+    return (w.length > MAX_WORDS ? w.slice(0, MAX_WORDS).join(" ") : trim(s)).slice(0, MAX_TEXT);
+  }
+
   function say(text) {
-    var body = { name: handle(), text: text.slice(0, MAX_TEXT), key: secret(),
+    var body = { name: handle(), text: clip(text), key: secret(),
                  cc: window.VISITOR_CC || get("cc", "") };
     if (answering) body.reply = answering.id;
     fetch(base + "/api/say", {
@@ -253,11 +270,41 @@ window.BUGCHAT = (function () {
       put("chat:name", v);
     });
 
+    // A textarea does not submit on Enter, and this one should: it is a chat
+    // box that happens to be able to hold a bug report, not a form field.
+    // Shift+Enter is not a newline either -- the server folds those to spaces,
+    // so offering one would be a promise the room cannot keep.
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event("submit", { cancelable: true }));
+      }
+    });
+
+    // Grow with what is being written, up to a point, then scroll. A one-line
+    // box you cannot see the top of is no way to write two hundred words.
+    function grow() {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 132) + "px";
+    }
+    input.addEventListener("input", function () { grow(); count(); });
+
+    // Say how much room is left, but only once it is nearly gone. A counter
+    // sitting there from the first keystroke reads as a warning about a limit
+    // almost nobody will reach.
+    function count() {
+      var left = MAX_WORDS - trim(input.value).split(/\s+/).filter(Boolean).length;
+      note(left <= 100 && left >= 0 ? T("chat.left", { n: left })
+           : left < 0 ? T("chat.over", { n: -left }) : "");
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var v = input.value.trim();
+      var v = trim(input.value);
       if (!v) return;
       input.value = "";
+      input.style.height = "";
+      note("");
       say(v);
     });
 
@@ -318,9 +365,9 @@ window.BUGCHAT = (function () {
       '<form class="chat-form">' +
       '<input class="chat-name" type="text" maxlength="' + MAX_NAME + '" spellcheck="false" ' +
       'aria-label="' + esc(T("chat.name")) + '" title="' + esc(T("chat.name")) + '">' +
-      '<input class="chat-say" type="text" maxlength="' + MAX_TEXT + '" autocomplete="off" ' +
+      '<textarea class="chat-say" rows="1" maxlength="' + MAX_TEXT + '" autocomplete="off" ' +
       'placeholder="' + esc(T("chat.placeholder")) + '" aria-label="' +
-      esc(T("chat.placeholder")) + '">' +
+      esc(T("chat.placeholder")) + '"></textarea>' +
       '<button type="button" class="chat-emo" aria-label="' + esc(T("chat.emoji")) + '">&#9786;</button>' +
       '<button type="submit" aria-label="' + esc(T("chat.send")) + '">&#8629;</button>' +
       "</form>" +
