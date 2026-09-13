@@ -119,6 +119,13 @@ window.BUGCHAT = (function () {
         cc.toLowerCase() + '.svg">' : "";
   }
 
+  /* The house, and the thing it runs. Only the server puts these on a line --
+     nothing a visitor can type produces one. */
+  function badgeOf(b) {
+    if (b !== "op" && b !== "bot") return "";
+    return '<span class="tag ' + b + '">' + (b === "op" ? T("chat.op") : T("chat.bot")) + "</span>";
+  }
+
   function state(k, live) { if (cb) cb(T(k), live); }
 
   /* Consecutive lines from one person, close together, are a single turn of
@@ -138,7 +145,8 @@ window.BUGCHAT = (function () {
       out.push('<div class="chat-line' + (joined ? " joined" : "") + '">');
       if (!joined) {
         out.push('<div class="chat-head"><span class="who">' + flagOf(x.cc) + esc(x.name) +
-                 '</span><span class="t">' + esc(clock(x.ts)) + "</span></div>");
+                 badgeOf(x.badge) + '</span><span class="t">' + esc(clock(x.ts)) +
+                 "</span></div>");
       }
       if (x.reply && x.re_name) {
         out.push('<div class="chat-re"><span class="who">' + esc(x.re_name) + "</span>" +

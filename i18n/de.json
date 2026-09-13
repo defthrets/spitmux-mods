@@ -96,6 +96,8 @@
   "chat.placeholder": "sag was",
   "chat.send": "senden",
   "chat.emoji": "bildchen",
+  "chat.op": "chef",
+  "chat.bot": "bot",
   "chat.reply": "darauf antworten",
   "chat.unreply": "doch nicht",
   "chat.reserved": "„{name}“ ist vergeben — nimm einen anderen namen",

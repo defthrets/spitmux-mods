@@ -96,6 +96,8 @@
   "chat.placeholder": "なにか言う",
   "chat.send": "送信",
   "chat.emoji": "スタンプ",
+  "chat.op": "主",
+  "chat.bot": "ボット",
   "chat.reply": "これに返信",
   "chat.unreply": "やめる",
   "chat.reserved": "「{name}」は使えません — 別の名前を",

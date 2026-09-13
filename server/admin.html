@@ -77,6 +77,12 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
 .row.hidden-line .text { text-decoration:line-through; }
 .t { color:var(--dim); font-size:11px; white-space:nowrap; }
 .who { color:var(--glow); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* the house's own lines, so a moderator can tell at a glance which side of
+   the room a line came from */
+.who .tag { margin-left:5px; padding:0 4px; border-radius:2px; font-size:10px;
+            letter-spacing:.12em; vertical-align:1px; }
+.who .tag.op { background:var(--glow); color:#0b0906; }
+.who .tag.bot { border:1px solid var(--dim); color:var(--dim); }
 .ip { color:var(--mid); font-size:11px; white-space:nowrap; cursor:pointer; display:flex; align-items:center; gap:5px; }
 .ip:hover { color:var(--core); }
 .ip .flag {
@@ -97,6 +103,18 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
 .ban-why { display:block; color:var(--dim); font-size:11px; }
 .empty { padding:16px 12px; color:var(--dim); font-family:"VT323",monospace; font-size:16px; }
 .say { padding:6px 12px; color:var(--glow); font-family:"VT323",monospace; font-size:15px; min-height:26px; }
+
+/* the line being answered, above the box */
+.answering {
+  display:flex; gap:8px; align-items:baseline;
+  padding:5px 12px; border-left:2px solid var(--signal);
+  background:rgb(var(--rgb-signal)/.06); font-size:12px;
+}
+.answering[hidden] { display:none; }
+.answering .who { color:var(--glow); flex:none; }
+.answering .what { color:var(--body); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.answering .drop { margin-left:auto; padding:0 4px; background:none; border:0; color:var(--half); cursor:pointer; }
+.answering .drop:hover { color:var(--core); }
 
 /* On a phone the two columns become one, the row becomes two lines, and the
    actions stop hiding behind a hover that a finger cannot do. */
@@ -155,9 +173,14 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
       <button id="lock" class="bad">lock</button>
     </div>
     <div class="rows" id="rows"><div class="empty">reading…</div></div>
+    <div class="answering" id="answering" hidden></div>
     <form class="bar" id="post">
       <input id="as" type="text" value="spitmux" size="12" spellcheck="false"
              aria-label="the name to say it under">
+      <select id="mark" aria-label="the badge to wear">
+        <option value="op" selected>op</option>
+        <option value="bot">bot</option>
+      </select>
       <input id="line" type="text" maxlength="200" placeholder="say something in the room"
              aria-label="say something in the room">
       <button type="submit">say it</button>
@@ -179,7 +202,7 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
-  var token = "", lines = [], bans = [], timer = null;
+  var token = "", lines = [], bans = [], timer = null, answering = null;
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
@@ -241,13 +264,14 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
     $("rows").innerHTML = rows.map(function (l) {
       return '<div class="row' + (l.hidden ? " hidden-line" : "") + '">' +
         '<span class="t">' + esc(when(l.ts)) + "</span>" +
-        '<span class="who">' + esc(l.name) + "</span>" +
+        '<span class="who">' + esc(l.name) + tag(l.badge) + "</span>" +
         '<span class="ip" data-ip="' + esc(l.ip) + '" title="' + esc(where(l)) + '">' +
           flag(l.geo || l.cc) + esc(l.ip) +
           (l.cc && l.geo && l.cc !== l.geo ? ' <span class="lie">said ' + esc(l.cc) + "</span>" : "") +
         "</span>" +
         '<span class="text">' + esc(l.text) + "</span>" +
         '<span class="acts">' +
+          '<button data-answer="' + l.id + '">reply</button>' +
           (l.hidden ? '<button data-show="' + l.id + '">restore</button>'
                     : '<button data-hide="' + l.id + '">hide</button>') +
           '<button class="bad" data-del="' + l.id + '">delete</button>' +
@@ -256,6 +280,10 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
           '<button class="bad" data-banname="' + esc(l.name) + '">name</button>' +
         "</span></div>";
     }).join("");
+  }
+
+  function tag(b) {
+    return (b === "op" || b === "bot") ? '<span class="tag ' + b + '">' + b + "</span>" : "";
   }
 
   function drawBans() {
@@ -337,22 +365,51 @@ aside { border-left:1px solid var(--edge); display:flex; flex-direction:column; 
 
   /* The house speaking in its own room. The reserved names are refused to
      everyone else, and the token is what makes this the exception. */
+  function showAnswering() {
+    var box = $("answering");
+    if (!answering) { box.hidden = true; box.innerHTML = ""; return; }
+    box.hidden = false;
+    box.innerHTML = '<span class="who">' + esc(answering.name) + "</span>" +
+                    '<span class="what">' + esc(answering.text) + "</span>" +
+                    '<button class="drop" type="button" title="never mind">&#215;</button>';
+  }
+  $("answering").addEventListener("click", function (e) {
+    if (!e.target.closest(".drop")) return;
+    answering = null;
+    showAnswering();
+  });
+
   $("post").addEventListener("submit", function (e) {
     e.preventDefault();
     var text = $("line").value.trim();
     if (!text) return;
-    ask("api/say", { name: $("as").value.trim() || "spitmux", text: text })
-      .then(function (d) {
-        if (d.line) { $("line").value = ""; say("said it"); load(); }
-        else say(d.error || "it would not go", true);
-      });
+    var body = { name: $("as").value.trim() || "spitmux", text: text,
+                 badge: $("mark").value };
+    if (answering) body.reply = answering.id;
+    ask("api/say", body).then(function (d) {
+      if (d.line) {
+        $("line").value = "";
+        answering = null;
+        showAnswering();
+        say("said it");
+        load();
+      } else say(d.error || "it would not go", true);
+    });
   });
 
   $("rows").addEventListener("click", function (e) {
     var b = e.target.closest("button"), ip = e.target.closest(".ip");
     if (ip) { $("q").value = ip.dataset.ip; drawRows(); return; }
     if (!b) return;
-    if (b.dataset.hide) {
+    if (b.dataset.answer) {
+      var id = +b.dataset.answer, line = null;
+      lines.forEach(function (l) { if (l.id === id) line = l; });
+      if (line) {
+        answering = { id: id, name: line.name, text: line.text.slice(0, 90) };
+        showAnswering();
+        $("line").focus();
+      }
+    } else if (b.dataset.hide) {
       ask("api/admin/hide", { id: +b.dataset.hide }).then(function () { say("taken down"); load(); });
     } else if (b.dataset.show) {
       ask("api/admin/hide", { id: +b.dataset.show, hidden: 0 }).then(function () { say("back on the wall"); load(); });

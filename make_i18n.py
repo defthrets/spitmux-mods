@@ -126,6 +126,8 @@ UI = {
     "chat.placeholder": "say something",
     "chat.send": "send",
     "chat.emoji": "pictures",
+    "chat.op": "op",
+    "chat.bot": "bot",
     "chat.reply": "answer this",
     "chat.unreply": "never mind",
     "chat.reserved": "“{name}” is spoken for — pick another name",

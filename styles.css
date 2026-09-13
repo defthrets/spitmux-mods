@@ -1798,7 +1798,7 @@ img.px {
 .chat-window.on .chat-body { display: flex; flex-direction: column; gap: 7px; }
 .chat-log {
   flex: 1 1 auto;
-  min-height: 120px;
+  min-height: 140px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--p-line) transparent;
@@ -1824,11 +1824,32 @@ img.px {
 }
 .chat-head .who {
   color: var(--p-glow);
+  font-size: 17px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .chat-head .t { flex: none; color: var(--p-dim); font-size: 14px; }
+
+/* who is actually the house. Filled for the operator, hollow for the thing
+   it runs, so the two are never mistaken for each other or for anybody else. */
+.chat-head .tag {
+  margin-left: 6px;
+  padding: 0 5px 1px;
+  border-radius: 2px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+.chat-head .tag.op {
+  background: var(--p-signal);
+  color: #120b05;
+}
+.chat-head .tag.bot {
+  border: 1px solid var(--p-half);
+  color: var(--p-half);
+}
 .chat-line .flag {
   width: 14px; height: 10px;
   object-fit: cover;
@@ -1851,8 +1872,16 @@ img.px {
 }
 .chat-re .who { color: var(--p-half); flex: none; }
 .chat-re .what { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-re .emo { width: 16px; height: 16px; vertical-align: -4px; }
 
-.chat-line .say { color: var(--p-pale); word-break: break-word; }
+.chat-line .say {
+  color: var(--p-core);
+  font-family: var(--font), "Courier New", monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  word-break: break-word;
+}
 .chat-line .say .reply {
   float: right;
   margin: -1px 0 0 6px;
@@ -1868,13 +1897,6 @@ img.px {
 }
 .chat-line:hover .say .reply { opacity: 1; }
 .chat-line .say .reply:hover { color: var(--p-signal); }
-.chat-line .emo {
-  width: 18px; height: 18px;
-  vertical-align: -4px;
-  margin: 0 1px;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
-}
 
 /* the line you are about to answer, sat above the box */
 .chat-answering {
@@ -1918,9 +1940,9 @@ img.px {
 
 /* the site's own art, small enough to sit in a sentence */
 .chat-line .emo {
-  width: 18px; height: 18px;
-  vertical-align: -4px;
-  margin: 0 1px;
+  width: 24px; height: 24px;
+  vertical-align: -7px;
+  margin: 0 2px;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
 }
@@ -1945,7 +1967,7 @@ img.px {
 }
 .chat-tray button:hover { border-color: var(--p-signal); background: rgb(var(--rgb-signal) / 0.08); }
 .chat-tray img {
-  width: 26px; height: 26px;
+  width: 30px; height: 30px;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
   filter: saturate(0.35) brightness(0.9) sepia(0.3);

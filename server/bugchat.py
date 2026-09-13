@@ -77,7 +77,7 @@ LOOKALIKE = {"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "6": "g",
 MAX_TEXT = 200
 MAX_NAME = 16
 ROOM_LINES = 60           # how much of the wall a new arrival is handed
-ROOM = ("SELECT m.id, m.ts, m.name, m.text, m.reply, "
+ROOM = ("SELECT m.id, m.ts, m.name, m.text, m.reply, m.badge, "
         "CASE WHEN m.geo <> '' THEN m.geo ELSE m.cc END AS cc, "
         "r.name AS re_name, substr(r.text, 1, 70) AS re_text "
         "FROM msg m LEFT JOIN msg r ON r.id = m.reply ")
@@ -94,7 +94,8 @@ CREATE TABLE IF NOT EXISTS msg (
   cc      TEXT    NOT NULL DEFAULT '',   -- what the page said, and can lie
   geo     TEXT    NOT NULL DEFAULT '',   -- what Cloudflare said, and cannot
   hidden  INTEGER NOT NULL DEFAULT 0,
-  reply   INTEGER NOT NULL DEFAULT 0    -- the line this one answers, or 0
+  reply   INTEGER NOT NULL DEFAULT 0,   -- the line this one answers, or 0
+  badge   TEXT    NOT NULL DEFAULT ''   -- 'op' or 'bot'; only the token sets it
 );
 CREATE INDEX IF NOT EXISTS msg_ts ON msg (ts);
 -- A name belongs to whoever said it first, and keeps belonging to them. The
@@ -140,6 +141,8 @@ def setup():
             c.execute("ALTER TABLE msg ADD COLUMN geo TEXT NOT NULL DEFAULT ''")
         if "reply" not in have:
             c.execute("ALTER TABLE msg ADD COLUMN reply INTEGER NOT NULL DEFAULT 0")
+        if "badge" not in have:
+            c.execute("ALTER TABLE msg ADD COLUMN badge TEXT NOT NULL DEFAULT ''")
     c.close()
 
 
@@ -397,7 +400,10 @@ class Handler(BaseHTTPRequestHandler):
             if why is not None:
                 c.close()
                 return self.reply(403, {"error": why or "you are not welcome here"})
-            slow = too_fast(ip)
+            # The pacing is there to stop one address flooding the wall. The
+            # house is one address and will be answering several people at
+            # once once the bot is behind it, so it is not held to that.
+            slow = None if house else too_fast(ip)
             if slow:
                 c.close()
                 return self.reply(429, {"error": slow})
@@ -424,14 +430,21 @@ class Handler(BaseHTTPRequestHandler):
                     "SELECT 1 FROM msg WHERE id=? AND hidden=0", (reply,)).fetchone():
                 reply = 0
 
+            # A badge is a claim about who is speaking, so only something
+            # holding the token may make one -- the house, or the bot it runs.
+            badge = clean(d.get("badge"), 3).lower() if house else ""
+            if badge not in ("op", "bot"):
+                badge = "op" if house else ""
+
             geo = self.client_country()
             with c:
                 cur = c.execute(
-                    "INSERT INTO msg (ts, name, text, ip, cc, geo, reply) VALUES (?,?,?,?,?,?,?)",
-                    (ts, name, text, ip, cc, geo, reply))
+                    "INSERT INTO msg (ts, name, text, ip, cc, geo, reply, badge) "
+                    "VALUES (?,?,?,?,?,?,?,?)",
+                    (ts, name, text, ip, cc, geo, reply, badge))
             rid = cur.lastrowid
             out = {"id": rid, "ts": ts, "name": name, "text": text,
-                   "cc": geo or cc, "reply": reply}
+                   "cc": geo or cc, "reply": reply, "badge": badge}
             if reply:
                 r = c.execute("SELECT name, text FROM msg WHERE id=?", (reply,)).fetchone()
                 if r:

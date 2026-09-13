@@ -96,6 +96,8 @@
   "chat.placeholder": "diz alguma coisa",
   "chat.send": "enviar",
   "chat.emoji": "figurinhas",
+  "chat.op": "dono",
+  "chat.bot": "bot",
   "chat.reply": "responder a isto",
   "chat.unreply": "deixa pra lá",
   "chat.reserved": "“{name}” já tem dono — escolhe outro nome",
