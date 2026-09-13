@@ -101,12 +101,21 @@ HERMES = envs("BOT_HERMES", "/home/spitmux/.local/bin/hermes")
 PROFILE = envs("BOT_PROFILE", "spitmuxbot")
 
 # ── who it is ────────────────────────────────────────────────────────────
-BOT_NAME = envs("BOT_NAME", "ratboy")
+BOT_NAME = envs("BOT_NAME", "spitmux-bot")
 # Words that mean "I am talking to you". Kept short: every extra one is
 # another way for the bot to butt into a conversation it was not part of.
 # The name counts wherever it lands in a line. It is the bot's own and
 # nobody in the room says it by accident.
-ADDRESSED = [BOT_NAME.lower()]
+#
+# Every spelling of it, though, because the line is matched against text that
+# has already had its punctuation folded to spaces. A hyphenated name compared
+# as typed matches nothing at all, and the bot goes quietly deaf to its own
+# name -- so "spitmux-bot", "spitmux bot", "@spitmuxbot" and "spitmuxbot" are
+# all derived here from whatever the name happens to be.
+ADDRESSED = sorted(set([
+    re.sub(r"[^a-z0-9]+", " ", BOT_NAME.lower()).strip(),
+    re.sub(r"[^a-z0-9]+", "", BOT_NAME.lower()),
+]))
 # The bare word does not, unless the line is at least asking something. "the
 # bot answered me twice already lol" and "anyone else think the bot is
 # broken" are people talking ABOUT it, not to it, and paying for those means
@@ -459,6 +468,14 @@ def hermes(prompt, usage_path):
     # neither reads nor holds.
     env = dict(os.environ)
     env.pop("BUGCHAT_TOKEN", None)
+    # A service has no locale, so the child decided its stdout was ASCII and
+    # every character that was not came back as bytes this cannot decode -- an
+    # em dash arrived in the room as a replacement glyph, and an answer in
+    # Hindi or Japanese would have arrived as nothing else. The orders tell it
+    # to answer in the language it was asked in, so this is not cosmetic.
+    env["PYTHONIOENCODING"] = "utf-8"
+    env.setdefault("LANG", "C.UTF-8")
+    env.setdefault("LC_ALL", "C.UTF-8")
 
     argv = [HERMES, "-p", PROFILE, "-z", prompt, "--usage-file", usage_path]
     t0 = time.time()
