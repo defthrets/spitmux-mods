@@ -38,6 +38,8 @@ cannot ban what you did not write down. It is never served to the public room
 did. Only the admin endpoints, behind the token, can see who said what.
 """
 
+import hashlib
+import hmac
 import io
 import json
 import os
@@ -70,6 +72,13 @@ ORIGINS = set(filter(None, os.environ.get(
 # spit-mux, xXspitmuxXx and defthr3ts are all the same attempt at the same lie.
 RESERVED = ["spitmux", "defthrets", "ratboy", "admin", "moderator", "owner",
             "operator", "warden", "official", "staff", "system"]
+
+# The same idea for the helper's names, but matched whole rather than as a
+# substring. "bot" inside a name is not a lie -- robot, abbot and sandbot are
+# somebody's handle, not an impersonation -- while a name that flattens to
+# exactly "bot" is only ever one thing.
+RESERVED_EXACT = ["bot", "hermes", "assistant", "helper", "support",
+                  "spitmuxbot", "modbot"]
 LOOKALIKE = {"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "6": "g",
              "7": "t", "8": "b", "9": "g", "$": "s", "@": "a", "!": "i",
              "|": "i", "+": "t"}
@@ -77,7 +86,20 @@ LOOKALIKE = {"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "6": "g",
 MAX_TEXT = 200
 MAX_NAME = 16
 ROOM_LINES = 60           # how much of the wall a new arrival is handed
-ROOM = ("SELECT m.id, m.ts, m.name, m.text, m.reply, m.badge, "
+# The bot's per-person cap needs something a visitor cannot simply retype. A
+# display name is free -- pick a new one and the cap resets -- so loopback
+# callers are handed this instead: a keyed digest of the real address, stable
+# for as long as that address is, meaningless anywhere else, and never sent to
+# a browser. SPEAKER_SALT is per-process on purpose; it only has to outlive a
+# day's counting, and a restart forgetting it is cheaper than storing it.
+SPEAKER_SALT = os.urandom(16)
+
+
+def speaker_id(ip):
+    return hmac.new(SPEAKER_SALT, ip.encode("utf-8"), hashlib.sha256).hexdigest()[:16]
+
+
+ROOM = ("SELECT m.id, m.ts, m.name, m.text, m.reply, m.badge, m.ip, "
         "CASE WHEN m.geo <> '' THEN m.geo ELSE m.cc END AS cc, "
         "r.name AS re_name, substr(r.text, 1, 70) AS re_text "
         "FROM msg m LEFT JOIN msg r ON r.id = m.reply ")
@@ -147,8 +169,15 @@ def setup():
 
 
 def clean(s, n):
-    """One line of it, no control characters, trimmed to length."""
-    s = re.sub(r"[\x00-\x1f\x7f]", " ", str(s or "")).strip()
+    """One line of it, no control characters, trimmed to length.
+
+    The ASCII controls are the obvious half. NEL, LINE SEPARATOR and PARAGRAPH
+    SEPARATOR are the other one: they are not in the C0 range, they are real
+    line breaks to anything that renders or reflows the text afterwards, and a
+    single one of them is not a run of whitespace, so collapsing runs does not
+    catch it either. Folded here, on the way in, so it never reaches the
+    database and cannot come back out through a reply quote."""
+    s = re.sub(u"[\x00-\x1f\x7f\u0085\u2028\u2029]", " ", str(s or "")).strip()
     return re.sub(r"\s{2,}", " ", s)[:n]
 
 
@@ -168,6 +197,9 @@ def taken(name):
     flat = flatten(name)
     for r in RESERVED:
         if r in flat:
+            return r
+    for r in RESERVED_EXACT:
+        if r == flat:
             return r
     return None
 
@@ -219,13 +251,44 @@ class Handler(BaseHTTPRequestHandler):
         cc = (self.headers.get("CF-IPCountry", "") or "").strip().upper()
         return cc if re.match(r"^[A-Z]{2}$", cc) else ""
 
+    def room_rows(self, rows):
+        """The room as the caller is allowed to see it.
+
+        The query carries the address so that a speaker id can be derived from
+        it. The address itself goes no further than this method -- it is
+        dropped from every row, for every caller, before anything is sent. The
+        id that replaces it appears only for a caller on the loopback
+        interface, which is the bot and nothing else: a browser has no use for
+        it and no business being handed a stable handle on anybody."""
+        local = self.client_address[0] in ("127.0.0.1", "::1") and not self.from_outside()
+        out = []
+        for r in rows:
+            d = dict(r)
+            ip = d.pop("ip", "") or ""
+            if local and ip:
+                d["sid"] = speaker_id(ip)
+            out.append(d)
+        return out
+
     def client_ip(self):
-        """The address the reverse proxy saw, not the proxy's own."""
-        fwd = self.headers.get("X-Forwarded-For", "")
-        if fwd:
-            return fwd.split(",")[0].strip()
-        real = self.headers.get("X-Real-IP", "")
-        return real.strip() or self.client_address[0]
+        """Who is actually talking, by the only account of it worth believing.
+
+        X-Forwarded-For is written by the caller. cloudflared APPENDS the real
+        address to whatever arrived rather than replacing it, so the leftmost
+        entry -- which this used to take -- is a string the visitor chose. Every
+        control keyed on it was therefore keyed on the attacker's own input: a
+        ban was shaken off by inventing an address, the flood limit reset the
+        same way, and six deliberate wrong tokens sent under the house's own
+        address locked the warden out of its own room for five minutes.
+
+        So: through the tunnel, believe CF-Connecting-IP and nothing else --
+        cloudflared sets it on the edge and a request cannot forge it. Off the
+        tunnel, believe the socket. Neither can be typed by the person at the
+        other end."""
+        if self.from_outside():
+            cf = (self.headers.get("CF-Connecting-IP", "") or "").strip()
+            return cf or self.client_address[0]
+        return self.client_address[0]
 
     def cors(self):
         origin = self.headers.get("Origin", "")
@@ -344,7 +407,7 @@ class Handler(BaseHTTPRequestHandler):
                     (ROOM_LINES,)).fetchall()
                 rows = list(reversed(rows))
             c.close()
-            return self.reply(200, {"lines": [dict(r) for r in rows]})
+            return self.reply(200, {"lines": self.room_rows(rows)})
 
         if path.startswith("/api/admin/"):
             if self.from_outside():
@@ -388,8 +451,11 @@ class Handler(BaseHTTPRequestHandler):
             if not text:
                 return self.reply(400, {"error": "say something"})
 
-            # the house's own names, unless the house is the one asking
-            house = self.admin_ok()
+            # The house's own names, unless the house is the one asking -- and
+            # the house never asks from the internet, so the token is not even
+            # compared for a request that came down the tunnel. That keeps the
+            # guess counter, and the lockout it triggers, off the public side.
+            house = (not self.from_outside()) and self.admin_ok()
             if not house:
                 mine = taken(name)
                 if mine:

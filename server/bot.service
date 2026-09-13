@@ -1,0 +1,111 @@
+# The bug chat's bot. The same shape and the same hardening as
+# bugchat.service, with the two differences that running Hermes forces.
+#
+# Install:
+#     sudo install -m 0600 bot.service /etc/systemd/system/spitmux-bot.service
+#     sudo systemctl daemon-reload
+#     sudo systemctl enable --now spitmux-bot
+#
+# 0600 because the unit holds the chat's admin token, exactly as the bugchat
+# unit does. The token is NOT in this file and must never be committed to it:
+# put the value in once the file is on the box, or use
+#
+#     sudo systemctl edit spitmux-bot
+#
+# and set it in the drop-in, which keeps it out of anything git can see.
+#
+# This unit has nothing to do with hermes-gateway.service, which is the
+# owner's own agent on the default profile. Different name, different profile,
+# different HERMES_HOME. Installing, starting or stopping this one does not
+# touch that one.
+
+[Unit]
+Description=spitmux.me bug chat bot
+# After the chat but not Requires=: if the chat is down the bot should sit
+# there retrying rather than be taken down with it and need a hand to come
+# back.
+After=network-online.target bugchat.service
+Wants=network-online.target
+
+[Service]
+# spitmux owns the Hermes install, and a profile is only ever readable by the
+# account that owns it -- the profile directory is 0700 and the .env inside it
+# is 0600.
+User=spitmux
+
+# The chat's admin token is NOT set here, and there is deliberately no blank
+# line to fill in. This file lives in the website's repo, and the website is
+# published: a value typed on the line below would have been one commit away
+# from being served at spitmux.me. The token is supplied by a drop-in that
+# never leaves the box:
+#
+#   sudo systemctl edit spitmux-bot
+#   [Service]
+#   Environment=BUGCHAT_TOKEN=<the value from bugchat.service>
+#
+# It lands in /etc/systemd/system/spitmux-bot.service.d/override.conf, root
+# owned and 0600, next to the only other copy of that token. Without it the
+# bot cannot wear the `bot` badge, and "ratboy" is on the reserved list, so
+# its lines are refused outright rather than posted unbadged.
+
+# The DeepSeek key is deliberately NOT here. Hermes reads it out of
+# /home/spitmux/.hermes/profiles/spitmuxbot/.env itself, so this process never
+# holds it, never hands it to a child, and cannot log it by accident.
+
+Environment=HOME=/home/spitmux
+Environment=BOT_BRAIN=/opt/bugchat/brain
+Environment=BOT_STATE=/var/lib/spitmux-bot/state.json
+Environment=BOT_PROFILE=spitmuxbot
+Environment=BOT_NAME=ratboy
+# Every other knob has a sane default in bot.py. The ones worth reaching for:
+#Environment=BOT_DRY_RUN=1          decide and ask, but post nothing
+#Environment=BOT_PER_HOUR=12
+#Environment=BOT_PER_DAY=80
+#Environment=BOT_PER_PERSON_DAY=6
+#Environment=BOT_SPEND_DAY_USD=0.50
+#Environment=BOT_COOLDOWN_S=20
+
+ExecStart=/usr/bin/python3 /opt/bugchat/bot.py
+Restart=always
+RestartSec=3
+# A Hermes call can be in flight for up to BOT_TIMEOUT_S, which defaults to
+# 90s. This has to be longer than that or the comment is a lie: a `systemctl
+# restart` during a call would be SIGKILLed mid-flight, which is precisely
+# when the bot has asked a question and not yet recorded the answer.
+TimeoutStopSec=120
+
+# /var/lib/spitmux-bot, created and chowned by systemd, and writable without
+# having to name it in ReadWritePaths.
+StateDirectory=spitmux-bot
+StateDirectoryMode=0750
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+
+# The two differences from bugchat.service, both forced by Hermes.
+#
+# ProtectHome stays off because the whole Hermes install lives under
+# /home/spitmux -- the wrapper, the runtime and the profile. bugchat can hide
+# the home directory because it has no business in one; this cannot.
+ProtectHome=false
+#
+# ProtectSystem=strict then leaves /home read-only, and only the paths below
+# get written. That is not a technicality, it is the isolation itself: the
+# owner's default profile, and everything else under ~/.hermes, is read-only
+# to this service at the kernel level, so a bug in here cannot reach it
+# however hard it tries. Never widen this to /home/spitmux/.hermes.
+ReadWritePaths=/home/spitmux/.hermes/profiles/spitmuxbot
+#
+# The bot does NOT get the owner's ~/.cache. That directory holds a keyring,
+# a Proton session, and cached executables for playwright, pnpm and node --
+# all belonging to the person who runs this machine interactively, under the
+# same account. Write access there would let anything that got into the bot
+# leave a binary for the owner's next npx to run, which is a far shorter path
+# out than anything the chat could offer. It gets a cache of its own instead.
+CacheDirectory=spitmux-bot
+CacheDirectoryMode=0750
+Environment=XDG_CACHE_HOME=/var/cache/spitmux-bot
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+# What GitHub Pages is allowed to publish.
+#
+# Pages runs Jekyll over this repo and, with no config, copies almost
+# everything into the live site. That was serving the chat server's source,
+# the warden page and every build script at spitmux.me/server/... -- readable
+# by anyone who guessed the path. None of it is secret, but none of it is the
+# website either, and a unit file one commit away from holding a token had no
+# business being one URL away from the internet.
+#
+# Jekyll already skips anything beginning with a dot or an underscore. This
+# adds the rest: the service that runs the chat, and the tooling that builds
+# the site rather than being part of it. Patterns, not a list of names, so a
+# script added next month is excluded by default instead of by remembering.
+exclude:
+  - server/
+  - "*.py"
+  - "*.ps1"
+  - "*.md"
+  - "*.log"
