@@ -123,6 +123,24 @@ ADDRESSED = sorted(set([
 # way to spend its day: three letters, no mod named, no question mark.
 ADDRESSED_IF_ASKED = ["bot"]
 
+# ── the other doorway ────────────────────────────────────────────────────
+# Telegram, answered by exactly the same brain as the room: same standing
+# orders, same routing, same fence, same caps, same money. It is deliberately
+# NOT the Hermes gateway. The gateway hands the model the standing orders and
+# nothing else -- no index, no briefs -- so it was told to answer from
+# material it had no way to read, and went looking for a terminal to find it
+# with. There was no terminal, so nothing happened, but a bot reaching for one
+# is a bot that has been set up wrong.
+TG_TOKEN = envs("TELEGRAM_BOT_TOKEN", "")
+# Fail closed. An empty or missing list is nobody, not everybody: the one way
+# this variable is likely to be wrong is by being absent, and the cost of
+# guessing "open" is a stranger spending the same balance the owner's own
+# agent draws on. "open" has to be typed out.
+TG_ALLOWED = envs("TELEGRAM_ALLOWED_USERS", "")
+TG_OPEN = TG_ALLOWED.strip().lower() == "open"
+TG_USERS = set(u.strip() for u in TG_ALLOWED.split(",") if u.strip().isdigit())
+TG_API = "api.telegram.org"
+
 # ── how often, and how much ──────────────────────────────────────────────
 POLL_S = envf("BOT_POLL_S", 3.0)          # the page itself polls at 2.5s
 STALE_S = envf("BOT_STALE_S", 240.0)      # older than this and the moment passed
@@ -418,6 +436,86 @@ class Chat(object):
         }, token=True)
 
 
+class Telegram(object):
+    """The Telegram bot API, over short polls.
+
+    Short rather than long polls because this shares a thread with the room,
+    and a 25-second long poll would leave the room unanswered for 25 seconds.
+    One request every few seconds costs nothing and keeps both doorways
+    equally quick."""
+
+    def __init__(self, token):
+        self.token = token
+        self.conn = None
+
+    def drop(self):
+        try:
+            if self.conn:
+                self.conn.close()
+        except Exception:
+            pass
+        self.conn = None
+
+    def call(self, method, payload=None):
+        raw = json.dumps(payload or {}).encode("utf-8")
+        head = {"Content-Type": "application/json", "Accept": "application/json"}
+        for attempt in (1, 2):
+            try:
+                if self.conn is None:
+                    self.conn = http.client.HTTPSConnection(TG_API, timeout=20)
+                self.conn.request("POST", "/bot%s/%s" % (self.token, method),
+                                  body=raw, headers=head)
+                r = self.conn.getresponse()
+                data = r.read()
+                return json.loads(data.decode("utf-8") or "{}")
+            except Exception:
+                self.drop()
+                if attempt == 2:
+                    raise
+        return {}
+
+    def updates(self, offset):
+        # timeout=0 makes this a poll rather than a wait. allowed_updates keeps
+        # Telegram from sending edits, reactions and channel posts, none of
+        # which this answers.
+        out = self.call("getUpdates", {"offset": int(offset), "timeout": 0,
+                                       "limit": 20,
+                                       "allowed_updates": ["message"]})
+        return out.get("result") or []
+
+    def send(self, chat_id, text, reply_to=None):
+        body = {"chat_id": chat_id, "text": text,
+                "disable_web_page_preview": True}
+        if reply_to:
+            body["reply_to_message_id"] = int(reply_to)
+        return self.call("sendMessage", body)
+
+
+def as_line(update):
+    """A Telegram message in the same shape as a line off the chat wall, so
+    everything downstream of here cannot tell the difference and does not have
+    to care which doorway a question arrived through."""
+    msg = update.get("message") or {}
+    frm = msg.get("from") or {}
+    chat = msg.get("chat") or {}
+    text = msg.get("text") or ""
+    if not text or frm.get("is_bot"):
+        return None
+    return {
+        "id": "tg%d" % int(update.get("update_id") or 0),
+        "name": clean(frm.get("first_name") or frm.get("username") or "someone"),
+        "text": text,
+        "badge": "",
+        "reply": 0,
+        "ts": int(msg.get("date") or 0) * 1000,
+        "via": "tg",
+        "sid": "tg:%s" % frm.get("id"),
+        "user": str(frm.get("id") or ""),
+        "chat_id": chat.get("id"),
+        "msg_id": msg.get("message_id"),
+    }
+
+
 # ── the answer ───────────────────────────────────────────────────────────
 
 def cut(text, limit, parts):
@@ -537,6 +635,12 @@ class Bot(object):
 
     def __init__(self):
         self.chat = Chat()
+        self.tg = Telegram(TG_TOKEN) if TG_TOKEN else None
+        # One history per Telegram conversation. The room's history is shared
+        # because the room is; a direct message is not, and threading one
+        # person's follow-up onto another person's question would be both
+        # wrong and a way of reading somebody else's message out loud.
+        self.tg_recent = {}
         self.rules, self.index, self.mods = read_pack()
         # Precomputed once: the standing orders are the one text the bot must
         # never reproduce, and checking every answer against them costs
@@ -555,6 +659,7 @@ class Bot(object):
         self.mute = False       # set when a badge came back wrong
         self.told = set()       # ceilings already complained about today
         self.fresh = not os.path.exists(STATE)
+        self.fresh_tg = self.fresh
         self.st = self.load()
 
     # ── state ────────────────────────────────────────────────────────
@@ -661,6 +766,12 @@ class Bot(object):
 
         hay = flat(text)
         mod = route(self.mods, text)
+        if line.get("via") == "tg":
+            # Somebody who has opened a conversation with the bot and typed
+            # into it is addressing it, whatever the words are. The room needs
+            # the name because a hundred other conversations are going on in
+            # it; a direct message has nobody else in it to be talking to.
+            return mod, "messaged"
         if any((" " + a + " ") in hay for a in ADDRESSED):
             return mod, "addressed"
         if not text.rstrip().endswith("?"):
@@ -714,7 +825,7 @@ class Bot(object):
         context was not, so anyone who wanted to plant an instruction put it in
         an earlier line, or in the 70 characters of a reply stub, and had it
         arrive as bare prose in the middle of the prompt."""
-        rows = [r for r in list(self.recent)[-CONTEXT_LINES:]
+        rows = [r for r in list(self.history(line))[-CONTEXT_LINES:]
                 if r["id"] != line.get("id")]
         if line.get("reply") and line.get("re_name"):
             stub = {"id": line["reply"], "badge": "", "answering": True,
@@ -729,6 +840,8 @@ class Bot(object):
                 role = "you, earlier"
             elif r.get("badge"):
                 role = "the site owner"
+            elif line.get("via") == "tg":
+                role = "the person you are talking to, earlier"
             else:
                 role = "somebody else in the room"
             out.append("%s\nWho: %s\nSaid: %s\n%s"
@@ -822,6 +935,8 @@ class Bot(object):
         people[who] = people.get(who, 0) + 1
 
     def post(self, line, lines):
+        if line.get("via") == "tg":
+            return self.post_tg(line, lines)
         qid = int(line.get("id") or 0)
         for n, text in enumerate(lines):
             if DRY_RUN:
@@ -865,12 +980,44 @@ class Bot(object):
             time.sleep(1.0)     # two at once reads as one wall of bot
 
     # ── the loop ─────────────────────────────────────────────────────
+    def history(self, line):
+        """The deque this line belongs in: the room's, or this conversation's."""
+        if line.get("via") != "tg":
+            return self.recent
+        key = str(line.get("chat_id"))
+        if key not in self.tg_recent:
+            if len(self.tg_recent) > 200:       # a cap, not a policy
+                self.tg_recent.pop(next(iter(self.tg_recent)))
+            self.tg_recent[key] = deque(maxlen=CONTEXT_KEEP)
+        return self.tg_recent[key]
+
+    def post_tg(self, line, lines):
+        """One message, not two. The room is a 200-character box and a long
+        answer has to be broken across lines to fit it; Telegram is not, and
+        two notifications for one answer is worse manners there than a
+        slightly longer paragraph."""
+        qid = line.get("id")
+        text = " ".join(lines).strip()
+        if DRY_RUN:
+            log("%s dry run, would reply: %s", qid, text)
+            return
+        try:
+            out = self.tg.send(line.get("chat_id"), text, line.get("msg_id"))
+        except Exception as e:
+            log("%s could not reply on telegram (%s)", qid, e.__class__.__name__)
+            return
+        if not out.get("ok"):
+            log("%s telegram refused: %s", qid,
+                clean(out.get("description"))[:120])
+            return
+        log("%s answered on telegram (%d characters)", qid, len(text))
+
     def remember(self, line):
         # The badge is kept now. Without it an operator's line, one of the
         # bot's own replies and an anonymous visitor's all rendered the same,
         # so the only thing telling the model who was speaking was a name the
         # visitor had chosen for themselves.
-        self.recent.append({"id": line.get("id"),
+        self.history(line).append({"id": line.get("id"),
                             "badge": line.get("badge") or "",
                             "name": clean(line.get("name")),
                             "text": clean(line.get("text"))})
@@ -913,6 +1060,49 @@ class Bot(object):
             return
         self.answer(line, mod)
 
+    def poll_telegram(self):
+        """The other doorway, drained into the same machinery.
+
+        The allow-list is checked here, before a single token is spent: an
+        uninvited message is acknowledged to Telegram by advancing the offset
+        and then dropped. Answering it -- even to refuse -- would cost money
+        and confirm the bot is listening."""
+        if not self.tg:
+            return
+        try:
+            updates = self.tg.updates(self.st.get("tg_offset", 0))
+        except Exception as e:
+            log("telegram: %s -- retrying", e.__class__.__name__)
+            return
+        if not updates:
+            return
+        # The offset is advanced and written before anything is answered.
+        # Telegram redelivers everything above the offset forever, so a crash
+        # mid-answer with the offset unsaved means the same question again on
+        # every restart, for good.
+        self.st["tg_offset"] = max(int(u.get("update_id") or 0)
+                                   for u in updates) + 1
+        first = self.fresh_tg
+        self.fresh_tg = False
+        self.save()
+        if first:
+            log("telegram: %d message(s) were waiting from before this "
+                "started -- leaving them", len(updates))
+            return
+        for u in updates:
+            line = as_line(u)
+            if not line:
+                continue
+            if not (TG_OPEN or line["user"] in TG_USERS):
+                log("telegram: ignoring %s, not on the list", line["user"])
+                continue
+            self.remember(line)
+            try:
+                self.consider(line)
+            except Exception as e:
+                log("%s went wrong handling it (%s: %s)", line["id"],
+                    e.__class__.__name__, e)
+
     def run(self):
         log('watching %s:%d as "%s", brain %s, profile %s',
             CHAT_HOST, CHAT_PORT, BOT_NAME, BRAIN, PROFILE)
@@ -920,6 +1110,16 @@ class Bot(object):
             "a day, $%.2f a day", COOLDOWN_S, PER_HOUR, PER_DAY,
             PER_PERSON_DAY, SPEND_DAY_USD)
         log("index.md routes %d mods", len(self.mods))
+        if not self.tg:
+            log("telegram: off, no TELEGRAM_BOT_TOKEN")
+        elif TG_OPEN:
+            log("telegram: on, open to anyone who finds the bot")
+        elif TG_USERS:
+            log("telegram: on, %d allowed user(s)", len(TG_USERS))
+        else:
+            log("telegram: on but nobody is allowed -- set "
+                "TELEGRAM_ALLOWED_USERS to a comma-separated list of numeric "
+                "ids, or to the word open")
         if DRY_RUN:
             log("dry run: nothing will be posted")
         while True:
@@ -933,6 +1133,7 @@ class Bot(object):
                 log("room: %s: %s -- retrying", e.__class__.__name__, e)
                 time.sleep(POLL_S * 3)
                 continue
+            self.poll_telegram()
             if self.fresh and not lines:
                 # An empty first poll still means "this is where we came in".
                 # Leaving the flag up meant the next batch -- which in a new

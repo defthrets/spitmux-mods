@@ -202,8 +202,7 @@ sudo systemctl enable --now spitmux-bot
 
 `setup-bot.sh` builds the isolated Hermes profile `spitmuxbot`, points it at
 `deepseek-flash`, switches every toolset off, installs the standing orders as
-that profile's `SOUL.md` so the Telegram side of the bot obeys the same rules
-the chat side does, mirrors the knowledge pack into `/opt/bugchat/brain`, and
+that profile's `SOUL.md`, mirrors the knowledge pack into `/opt/bugchat/brain`, and
 then prints which secrets are still missing and where they go. It changes
 nothing that is already correct, so running it again is also how you update.
 
@@ -212,18 +211,42 @@ It will not touch the `default` Hermes profile, will not restart
 this -- and will not start anything. It prints the last few commands and
 stops.
 
-Two secrets, in two places, neither of them in this repository:
+Three secrets, in two places, none of them in this repository:
 
-    BUGCHAT_TOKEN       in the unit, the same value bugchat.service has
-    DEEPSEEK_API_KEY    in ~/.hermes/profiles/spitmuxbot/.env, 0600
+    BUGCHAT_TOKEN           in the unit drop-in, as bugchat.service has it
+    TELEGRAM_BOT_TOKEN      in the unit drop-in, only for the Telegram side
+    TELEGRAM_ALLOWED_USERS  in the unit drop-in: numeric ids, or the word
+                            `open`. Empty denies everyone, on purpose
+    DEEPSEEK_API_KEY        in ~/.hermes/profiles/spitmuxbot/.env, 0600
 
-The bot process only ever holds the first. Hermes reads its own key out of the
-profile's `.env`, so the key for the model never enters the bot's environment
-and cannot come back out in its log.
+The bot process never holds the model's key. Hermes reads that out of the
+profile's own `.env`, so it does not enter the bot's environment and cannot
+come back out in its log. The bot pops `BUGCHAT_TOKEN` out of the environment
+it hands to Hermes for the same reason, in the other direction.
 
-`TELEGRAM_BOT_TOKEN` goes in the same `.env`, and is only needed if the bot is
-wanted on Telegram as well. It has to be a brand-new bot from @BotFather: two
-pollers on one token fight over `getUpdates`.
+### Telegram
+
+Answered by `bot.py`, not by a Hermes gateway. Do not run
+`hermes -p spitmuxbot gateway install`.
+
+That was the first attempt and it was wrong twice. A gateway hands the model
+the standing orders and nothing else -- no index, no briefs -- so the bot is
+told to answer from material it has no way to read, and starts looking for a
+terminal to go and read it with. (It does not find one: every toolset is off,
+and the tool call came out as inert text in the reply. A bot reaching for a
+terminal is still a bot that has been set up wrong.) And a gateway polling the
+same token as `bot.py` is two processes splitting one stream of messages
+between them at random.
+
+Going through `bot.py` means Telegram gets the same routing, the same fence,
+the same leak guard and the same caps as the room, out of the same budget. A
+direct message counts as addressed -- there is nobody else in the conversation
+to be talking to -- so the name is not needed there.
+
+The allow-list is checked before a single token is spent: an uninvited message
+is acknowledged to Telegram, so it is not redelivered, and then dropped
+without being answered. Answering it, even to refuse, would cost money and
+confirm somebody is listening.
 
 ### Shutting it up in a hurry
 
@@ -271,8 +294,9 @@ answered from. Nothing else in the profile changes if nothing else needs to.
 The bot re-reads a brief on every question, so a brief edit takes effect on the
 next one. `rules.md` and `index.md` are read once at startup, so those two want
 a `systemctl restart spitmux-bot` after. Standing orders are installed into the
-profile's `SOUL.md` as well, which is what the Telegram side reads, and that
-is done by the same script for the same reason.
+profile's `SOUL.md` as well, which is the belt to the prompt's braces: if the
+pack ever failed to load, the model would still know what it is and what it
+refuses.
 
 `index.md` is the routing table, and the only reason any of this fits. Ten
 briefs at twenty to forty kilobytes each will not go in one prompt, so the bot

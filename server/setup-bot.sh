@@ -309,14 +309,11 @@ else
 # DeepSeek inference key for deepseek-flash (deepseek-v4-flash on the wire).
 DEEPSEEK_API_KEY=FILL_ME
 
-# Telegram bot token from @BotFather. It MUST be a brand-new bot, not the one
-# the default profile uses -- two pollers on one token fight over getUpdates.
-# Leave it as FILL_ME if the bot is only wanted in the chat room.
-TELEGRAM_BOT_TOKEN=FILL_ME
-
-# Who may talk to it on Telegram: comma-separated numeric user IDs, or * for
-# everybody. Empty or unset is fail-closed and denies all.
-TELEGRAM_ALLOWED_USERS=
+# No Telegram token here. Telegram is answered by bot.py, not by a Hermes
+# gateway, so the token belongs in the service's own drop-in alongside
+# BUGCHAT_TOKEN. Putting a copy here would be a second poller waiting to
+# happen: two processes calling getUpdates on one token take each other's
+# messages at random.
 ENVEOF
   chmod 600 "$ENVF"
   did "created it with placeholders, 0600"
@@ -342,17 +339,16 @@ cat <<TXT
 
      DEEPSEEK_API_KEY      from the DeepSeek console. Required: with it unset
                            every run exits 1 with "No usable credentials".
-     TELEGRAM_BOT_TOKEN    from @BotFather, a NEW bot. Only needed for the
-                           Telegram side. Leave it at FILL_ME otherwise.
-     TELEGRAM_ALLOWED_USERS  numeric Telegram user IDs, comma separated, or *
-                           for anyone. Empty denies everyone.
-
-   And one more, in the unit rather than in a file:
+   And the rest in the unit rather than in a file, so they land in a 0600
+   drop-in under /etc and never in this repository:
 
      BUGCHAT_TOKEN         the chat's admin token, the same value already in
-                           /etc/systemd/system/bugchat.service. Copy it across
-                           with 'sudo systemctl edit spitmux-bot' so it lands
-                           in a 0600 drop-in and never in this repository.
+                           /etc/systemd/system/bugchat.service.
+     TELEGRAM_BOT_TOKEN    from @BotFather, a NEW bot. Only if you want the
+                           Telegram side; the chat works without it.
+     TELEGRAM_ALLOWED_USERS  numeric Telegram user IDs, comma separated, or
+                           the word `open` for anyone. Empty denies everyone,
+                           which is what an unset variable should mean.
 
 TXT
 
@@ -370,14 +366,19 @@ cat <<TXT
    $HERMES_BIN -p $PROFILE -z "say hello in five words" --usage-file /tmp/u.json
    cat /tmp/u.json     # trust 'completed', not the exit code: a 401 exits 0
 
-   For the Telegram side, once TELEGRAM_BOT_TOKEN is in:
+   For the Telegram side, add the token to the same drop-in and restart. Do
+   NOT run 'hermes -p $PROFILE gateway install'. That was the first attempt and
+   it was wrong twice over: the gateway hands the model the standing orders and
+   nothing else -- no index, no briefs -- so it is told to answer from material
+   it cannot read and starts hunting for a tool to read it with; and a gateway
+   polling the same token as bot.py means two processes splitting one stream of
+   messages between them at random.
 
-   $HERMES_BIN -p $PROFILE gateway install
-   $HERMES_BIN -p $PROFILE gateway start
+   bot.py answers both doorways with the same brain: the same routing, the same
+   fence, the same caps and the same daily spend ceiling. If a gateway was ever
+   installed for this profile, take it off with:
 
-   That installs a user unit called hermes-gateway-$PROFILE. The owner's is a
-   system unit called hermes-gateway -- different name, different scope,
-   different socket. Neither one sees the other.
+   $HERMES_BIN -p $PROFILE gateway uninstall
 TXT
 
 GW_AFTER="$(systemctl show -p MainPID -p ActiveEnterTimestamp --value "$GATEWAY" 2>/dev/null | tr '\n' ' ')"
