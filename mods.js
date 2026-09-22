@@ -35,8 +35,8 @@ window.MODS = [
     tag: "drug-dealing and gang life, run off a phone that replaces the game's own",
     cat: "LIFE",
     key: "PHONE",
-    lines: 163495,
-    files: 216,
+    lines: 161290,
+    files: 212,
     status: "ACTIVE",
     repo: "https://github.com/defthrets/hoodrich",
     blurb:
@@ -93,8 +93,8 @@ window.MODS = [
     tag: "the needs the game left out, on a row of upright bars",
     cat: "LIFE",
     key: "F7",
-    lines: 42576,
-    files: 89,
+    lines: 48923,
+    files: 98,
     status: "ACTIVE",
     repo: "https://github.com/defthrets/bare-minimum",
     blurb:
