@@ -93,8 +93,8 @@ window.MODS = [
     tag: "the needs the game left out, on a row of upright bars",
     cat: "LIFE",
     key: "F7",
-    lines: 48923,
-    files: 98,
+    lines: 49286,
+    files: 99,
     status: "ACTIVE",
     repo: "https://github.com/defthrets/bare-minimum",
     blurb:
